@@ -1,0 +1,17 @@
+# Additive to agents/requirements.txt -- install both. Powers agents/api.py,
+# the FastAPI chat wrapper with per-thread history persisted via LangGraph's
+# own SQLite checkpointer (not a new database of this project's own design).
+
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# AsyncSqliteSaver -- the checkpointer agents/api.py compiles the graph
+# with. Ships separately from core langgraph.
+langgraph-checkpoint-sqlite>=2.0
+aiosqlite>=0.20
+
+# Server-side rate limiting + timeouts (agents/api.py's AGENT_API_RATE_LIMIT
+# / TURN_TIMEOUT_SECONDS) -- generous, single-developer-testing defaults,
+# see that module's own comments on both. asyncio.wait_for (the timeout
+# half) needs no extra package; slowapi is the rate-limiting half.
+slowapi>=0.1.9

@@ -1,0 +1,72 @@
+# --- Core ---
+numpy
+tqdm
+pydantic>=2.0
+
+# requests -- already a transitive dependency of several packages below
+# (unstructured, sentence-transformers, etc.), listed explicitly here
+# because vlm/online_vlm.py (Gemini) and groq_client.py (Groq --
+# generation/groq_generator.py, vlm/groq_vlm.py, agents/llm_provider.py)
+# both import it directly, not just transitively.
+requests
+
+# --- REST API ---
+fastapi                 # ingestion + query endpoints (serving/api.py)
+uvicorn[standard]        # ASGI server to run the API
+python-multipart         # required by FastAPI for UploadFile (file uploads)
+
+# --- Ingestion ---
+pymupdf              # PDF text + embedded image extraction (fitz)
+pillow                # image loading
+unstructured[md]      # optional: generic doc parsing fallback
+
+# --- Chunking ---
+nltk                   # sentence tokenization
+langchain-text-splitters  # recursive splitter (free, no API key needed)
+
+# --- Embeddings (free, local) ---
+sentence-transformers   # HF embedders: all-MiniLM-L6-v2, bge-small/base
+open-clip-torch         # CLIP embeddings, image+text shared space, fully local
+torch                   # backend for sentence-transformers / open_clip
+ollama                  # python client for local Ollama server (nomic-embed-text, mxbai-embed-large)
+
+# --- Vector stores ---
+chromadb                # embedded, zero-setup
+qdrant-client           # production-grade, needs local Qdrant (docker or binary)
+
+# --- Retrieval ---
+rank-bm25               # keyword/BM25 side of hybrid search
+
+# --- Generation (free, local via Ollama or HF) ---
+transformers            # local HF causal LMs (e.g. Qwen2.5, Phi-3-mini) as fallback to Ollama
+
+# --- Evaluation ---
+ragas                   # optional automated RAG eval (uses local LLM as judge, no API key required if configured)
+
+# --- OCR / table extraction (free, local) ---
+pytesseract             # OCR wrapper (requires system tesseract-ocr binary)
+pdf2image                # render PDF pages to images for OCR (requires system poppler-utils)
+pdfplumber               # table extraction from PDFs
+
+# --- Reliability / observability (free, local) ---
+tenacity                 # retry/backoff decorator
+arize-phoenix            # optional local tracing UI, no cloud account needed
+
+# --- Dedup / caching ---
+diskcache                # simple local disk cache for embeddings
+
+# --- SLM benchmarking ---
+psutil                   # process memory measurement
+
+# --- Quantization (free, local) ---
+bitsandbytes             # 4-bit/8-bit quantization for HF models, requires CUDA GPU for real benefit
+accelerate               # needed by bitsandbytes' device_map="auto" loading
+
+# --- VLMs (free, local) ---
+# transformers + pillow (already listed above) cover HF VLMs (moondream2, Qwen2-VL)
+# ollama (already listed above) covers Ollama VLMs (llava, moondream) via the same client
+
+# --- vLLM serving infrastructure (free, local, requires CUDA GPU) ---
+vllm                     # offline batch inference + OpenAI-compatible local server
+openai                   # client library for talking to vLLM's local OpenAI-compatible server
+

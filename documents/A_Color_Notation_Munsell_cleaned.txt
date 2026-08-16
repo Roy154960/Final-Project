@@ -1,0 +1,3491 @@
+HARVARD UNIVERSITY
+
+UBRARY OF THE
+
+GRADUATE SCHOOL
+OF EDUCATION
+
+A BALANCED COLOR SPHERE
+
+PASTEL SKETCH
+
+\ i .\! WTH* COLOR SPHERE
+
+A COLOR NOTATION
+
+By
+H. MUNSELL
+
+A MEASURED COLOR
+SYSTEM, BASED ON THE
+THREE QUALITIES
+Hue, ValuCy and Chroma
+
+WITH
+
+Illustrative Models, Charts,
+AND A Course of Study
+Arranged for Teachers
+
+Geo. H. Ellis Co.
+
+BOSTON
+
+HjWVARD UNtVWSrTY
+
+fil^OXlATE SCHOOL OF LDUCATIOH
+
+HQt^QE C GUTMAN LIftRARY
+
+OCT. 3, IMt
+
+Copyright, 1905
+
+BY
+A. H. MUNSBLL
+
+Ail rights rt served
+
+Entkrbd at Stationbrs* Hall
+
+AUTHOR'S PREFACE.
+
+At various times during the past ten years, the gist of these pages
+has been given in the form of lectures to students of the Normal
+Art School, the Art Teachers* Association, and the Twentieth
+Century Club. In October of last year it was presented before
+the Society of Arts of the Massachusetts Institute of Technology,
+at the suggestion of Professor Charles R. Cross.
+
+Grateful acknowledgment is due to many whose helpful criti-
+cism has aided in its development, notably Mr. Benjamin Ives
+Gilman, Secretary of the Museum of Fine Arts, Professor Harry E.
+Clifford, of the Institute of Technology, and Mr. Myron T. Prit-
+chard, master of the Everett School, Boston.
+
+A. H. M.
+
+Chbstnttt Hill, Mass, 1906.
+
+INTRODUCTION.
+
+The lack of definiteness which is at present so general in color
+nomenclatiire» is due in large measure to the failure to appreciate
+the fundamental characteristics on which color differences depend.
+For the physicist, the expression of the wave length of any partic-
+ular light is in most cases sufficient, but in the great majority of
+instances where colors are referred to, something more than this
+and something easier of realization is essential.
+
+The attempt to express color relations by using merely two
+dimensions, or two definite characteristics, can never lead to a
+successful system. For this reason alone the system proposed
+by Mr. Munsell, with its three dimensions of hue, value, and
+chroma, is a decided step in advance over any previous propo-
+sition. By means of these three dimensions it is possible to com-
+pletely express any particular color, and to differentiate it from
+colors ordinarily classed as of the same general character.
+
+The expression of the essential characteristics of a color is, how-
+ever, not all that is necessary. There must be some accurate
+and not too complicated system for dupUcating these characteris-
+tics, one which shall not alter with time or place, and which shall
+be susceptible of easy and accurate redetermination. From the
+teaching standpoint also a logical and sequential development is
+absolutely essential. This Mr. Munsell seems to have most suc-
+cessfully accomplished.
+
+INTRODUCTION
+
+In the detennination of his relationships he has made use of
+distinctly scientific methods, and there seems no reason why his
+suggestions should not lead to an exact and definite system
+of color essentials. The Munsell photometer, which is briefly
+referred to, is an instrument of wide range, high precision, and
+great sensitiveness, and permits the valuations which are necessary
+in his system to be accurately made. We all appreciate the neces-
+sity for some improvement in our ideas of color, and the natural
+inference is that the training should be begun in early youth.
+The present system in its modified form possesses elements of
+simplicity and attractiveness which should appeal to children, and
+give them almost unconsciously a power of discrimination which
+would prove of immense value in later life. The possibiUties in
+this system are very great, and it has been a privilege to be
+allowed during the past few years to keep in touch with its
+development. I cannot but feel that we have here not only a
+rational color nomenclature, but also a system of scientific impor-
+tance and of practical value.
+
+H. E. Clifford.
+Massachttsetts Institute of Teghnologt,
+February, 1905
+
+CONTENTS.
+
+Chaftbb Paraoraph
+
+I. COLOB NAMES : bed, yellow, green, blue, fubplb, 1
+
+n. COLOR QUALITIES : hue, value, chboma .... 20
+
+in. COLOB MIXTUBE : A tbi-dimensional balance . . 54
+
+IV. PBISMATIC COLOBS 87
+
+V. THE PIGMENT COLOB SPHEBE 102
+
+VI. COLOB NOTATION : A written colob system . . 132
+
+Vn. COLOB HABMONY : A measubed belation .... 146
+
+APPENDIX.
+
+GLOSSABY OF COLOB TEBMS.
+
+A COLOB SYSTEM AND COUBSE OF STUDY BASED
+
+ON THE COLOB SOLID AND ITS CHABTS.
+
+INDEX.
+
+Chafteb I.
+COLOR NAMES.
+
+Writing from Samoa to Sidney Colvin in London, Stevenson*
+says: '* Perhaps in the same way it might amuse you to send us
+any pattern of wall paper that might strike you as cheap, pretty,
+and suitable for a room in a hot and extremely bright climate.
+It should be borne in mind that our climate can be extremely
+dark, too. Our sitting-room is to be in varnished wood. The
+room I have particularly in mind is a sort of bed and sitting room,
+pretty large, lit on three sides, and the colour in favour of its pro-
+prietor at present is a topazy yellow. But then with what colour
+to relieve it? For a little work-room of my own at the back I
+should rather like to see some patterns of unglossy — ^well, I'll be
+hanged if I can describe this red. It's not Turkish, and it's not
+Roman, and it's not Indian; but it seems to partake of the last
+two, and yet it can't be either of them, because it ought to be able
+to go with vermilion. Ah, what a tangled web we weave! Any-
+way, with what brains you have left choose me and send me some
+— ^many — patterns of the exact shade."
+
+(1) Where could be found a more delightful cry for some rational
+way to describe color? He wants "a topazy yellow" and a red
+that is not Turkish nor Roman nor Indian, but that *' seems to
+partake of the last two, and yet it can't be either of them." As
+
+*Vailima Letters. Oct. 8, 1902.
+
+8 NAMES
+
+a cap to the climax comes his demand for '' patterns of the exact
+shade." Thus one of the clearest and most forceful writers of
+English finds himself unable to describe the color he wants. And
+why? Simply because popular language does not clearly state
+a single one of the three qualities united in every color, and which
+must be known before one may even hope to convey his color
+conceptions to another.
+
+(S) The incongruous and bizarre nature of our present color
+names must appear to any thoughtful person. Baby blue, pea-
+cock blue, Nile green, apple green, lemon yellow, straw yellow,
+rose pink, heliotrope, royal purple. Magenta, Solferino, plum, and
+automobile are popular terms, conveying di£Ferent ideas to dif-
+ferent persons and utterly failing to define colors. The terms
+used for a single hue, such as pea green, sea green, olive green,
+grass green, sage green, evergreen, invisible green, are not to be
+trusted in ordering a piece of doth. They invite mistakes and
+disappointment. Not only are they inaccurate: they are inappro-
+priate. Can we imagine musical tones called lark, canary, cock-
+atoo, crow, cat, dog, or mouse, because they bear some distant
+resemblance to the cries of those animals ?
+Color needs a system.
+
+(3) Music is equipped with a system by which it defines each
+sound in terms of its pitch, intensity, and duration, without drag-
+ging in loose allusions to the endlessly varying sounds of nature.
+So should color be supplied with an appropriate system, based
+on the hue, value, and chroma of our sensations, and not attempt-
+ing to describe them by the indefinite and varying colors of nat-
+ural objects. The system now to be considered portrays the
+three dimensions of color, and measures each by an ap-
+propriate scale. It does not rest upon the whim of an individual.
+
+NAMES 9
+
+but upon physical measurements made possible by special color
+apparatus. The results may be tested by any one who comes to
+the problem with ^'a clear mind» a good eye, and a fair supply of
+patience."
+
+Clear mental images make clear speech. Vague thonghta find trague
+utterance.
+
+(4) The child gathers flowers, hoards colored beads, chases
+butterflies, and begs for the gaudiest painted toys. At first his
+strong color sensations are suflGiciently described by the simple
+terms of red, yellow, green, blue, and purple. But he soon sees
+that some are light, while others are dark, and later comes to per-
+ceive that each hue has many grayer degrees. Now, if he wants
+to describe a particular red, — such as that of his faded cap, — ^he
+is not content to merely call it red, since he is aware of other red
+objects which are very unlike it. So he gropes for means to define
+this particular red; and, having no standard of comparison, — ^no
+scale by which to estimate, — ^he hesitatingly says that it is a *' sort
+of duU red."
+
+(5) Thus early is he cramped by the poverty of color language.
+He has never been given an appropriate word for this color qual-
+ity, and has to borrow one signifying the opposite of sharp, which
+belongs to edge tools rather than to colors.
+
+Most color terms are borrowed from other senses.
+
+(6) When his older sister refers to the ** tone " of her green dress,
+or speaks of the "key of color** in a picture, he is naturally con-
+fused, because tone and key are terms associated in his mind with
+music. It may not be long before he will hear that "a color
+note has been pitched too high," or that a certain artist "paints in
+a minor key." All these terms lead to mixed and indefinite ideas,
+and leave him unequipped for the clear expression of color qualities.
+
+10 NAMES
+
+(7) Musical art is not so handicapped. It has an established
+scale with measured intervals and definite terms. Likewise,
+coloristic art must establish a scale, measure its intervals, and
+name its qualities in unmistakable fashion.
+
+Color has three dimensions.
+
+(8) It may sound strange to say that color has three dimensions,
+but it is easily proved by the fact that each of them can be meas-
+ured. Thus in the case of the boy's faded cap its redness or
+HUE is determined by one instrument; the amount of light in
+the red, which is its value, is found by another instrument; while
+still a third instrument determines the purity or chboma of the red.
+
+The omission of any one of these three qualities leaves us in
+doubt as to the character of a color, just as truly as the character
+of this studio would remain imdefined if the length were omitted
+and we described it as 2S feet wide by 14 feet high. The imagi-
+nation would be free to ascribe any length it chose, from S5 to 100
+feet. This length might be differently conceived by every indi-
+vidual who tried to supply the missing factor.
+
+(9) To illustrate the tri-dimensional nature of colors. Suppose
+we peel an orange and divide it in five parts, leaving the sections
+
+slightly connected below (Fig. 4). Then
+let us say that all the reds we have ever
+seen are gathered in one of the sections,
+all yellows in another, all greens in the third,
+blues in the fourth, and purples in the fifth.
+^*i4^, Next we will assort the hues in each sec-
+tion so that the lightest are near the top,
+and grade regularly to the darkest near the bottom. A white
+wafer connects all the sections at the top, and a black wafer may
+be added beneath.
+
+NAMES 11
+
+(10) The fruit is then filled with assorted colors, graded from
+white to black, according to their values, and disposed by their
+HUES in the five sections. A slice near the top will uncover Ught
+values in all hues, and a slice near the bottom will fiuad dark
+values in the same hues. A sUce across the middle discloses a
+circuit of hues all of middle value; that is, midway between
+the extremes of white and black.
+
+(11) Two color dimensions are thus shown in the orange, and
+it remains to exhibit the third, which is called chroma, or strength
+of color. To do this, we have only to take each section in turn,
+and, without disturbing the values abeady assorted, shove the gray-
+est in toward the narrow edge, and grade outward to the purest
+on the surface. Each sUce across the fruit still shows the circuit
+of hues in one uniform value; but the strong chromas are at the
+outside, while grayer and grayer chromas make a gradation in-
+ward to neutral gray at the centre, where all trace of color disap-
+pears. The thin edges of all sections unite in a scale of gray from
+black to white, no matter what hue each contains.
+
+The curved outside of each section shows its particular hue
+graded from black to white; and, should the section be cut at right
+angles to the thin edge, it would show the third dimension, —
+chroma, — ^f or the color is graded evenly from the surface to neutral
+gray. A pin stuck in at any point traces the third dimension.
+
+A color sphere can be need to unite the three
+dimensions of hue, yalue, and chroma.
+(12) Having used the familiar structure of
+the orange as a help in classifying colors, let
+us substitute a geometric solid, like a sphere,'*'
+and make use of geographical terms. The
+north pole is white. The south pole is black.
+
+*See frontispiece.
+
+12 NAMES
+
+The equator is a circuit of middle reds, yellows, greens, blues,
+and purples. Parallels above the equator locate this circuit in
+lighter values, and parallels below trace it in darker values.
+The vertical axis joining black and white is a neutral scale of
+gray values, while perpendiculars to it (like a pin thrust into the
+orange) are scales of chroma. Thus our color notions may be
+brought into an orderly relation by the color sphere. Any color
+describes its light and strength by its location in the solid or on
+the surface, and is named by its place in the combined scales of
+hue, value, and chroma.
+Two dimensions fail to describe a color.
+
+(13) Much of the popular misunderstanding of color is caused
+by ignorance of these three dimensions or by an attempt to make
+two dimensions do the work of three.
+
+(14) Flat diagrams showing hues and values, but omitting to
+define chromas, are as incomplete as would be a map of Switzer-
+land with the mountains left out, or a harbor chart without indi-
+cations of the depth of water. We find by aid of the measuring
+instruments that pigments are very unequal in this third dimen-
+sion,— chroma, — ^producing mountains and valleys on the color
+sphere, so that, when the color system is worked out in pigm^its
+and charted, some colors must be traced well out beyond the
+spherical surface (paragraphs 125-127). Indeed, a coloe tree
+is needed to display by the imequal levels and lengths of its branches
+the individuality of pigment colors. But, whatever solid or figure is
+used to illustrate color relations, it must combine the three scales of
+hue, value, and chroma, and these definite scales furnish a name
+for every color based upon its intrinsic qualities, and free from
+terms purloined in other sensations, or caught from the fluctuating
+colors of natural objects.
+
+NAMES 13
+
+How this system describes the spectmm.
+
+(15) The solar spectrum and rainbow are the most stimulating
+color experiences with which we are acquainted. Can they be
+described by this solid system?
+
+(16) The lightest part of the spectrum is a narrow field of green-
+ish yellow, grading into darker red on one side and into darker
+green upon the other, followed by still darker blue and purple.
+Upon the sphere these values of the spectral colors trace a path
+high up on the yellow section, near white, and slanting down-
+ward across the red and green sections, which are traversed near
+the level of the equator, it goes on to cross the blue and purple
+well down toward black.
+
+(17) This forms an inclined circuit, crossing the equator at
+opposite points, and suggests the ecliptic or the rings of Saturn
+(see outside cover). A pale rainbow would describe a slanting
+circuit nearer white, and a dimmer one would fall within the sphere,
+while an intensely brilliant spectrum projects far beyond the sur-
+face of the sphere, so greatly is the diroma of its hues in excess
+of the common pigments with which we work out our problems.
+
+(18) At the outset it is well to recognize the place of the spectrum
+in this system, not only because it is the established basis of sci-
+entific study, but especially because the invariable order assumed
+by its hues is the only stable hint which Nature affords us in
+her infinite color play.
+
+(19) All our color sensations are included in the color solid.
+None are left out by its scales of hue, value, and chroma. Indeed,
+the imagination is led to conceive and locate still purer colors
+than any we now possess. Such increased degrees of color sen-
+sation can be named, and clearly conveyed by symbols to another
+person as soon as the system is comprehended.
+
+Chapter II.
+COLOR QUALITIES.
+
+(20) The three color qualities are hue, value, and chroma.
+HUB is the name of a color.
+
+(£1) Hue is the quality by which we distinguish one color from
+another, as a red from a yellow, a green, a blue, or a purple.
+This names the hue, but does not tell whether it is light or dark,
+weak or strong, — Cleaving us in doubt as to its value and its chroma.
+
+Science attributes this quality to difference in the length of ether
+waves impinging on the retina, which cause the sensation of color.
+The wave length M. 5269 gives a sensation of green, while M. 6867
+gives a sensation of red.*
+VALUE is the light of a color.
+
+(£2) Value is the quality by which we distinguish a light color
+from a dark one. Color values are loosely called tints and shades,
+but the terms are frequently misapplied. A tint should be a light
+value, and a shade should be darker; but the word "shade*' has
+become a general term for any sort of color, so that a shade of
+yellow may prove to be lighter than a tint of blue. A photometric
+scale of value places all colors in relation to the extremes
+of white and black, but cannot describe their hue or their
+chroma.
+
+^See Qlossary for definitionB of Micron, Photometer, Retina, and Red, also for Hue,
+Tint, Shade, Value, Color Variables, Luminosity, and Chroma.
+
+QUALITIES 15
+
+Science describes this quality as due to difference in the height
+or amplitude of ether waves impinging on the retina. Small am-
+plitudes of the wave lengths given in paragraph SI produce the
+sensation of dark green and dark red: larger amplitudes give the
+sensation of lighter green and lighter red.*
+CHROMA is the strength of a color.
+
+(23) Chroma is the quality by which we distinguish a strong
+color from a weak one. To say that a rug is strong in color gives
+no hint of its hues or values, only its chromas. Loss of chroma
+is loosely called fading, but this word is frequently used to include
+changes of value and hue. Take two autumn leaves, identical
+in color, and expose one to the weather, while the other is waxed
+and pressed in a book. Soon the exposed leaf fades into a neutral
+gray, while the protected one preserves its strong chroma almost
+intact. If, in fading, the leaf does not change its hue or its value,
+there is only a loss of chroma, but the fading process is more likely
+to induce some change of the other two qualities. Fading, how-
+ever, cannot define these changes.
+
+Science describes chroma as the purity of one wave length sep-
+arated from all others. Other wave lengths, intermingUng,
+make its chroma less pure. A beam of daylight can combine all
+wave lengths in such balance as to give the sensation of white-
+ness, because no single wave is in excess.*
+
+(24) The color sphere (see Fig. 1) is a convenient model to
+illustrate these three qualities, — ^hue, value, and chroma, — and
+unite them by measured scales.
+
+(25) The north pole of the color sphere is white, and the south
+pole black. Value or luminosity of colors ranges between these
+two extremes. This is the vertical scale, to be memorized as F,
+
+*See definition of White in Glossary.
+
+16 QUALITIES
+
+the initial for both value and vertical. Vertical movement
+through color may thus be thought of as a change of value, but
+not as a change of hue or of chroma. Hues
+of color are spread around the equator of
+the sphere. This is a horizontal scale,
+memorized as Hy the initial for both hue and
+horizontal. Horizontal movement around the
+color soUd is thus thought of as a change
+of hue, but not of value or of chroma. A line
+inward from the strong surface hues to the
+neutral gray axis, traces the graying of each color, which is
+loss of chroma, and conversely a line beginning with neutral
+gray at the vertical axis, and becoming more and more colored
+until it passes outside the sphere, is a scale of chroma, which
+is memorized as C, the initial both for chroma and centre.
+Thus the sphere lends its three dimensions to color description,
+and a color applied anywhere to its surface or within it, is located
+and named by its degree of hue, of value, and of chroma.
+HUES first appeal to the child, VALUES next, and CHROllAS last.
+
+(£6) Color education begins with ability to recognize and name
+certain hues, such as red, yellow, green, blue, and purple (see
+paragraphs 182 and 183). Nature presents these hues in union
+with such varieties of value and chroma that, unless there is some
+standard of comparison, it is impossible for one person to describe
+them intelligently to another.
+
+(27) The solar spectrum forms a basis for scientific color anal-
+ysis, taught in technical schools; but it is quite beyond the com-
+prehension of a child. He needs something more tangible and
+constantly in view to train his color notions. He needs to handle
+colors, place them side by side for comparison, imitate them with
+
+QUALITIES 17
+
+crayons, paints, and colored stuffs, so as to test the growth of per-
+ception, and learn by simple yet accurate terms to describe each
+by its hue, its value, and its chroma.
+
+(^8) Pigments, rather than the solar spectrum, are the practical
+agents of color work. Certain of them, selected and measured
+by this system (see Chapter V.), will be known as baddle colors*
+because they stand midway in the scales of value and chroma.
+These middle colors are preserved in imperishable enamels,*
+so that the child can handle and fix them in his memory. These
+afford a permanent basis for comparing all other degrees of color.
+He learns to grade each fundamental color to the extremes of
+value and chroma.
+
+(29) Experiments with crayons and paints, and efforts to match
+middle colors, train his color sense to finer perceptions. Having
+learned to name colors, he compares them with the enamels of
+middle value, and can describe how light or dark they are. Later
+he perceives their differences of strength, and, comparing them
+with the enamels of middle chroma, can describe how weak or
+strong they are. Thus the full significance of these middle colors
+as a practical basis for all color estimates becomes apparent; and,
+when at a more advanced stage he studies the best examples of
+decorative color, he will again encounter them in the most beauti-
+ful products of Oriental art.
+
+Is it possible to define the endless varieties of color ?
+
+(30) At first glance it would seem almost hopeless to attempt
+the naming of every kind and degree of color. But, if all these
+varieties possess the same three qualities, only in different degrees,
+and if each quality can be measured by a scale, then there is a
+clue to this labyrinth.
+
+*See Enamel in Glossary.
+
+QUALITIES
+
+A COLOR SPH£RS and COLOR TRS£ to unite hue, yalne, and chroma.
+
+(31) This clue is found in the union of these three qualities
+by measured scales in a color sphere and color tree,* The equator
+
+of the sphere t naiay be divided into ten parts,
+and serve as the scale of hue, marked R,
+YR, Y, GY, G, BG, B, PB, P, and RP.
+Its vertical axis may be divided into ten parts
+to serve as the scale of value, numbered from
+black (0) to white (10). Any perpendicular
+to the neutral axis is a scale of chroma. On
+the plane of the equator this scale is num-
+bered 1, £, 3, 4, 5, from the centre to the surface.
+
+(32) This chroma scale may be raised or lowered to any level
+of value, always remaining perpendicular to the axis, and serv-
+ing to measure the chroma of every hue at
+every level of value. The fact that some
+colors exceed others to such an extent as to
+carry them out beyond the sphere is proved
+by measuring instruments, but the fact is a
+new one to many persons. (Figs. 3 and 2.)
+
+(33) For this reason the color tree is a
+completer model than the sphere, although
+the simplicity of the latter makes it best for a child's comprehension.
+
+*See Color Tree in paragraph 14.
+
+t Unaware that the spherical arrangement had been used years before, I devised a
+double tetrahedron to classify colors, while a student of painting in 1879. It now appears
+that the sphere was common property with psychologists, having been described by Riinge
+in 1810. Earlier still, Lambert had suggested a pyramidal form. Both are based on the
+erroneous assumption that red, yellow, and blue are primary sensations, and also fail to
+place these hues in a iust scale of luminosity. My twirling psrramid and its completer
+development in the present model have always made prominent the artistic feeling for
+color value. It differs in this and in other ways from previous systems, and is fortiinate
+in possessing new apparatus to measure the degrees of hue, value, and chroma.
+
+QUALITIES 19
+
+(34) The color tree is made by taking the vertical axis of the
+sphere, which carries a scale of value, for the trunk. The branches
+are at right angles to the trunk; and, as in the sphere, they carry
+the scale of chroma. Colored balls on the branches tell their
+Hue. In order to show the strongest chroma of each color, its
+branch is attached to the trunk (or neutral axis) at a level de-
+manded by its value, — ^the yellow nearest TC^hite at the top, then
+the green, red, blue, and purple branches, approaching black in
+the order of their lower values. It will be remembered that the
+chroma of the sphere ceased with 5 at the equator. The color
+tree prolongs this through 6, 7, 8, and 9. The branch ends carry-
+ing colored balls, represent the most powerful red, yellow, green,
+blue, and purple pigments which we now possess, and could be
+lengthened, should stronger chromas be discovered.
+
+(35) Such models set up a permanent image of color relations.
+Every point is self-described by its place in the united scales of
+hue, value, and chroma. These scales fix each new perception
+of color in the child*s mind by its situation in the color solid. The
+importance of such a definite image can hardly be overestimated,
+for without it one color sensation tends to efface another. When
+the child looks at a color, and has no basis of comparison, he soon
+has a vague memory that cannot be described. These models,
+on the contrary, lead to an inteUigent estimate of each color in
+terms of its hue, its value, and its chroma; while the permanent
+enamels correct any personal bias by a definite standard.
+
+(36) Thus defined, a color falls into a logical relation with all
+other colors in the system, and is easily memorized, so that its
+image may be recalled at any distance of time or place by the no-
+tation.
+
+(37) These solid models help to assemble colors and memorize
+
+«0 QUALITIES
+
+them, and the memory is further strengthened by a simple nota-
+tion, which records each color so that it cannot be mistaken for
+any other. By these written scales a child gains an in-
+stinctive estimate of relations, so that, when he is delighted
+with a new color combination, its proportions are noted and
+understood.
+
+(38) Musical art has long enjoyed the advantages of a definite
+scale and notation. Should not the art of coloring gain by
+similar definition? The musical scale is not left to per-
+sonal whim, nor does it change from day to day; and something
+as clear and stable would be an advantage in training the color
+sense.
+
+(S9) Perception of color is crude at first. The child sees only
+the most obvious distinctions, and prefers the strongest stimu-
+lation. But perception becomes refined by exercise, and, when
+a child tries to imitate the subtle colors of nature with paints, he
+begins to realize that the strongest colors are not the most beauti-
+ful,— ^rather the tempered ones, which may be compared to the
+tempered scales in music. To describe these tempered colors,
+he must estimate their hue, value, and chroma, and be able to de-
+scribe in what degree his copy departs from the natural color.
+And, with this gain in perception and imitation of the color in
+nature, he finds a strong desire to invent combinations to please
+his fancy. Thus the study divides into three related attitudes,
+which may be called recognition, imitation, and invention. Rec-
+ognition of color is fundamental, but it would be tedious to spend
+a year or two in formal and dry exercises to train recognition of color
+alone ; for each step in recognition of color is best tested by exercise in
+its imitation and arrangement. When perception becomes keener,
+emphasis can be placed on imitation of the colors found in art and in
+
+QUALITIES 21
+
+nature, resting finally on the selection and grouping of colors for
+design.*
+
+Every color can be recognized, named, matched, imitated, and written
+by its HUE, VALUE, and CHROMA.
+
+(40) The notation used in this system places Hue (expressed
+by an initial) at the left; Value (expressed by a number) at
+the right and above a line; and Chroma (also expressed by
+a number) at the right, below the line. Thus R f means
+
+HUB (red), 7-^, and will be found to represent the qua-
+
+^ ' CHROMA (9) ^ ^
+
+Eties of the pigment vermilicm.
+
+Hue, value, and chroma unite in every color sensation, but the
+child cannot grasp them all at once. Hue-difference appeals to
+him first, and he gains a permanent idea of five principal hues
+from the enamels of bhddle colors, learning to name, match,
+imitate, and finally write them by their initials: R (red), Y
+(yellow), G (green), B (blue), and P (purple). Intermediates
+formed by uniting successive pairs are also written by the
+joined initials, YR (yeUow-red), GY (green-yellow), BG (blue-
+green), PB (purple-blue), and RP (red-purple).
+
+(41) Ten differences of hue are as many as a child can render
+at the outset, yet in matching and imitating them he becomes
+aware of their hght and dark quality, and learns to separate it
+from hue as value-difference. Middle colors, as implied by that
+name, stand midway between white and black, — ^that is, on the
+equator of the sphere, — so that a middle red will be written R^,
+suggesting the steps 6, 7, 8, and 9 which are above the equator,
+while steps 4, 3, 2, and 1 are below. It is well to show only three
+values of a color at first; for instance, the middle value contrasted
+
+*See Course of Study, p. 86.
+
+22 QUALITIES
+
+with a light and a dark one. These are written R-^, R^, R^.
+Soon he perceives and can imitate finer differences, and the red
+scale may be written entire, as R^, R^, R^, R^, RA, R^, R^, R^,
+R^, with black as 0 and white as 10.
+
+(42) Chroma-difference is the third and most subtle color qual-
+ity. The child is already unconsciously familiar with the middle
+chroma of red, having had the enamels of middle color always
+in view, and the red enamel is to be contrasted with the strongest
+and weakest red chromas obtainable. These he writes Ry, R3-,
+R7, seeing that this describes the chromas of red, but leaves out
+its values. Rf , Rf , Rf , is the complete statement, showing that,
+while both hue and value are unchanged, the chroma
+passes from grayish red to middle red (enamel first learned)
+and out to the strongest red in the chroma scale obtained by
+vermilion.
+
+(43) It may be long before he can imitate the intervening steps
+of chroma, many children finding it difficult to express more
+than five steps of the chroma scale, although easily making ten
+steps of value and from twenty to thirty-five steps of hue. This
+interesting feature is of psychologic value, and has been followed
+in the color tree and color sphere.
+
+Does such a scientific scheme leave any outlet for feeling and personal
+expression of beauty?
+
+(44) Lest this exact attitude in color study should seem inar-
+tistic, compared with the free and almost chaotic methods in use,
+let it be said that the stage thus far outlined is frankly disciplinaiy.
+It is somewhat dry and unattractive, just as the early musical
+training is fatiguing without inventive exercises. The child should
+be encouraged at each step to exercise his fancy.
+
+(45) Instead of cramping his outlook upon nature, it widens
+
+QUALITIES 23
+
+his grasp of color, and stores the memoiy with finer differences,
+supplying more material by which to express his sense of color-
+istic beauty.
+
+(46) Color harmony, as now treated, is a purely personal affair,
+difficult to refer to any clear principles or definite laws. The very
+terms by which it seeks expression are borrowed from music, and
+suggest vague analogies that fail when put to the test. Color
+needs a new set of expressive terms, appropriate to its qualities,
+before we can make an analysis as to the harmony or discord of
+our color sensations.
+
+(47) This need is supplied in the present system by measured
+CHARTS, and a notation. Their very construction preserves the
+balance of colors, as will be shown in the next chapter, while the
+chapter on harmony (Chapter VII.) shows how harmonious pairs
+and triads of color may be found by masks with measured intervals.
+In fact, practice in the use of the charts supplies the imagination
+with scales and sequences of color quite as definite and quite as
+easily written as those sound intervals by which the musician con-
+veys to others his sense of harmony. And, although in neither
+art can training alone make the artist, yet a technical grasp of
+these formal scales gives acquaintance with the full range of the
+instrument, and is indispensable to artistic expression. From
+these color scales each individual is free to choose combinations
+in accord with his feeling for color harmony.
+
+Let us make an outline of the course of color study traced in
+the preceding pages.*
+
+*See Appendix, A Color System and Course of Study, p. 85.
+
+«4 QUALITIES
+
+PERCEPTION of color.
+
+(48) Hue-difference.
+
+Middle hues (5 principals).
+Middle hues (5 intermediates).
+
+Middle hues (10 placed in sequence as scale of hue).
+Valve-difference.
+Light, middle, and dark values (without change of hue).
+Light, middle, and dark values (traced with 5 principal
+
+hues).
+10 values traced with each hue. scale of value. The
+
+Cdor Sphere.
+Chromadifference.
+Strong, middle, and weak chroma (without change of
+
+hue).
+Strong, middle, and weak chroma (traced with three
+
+values without change of hue).
+Strong, middle, and weak chroma (traced with three
+
+values and ten hues).
+Maxima of color and their gradation to white, black,
+
+and gray. The Color Tree.
+EXPRESSION of color.
+
+(49) Matching and imitation of hues (using stuffs, crayons, and
+
+paints).
+Matching and imitation of values and hues (using stuffs,
+
+crayons, and paints).
+Matching and imitation of chromas, values, and hues (using
+
+stuffs, crayons, and paints).
+
+Value V Initial for hue.
+
+Notation of cdor. Hue , H-r> numeral above
+
+Chroma C f^^ ^^i^^^ ^^u^.
+
+eral below for chroma.
+
+QUALITIES 25
+
+Sequences of color.
+
+Two scales united, as hue and value, or chroma and value.
+Three scales united, — each step a change of hue, value
+and chroma.
+Balance of color.
+
+Opposites of equal value and chroma (R|^ and BG|^).
+Opposites of equal value and unequal chroma (Rf and
+
+BGf).
+Opposites unequal both in value and chroma (R^ and
+
+BGf).
+Abea as an element of balance.
+HARMONY of color.
+
+(50) Selection of colors that give pleasure.
+
+Study of butterfly wings and flowers, recorded by the
+
+NOTATION.
+
+Study of painted ornament, rugs, and mosaics, recorded
+
+by the notation.
+Personal choice of color pairs, balanced by H, V, C,
+
+and area.
+Personal choice of color triads, balanced by H, V, C,
+
+and area.
+Qrouping of colors to suit some practical use: wall papers,
+
+rugs, book covers, etc.
+Their analysis by the written notation.
+Search for principles of harmony, expressed in measured
+
+terms. ^
+
+A definite plan of color stndy, with freedom as to details of presentation.*
+
+(51) Having memorized these broad divisions of the study, a
+clever teacher will introduce many a detail, to meet the mood of
+
+*See Color Study aaaigned to each grade, in the Appendix.
+
+26 QUALITIES
+
+the class, or correlate this subject with other studies, without for
+a moment losing the thread of thought or befogging the presenta-
+tion. But to range at random in the immense field of color sensa-
+tions, without plan or definite aim in view, only courts fatigue of
+the retina and a chaotic state of mind.
+
+(52) The same broad principles which govern the presentation
+of other ideas apply with equal force in this study. A little, well
+apprehended, is better than a mass of undigested facts. If the
+child is led to discover, or at least to think he is discovering, new
+things about color, the mind will be kept alert and seek out novel
+illustrations at every step. Now and then a pupil will be found
+who leads both teacher and class by intuitive appreciation of color,
+and it is a subtle question how far such a nature can be helped
+or hurt by formal exercises. • But such an exception is rare, and
+goes to prove that systematic discipline of the color sense is neces-
+sary for most children.
+
+(53) Outdoor nature and indoor surroundings offer endless
+color illustrations. Birds, flowers, minerals, and the objects in
+daily use take on a new interest when their varied colors are
+brought into a conscious relation, and clearly named. A tri-
+dimensional perception, like this sense of color, requires skilful
+training, and each lesson must be simplified to the last point
+practicable. It must not be too long, and should lead to some
+definite result which a child can grasp and express with
+tolerable accuracy, while its difficulties should be approached
+by easy stages, so as to avoid failure or discouragement.
+The success of the present effort is the best incentive to further
+achievement.
+
+Chapter III.
+
+COLOR MIXTURE AND BALANCE.
+
+All colors grasped in the hand.
+
+(54) Let us recall the names and order of colors given in the
+last chapter, with their assemblage in a sphere by the three qual-
+ities of HUE, VALUE, and CHROMA. It will aid
+
+vvKMi^ the memory to call the thumb of the left hand
+
+RED, the forefinger yellow, the middle finger
+OREEN, the ring finger blue, and the little
+finger purple (Fig. 6). When the finger
+tips are in a circle, they represent a circuit of
+"i ' hues, which has neither beginning nor end, for
+we can start with any finger and trace a se-
+quence forward or backward. Now close the tips together for
+white, and imagine that the five strong hues have slipped down
+to the knuckles, where they stand for the equator of the color
+sphere. Still lower down at the wrist is black.
+
+(55) The hand thus becomes a color holder, with white at the
+finger tips, black at the wrist, strong colors around the outside,
+and weaker colors within the hollow. Each finger is a scale of its
+own color, with white above and black below, while the graying
+of all the hues is traced by imaginary lines which meet in the
+middle of the hand. Thus a child's hand may be his substitute
+for the color sphere, and also make him realize that it is filled with
+
+28 MIXTURE & BALANCE
+
+grayer degrees of the outside colors, all of which melt into gray
+
+in the centre.
+
+Veigbborly and opposite hoes ; and their miztuie.
+
+(56) Let this circle (Fig, 7) stand for the equator of the color
+sphere with the five principal hues (written by their initials R, Y,
+
+6, B, and P) spaced evenly about it. Some
+colors are neighbors, as red and yellow, while
+others are opposites. As soon as a child ex-
+periments with paints, he will notice the dif-
+ferent results obtained by mixing them.
+
+First, the neighbors (that is, any pair which
+lie next one another, as red and yellow) will
+unite to make a hue which retains a sugges-
+tion of both. It is intermediaie between red and yellow, and we
+
+call it YELLOW-RED.
+
+(57) Green and yellow unite to form oreen-tellow, blue and
+green make blue-oreen, and so on with each succeeding pair.
+These intermediates are to be written by their initials, and inserted
+in their proper place between the principal hues. It is as if an
+orange (paragraph 9) were split in ten sectors instead of
+five, with red, yellow, green, blue, and purple as alternate
+sectors, while half of each adjoining color pair unites in
+the sector between them. The original order of five hues is in no
+wise disturbed, but linked together by five intermediate steps.
+
+(58) Here is a table of the intermediates made by mixing each
+pair: —
+
+Red and yellow unite to form yellow-red (YR), popularly called orange.
+Yellow and green unite to form green-yellow (GY), popularly called grass green.
+Green and blue unite to form blue-^een (BG), popularly called peacock blue.
+Blue and purple imite to form purple-blue (PB), popularly called violet.
+Purple and red unite to form red-purple (RP), popularly called plum.
+
+MIXTURE & BALANCE 29
+
+Using the left hand again to hold colors, the principal hues re-
+main unchanged on the knuckles, but in the hollows between them
+are placed intermediate hues, so that the circle now reads: red,
+yellow-red, yellow, green-yellow, green, blue-green, blue, purple-
+blue, purple, and red-purple, back to the red with which we started.
+This circuit is easily memorizedy so that the child may begin with
+any color point, and repeat the series clock wise (that is, from left
+to right) or in reverse order.
+
+(59) Each principal hue has thus made two close neighbors
+by mixing with the nearest principal hue on either hand. The
+neighbors of red are a yellow-red on one side and a purple-red on
+the other. The neighbors of green are a green-yellow on one
+hand and a blue-green on the other. It is evident that a still
+closer neighbor could be made by again mixing each consecutive
+pair in this circle of ten hues; and, if the process were continued
+long enough, the color steps would become so fine that the eye
+could see only a circuit of hues melting imperceptibly one into
+another.
+
+(60) But it is better for the child to gain a fixed idea of red,
+yellow, green, blue, and purple, with their intermediates, before
+attempting to mix pigments, and these ten steps are sufficient for
+primary education.
+
+(61) Next comes the question of opposites in this circle. A
+line drawn from red, through the centre, finds its opposite, blue-
+green. If these colors are mixed, they unite to form gray.
+Indeed, the centre of the circle stands for a middle gray, not only
+because it is the centre of the neutral axis between black and
+white, but also because any pair of opposites will unite to form
+gray.
+
+MIXTURE & BALANCE
+
+(62) This is a table of five mixtures which make neutral gray:
+Opposites
+
+" Red & Blue-green
+Yellow Purple-blue
+Green Red7purple
+Blue Yellow-red
+
+^ Purple Green-yellow ^
+
+Each pair of which unites in neutral
+gray.
+
+(63) But if, instead of mixing these opposite hues, we place
+them side by side, the eye is so stimulated by their difference that
+each seems to gain in strength; i.e., each enhances the other when
+separate, but destroys the other when mixed. This is a very in-
+teresting point to be more fully illustrated by the help of a color
+wheel in Chapter V., paragraph 106. What we need to re-
+member is that the mixture of neighborly hues makes them less
+stimulating to the eye, because they resemble each other,
+while the mixture of opposite hues extinguishes both in a neutral
+gray.
+
+Hues once remoyed, and their mixture.
+
+(64) There remains the question, What will happen if we mix,
+not two neighbors, nor two opposites, but a pair of hues once re-
+moved in the circle^ such as red and green ? A
+line joining this pair does not pass through the
+neutral centre, but to one side nearer yellow,
+which shows' that this mixture falls between
+gray and yellow, partaking somewhat of each.
+In the same way a line joining yellow and blue
+shows that their mixture contains both green
+and gray. Indeed, any line joining two colors
+
+in the circuit may be said to describe their union. A radius
+through this middle point passes to a hue on the circum-
+ference, and describes by its intersection with the first line
+
+MIXTURE & BALANCE
+
+the chroma of the color made by a mixture of the two original
+colors.
+
+Red & Green make Yellow-gray '
+
+Yellow Blue Green-gray
+
+Green Purple Blue-gray >- Each pair unites in a colored gray.
+
+Blue Red Purple-gray
+
+Purple Yellow Red-gray
+
+Mixture of white and black : a scale of grays.
+
+{p5) So far we have thought only of the plane of the equator,
+with its circle of middle hues in ten steps, and studied their mixt-
+ure by drawing lines to join them. Now let
+us start at the neutral centre, and think upward
+to white and downward to black (Fig. 9).
+
+This vertical line is the neutral axis joining
+the poles of white and black, which represent
+the opposites of light and darkness, with middle
+gray half-way between. K black is called 0,
+and white is 10, then the middle point is 5,
+with 6, 7, 8, and 9 above, while 4, 3, 2, and 1 are below, thus mak-
+ing a vertical scale of grays from black to white (Chapter II.,
+paragraph 25).
+
+As it will soon be necessary to talk of the values in each color,
+we may distinguish the values on this neutral axis from color
+values by writing them N^, N^, N^, NS N^ N«, N^ N^, N^
+N^^ . Such a scale makes it easy to foresee the result of mixing
+light values with dark ones. Any two gray values unite to form
+a gray midway between them. Thus N* and N^ being equally
+above and below the centre, unite to form N^, as will also N^
+and N8, N^ and N^, or N» and N^. But N» and N« will unite
+to form N® , which is midway between 6 and 9.
+
+82 MIXTURE & BALANCE
+
+(66) When this numbered scale of values is familiar, it serves
+not only to describe light and dark grays, but the value of colors
+which are at the same level in the scale. Thus R*^ (popularly
+called a tint of red) is no lighter or darker than the gray of N^.
+Indeed, a numeral written above to the right will always be the
+vcducy whether of a gray or a color, so that R^, R*, R^, R*, R^,
+R®, R'^, R^, R®, describes a regular scale of red values from black
+to white, while G^, G^, G®, etc., is a scale of green values.
+
+(67) This matter of a notation for colors will be more fully
+worked out in Chapter VI., but the letters and nimierals already
+described greatly simplify what we are about to consider in the
+mixture and balance of colors.
+
+Mixture of light hues with dark hues.
+
+(68) Now that we are supplied with a decimal scale of grays,
+represented by divisions of the neutral axis (N^, N^, etc.), and
+
+a corresponding decimal scale of value for each
+of the ten hues ranged about the equator (R^,
+and so on), traced by ten equidistant meridians
+from white to black, it is not difficult to fore-
+see what the mixture of any two colors will
+produce, whether they are of the same level
+of value, as in the colors of the equator already
+considered, or whether they are of different levels.
+
+(69) For instance, let us mix a light yellow (Y^) with a dark-
+red (R*). They are neighbors in hue, but well removed in value.
+A line joining them centres at YR^ . This describes the result of
+their mixture, — a value intermediate between 7 and 3, with a
+hue intermediate between R and Y. It is a yellow-red of middle
+value, popularly called "dark orange." But, while this term
+
+MIXTURE & BALANCE
+
+''dark orange" rarely means the same color to three different
+people, these measured scales give to YR^ an unmistakable mean-
+ing, just as the musical scale gives an unmistakable significance
+to the notes of its score.
+
+(70) Evidently, this way of writing colors by their degrees of
+value and hue gives clearness to what would otherwise be hard to
+express by the color terms in common use.
+
+(71) K Y^ and R** be chosen for mixture, we know at once that
+they unite in YR^, which is two steps of the value scale above
+the middle; while Y® and R* make YR*, which is one step below
+the middle. Charts prepared with this system show each of these
+colors and their mixture with exactness.
+
+(72) The foregoing mixtures of dark reds and light yellows are
+typical of the union of light and dark values of any neighboring
+hues, such as yellow and green, green and blue, blue and purple,
+or purple and red. Next let us think of the result of mixing dif-
+ferent values in opposite hues; as, for instance, YR^ and B*.
+(Fig. 11). To this combination the color sphere gives a ready
+answer; for the middle of a straight line through the sphere, and
+joining them, coincides with the neutral centre, showing that they
+
+balance in neutral gray. This is also true
+of any opposite pair of surface hues where
+the values are equally removed from the
+equator.
+
+(73) Suppose we substitute familiar
+flowers for the notation, then YR'^ becomes
+the buttercup, and B* is the wild violet.
+But, in comparing the two, the eye is more
+stimulated by the buttercup than by the violet, not alone be-
+cause it is Eghter, but because it is stronger in chroma; that is,
+
+84 MIXTURE & BALANCE
+
+farther away from the neutral axis of the sphere, and in fact out
+beyond its surface, as shown in Fig. 11.
+
+The head of a pin stuck in toward the axis on the 7th
+level of YR to represent the 9th step in the scale of chroma is
+the buttercup, while the "modest** violet has a chroma of only 4,
+as shown by its position on the sphere, nearer to the neutral axis
+than the brilliant buttercup by five steps of chroma. This is the
+third dimension of color, and must be included in our notation.
+So we write the buttercup YR^ and the violet Bf , — chroma al-
+ways being written below to the right of hue, and value always
+
+above. (This is the invariable order hub . )
+
+CHROMA /
+
+(74) A line joining the head of the pin mentioned above with
+Bf does not pass through the centre of the sphere, and its middle
+point is nearer the buttercup than the neutral axis, showing that
+the hues of the buttercup and violet do not balance in gray.
+
+The neutral centre is a balancing point for colors.
+
+(75) This raises the question, What is balance of color? Ar-
+tists criticise the color schemes of paintings as being "too light
+or too dark** (unbalanced in value), "too weak or too strong**
+(unbalanced in chroma), and "too hot or too cold** (unbalanced
+in hue), showing that this is a fundamental idea underlying all
+color arrangements.
+
+(76) Let us assume that the centre of the sphere is the natural
+balancing point for all colors (which will be best shown by Max-
+well discs in Chapter V., paragraphs 106-112), then color points
+equally removed from the centre must balance one another. Thus
+white balances black. Lighter red balances darker blue-gi*een.
+Middle red balances middle blue-green. In short, every straight
+line through this centre indicates opposite qualities that balance
+
+MIXTURE & BALANCE 35
+
+one another. The color points so found are said to be **com'
+plemerUaryy** for each supplies what is needed to complement
+or balance the other in hue, value, and chroma.
+
+(77) The true complement of the buttercup, then, is not the
+violet, which is too weak in chroma to balance its strong chroma.
+We have no blue flower that can equal the chroma of the butter-
+cup. Some other means must be found to produce a balance.
+One way is to use more of the weaker color. Thus we can make
+a bunch of buttercups and violets, using twice as many of the
+latter, so that the eye sees an area of blue twice as great as the
+area of yellow-red. Area as a compensation for inequalities of
+hue, value, and chroma will be further described under the har-
+mony of color in Chapter VII.
+
+(78) But, before leaving this illustration of the buttercup and
+violet, it is well to consider another color path connecting them,
+which does not pass through the sphere, bid around it (Fig. 12).
+Such a path swinging around from yellow-red to blue slants down-
+ward in value, and passes through yellow, green-yellow, green,
+and blue-green, tracing a sequence of hue^ of which each step is
+less chromatic than its predecessor.
+
+This diminishing sequence is easily written thus, — ^YRf , Y|^,
+GYf , G|, BG|, B|,— and is shown graphically in Fig. 12. Its
+
+hue sequence is described by the initials
+YR, Y, GY, G, BG, and B. Its
+^ value-sequence appears in the upper
+numerals, 8, 7, 6, 5, 4, and 3, while
+the chroma-sequence is included in the
+lower numerals, 9, 8, 7, 6, 5, and 4.
+This gives a complete statement of
+the sequence, defining its pecuUarity, that at each change
+
+36 MIXTURE & BALANCE
+
+of hue there is a regular decrease of value and chroma. Nature
+seems to be partial to this sequence, constantly reiterating it in
+yellow flowers with their darker green leaves and underlying
+shadows. In spring time she may contract its range, making the
+blue more green and th^ yellow less red, but in autumn she seems
+to widen the range, presenting strong contrasts of yellowish-red
+and purple-blue.
+
+(79) Every day she plays upon the values of this sequence,
+from the strong contrasts of light and shadow at noon to the hardly
+perceptible differences at twilight. The chroma of this sequence
+expands during the summer to strong colors, and contracts in
+winter to grays. Indeed, Nature, who would seem to be the
+source of our notions of color harmony, rarely repeats herself, yet
+is endlessly balancing inequaUties of hue, value, and chroma by
+compensations of quantity.
+
+(80) So subtle is this equilibrium that it is taken for granted
+and forgotten, except when some violent disturbance disarranges
+it, such as an earthquake or a thunder-storm.
+
+The triple nature of color balance illustrated.
+
+(81) The simplest idea of balance is the equilibrium of two
+halves of a stick supported at its middle point. If one end is
+heavier than the other, the support must be moved nearer to that
+end.
+
+But, since color unites three qualities, we must seek some type
+of triple balance. The game of jackstraws illustrates this, when
+the disturbance of one piece involves the displacement of two
+others. The action of three children on a floating plank or the
+equilibrium of two acrobats carried on the shoulders of a third
+may also serve as examples.
+
+(82) Triple balance may be graphically shown by three discs
+
+MIXTURE & BALANCE 37
+
+in contact, Two of them are suspended by their centres, while
+they remain in touch with a third supported on a pivot, as in
+Fig. 14. Let us call the lowest disc Hue (H),
+^ and the lateral discs Value (V) and Chroma
+
+4 u^Wv^ (C). Any dip or rotation of the lower disc H
+will induce sympathetic action in the two lateral
+discs V and C. When H is inclined, both V
+and C change their relations to it. If H is raised
+f^ ' vertically, both V and C dip outward. If H is
+rotated, both V and C rotate, but in opposite
+directions. Indeed, any disturbance of V affects H and C, while
+H andV respond to any movement of C. So we must be prepared
+to realize that any change of one color quality involves readjust-
+ment of the other two.
+
+(83) Color balance soon leads to a study of optics in one direc-
+tion, to aesthetics in another, and to mathematical proportions in
+a third, and any attempt at an easy solution of its problems is not
+likely to succeed. It is a very complicated question, whose closest
+counterpart is to be sought in musical rhythms. The fall of
+musical impulses upon the ear can make us gay or sad, and there
+are color groups which, acting through the eye, can convey pleas-
+ure or pain to the mind.
+
+(84) A colorist is keenly alive to these feelings of satisfaction
+or annoyance, and consciously or unconsciously he rejects certain
+combinations of color and accepts others. Successful pictures
+and decorative schemes are due to some sort of balance uniting
+"light and shade** (value), "warmth and coolness** (hue), with
+"brilliancy and grayness** (chroma); for, when they fail to please,
+the mind at once begins to search for the unbalanced quality, and
+complains that the color is " too hot, ** " too dark,** or " too crude.**
+
+S8 MIXTURE & BALANCE
+
+This effort to establish pleasing proportions may be unconscious
+in one temperament, while it becomes a matter of definite analysis
+in another. Emerson claimed that the unconscious only is com-
+plete. We gladly permit those whose color instinct is unerring —
+(and how few they are) ! — to neglect all rules and set formulas.
+But education is concerned with the many who have not this gift.
+
+(85) Any real progress in color education must come not from
+a blind imitation of past successes, but by a study into the laws
+which they exemplify. To exactly copy fine Japanese prints or
+Persian rugs or Renaissance tapestries, while it cultivates an ap-
+preciation of their refinements, does not give one the power to
+create things equally beautiful. The masterpieces of music cor-
+rectly rendered do not of necessity make a composer. The musi-
+cian, besides the study of masterpieces, absorbs the science of
+counterpoint, and records by an unmistakable notation the exact
+character of any new combination of musical intervals which he
+conceives.
+
+(86) So must the art of the colorist be furnished with a scien-
+tific basis and a clear form of color notation. This will record
+the successes and failures of the past, and aid in the search, by
+contrast and analysis, for the fundamentals of color balance.
+Without a measured and systematic notation, attempts to de-
+scribe color harmony can only produce hazy generalities of little
+value in describing our sensations, and fail to express the essential
+differences between "good" and "bad** color.
+
+Chapteb IV.
+
+PRISMATIC COLOR.
+
+Pore color ia seen in the epectrom of eanlight.
+
+(87) The strongest sensation of color is gained in a darkened
+room, with a prism used to split a beam of sunlight into its vari-
+ous wave lengths. Through a narrow slit
+there enters a straight pencil of light
+which we are accustomed to think of as
+white, alhough it is a bundle of variously
+colored rays (or waves of ether) whose
+union and balance is so perfect that no
+single ray predominates.
+
+(88) Cover the narrow slit, and we are
+plunged in darkness. Admit the beam,
+and the eye feels a powerful contrast between the spot of light
+on the floor and its surrounding darkness. Place a triangular
+glass prism near the slit to intercept the beam of white light, and
+suddenly there appears on the opposite wall a band of briUiant
+colors. This deUghtful experiment rivets the eye by the beauty
+and purity of its hues. All other colors seem weak by com-
+parison. Their weakness is due to impurity, for all pigments
+and dyes contain portions of hues other than their dominant one,
+which tend to ^'gray'* them and diminish their chroma.
+
+(89) But prismatic color is pure, or veiy nearly so, because .the
+
+40 PRISMATIC COLOR
+
+shape of the glass refracts each hue» and separates it by the length
+of its ether wave. These waves have been measured, and science
+can name each hue by its wave length. Thus a certain red is
+known as M. 6867, and a certain green sensation is M. 5^69* With-
+out going veiy far into this scientific analysis of color, let it be said
+that Sir Isaac Newton made a series of experiments in 1687, and
+was privileged to name this color sequence by seven steps which
+he called red, orange, yellow, green, blue, violet, and indigo.
+Later a scientist named Frauenhofer discovered fine black lines
+crossing the solar spectrum, and marked them with letters of the
+alphabet from a to h. These with the wave length serve to locate
+every hue and define every step in the sequence. Since Newton's
+time it has been proved that only three of the spectral hues are
+primary^ while their mixture produces all other gradations. The
+primary sensations are a red, a green, and a violet-blue. By re-
+ceiving the spectrum on a screen with fine slits that fit the red and
+green waves, so that they alone pass through, they can be received
+on mirrors inclined at such an angle as to unite them on another
+screen, when, instead of red and green, the eye sees only yellow.f
+(90) A similar arrangement of slits and mirrors for the green
+and violet-blue proves that they unite to make blue, while a third
+experiment shows that the red and violet-blue can unite to make
+
+*See Micron in Qloaaary.
+
+t The fact that the spectral union of red and green makes yellow is a matter of sur-
+prise to practical workers in color who are familiar with the action of pigments, but un-
+familiar with spectrum analysis. Yellow seems to them a primary and indispensable color,
+because it cannot be made by the union of red and green pigments. Another surprise is
+awaiting them when they hear that the yellow and blue of the spectrum make whiU^ for
+all their experience with paints goes to prove that yellow and blue unite to form green.
+Attention is called to this difference between the mixture of colored light and of colored
+pigments, not with the idea of explaining it here, but to emphasize their difference; for in
+the next chapter we shall describe the practical making of a color sphere with pigments,
+which would be quite impractical, oould we have ouly the colors of the spectrum to work
+with.
+
+PRISMATIC COLOR 41
+
+purple. So yellow, blue, and purple are called secondaiy hues
+because they result from the mixture of the three primaries, red,
+green, and violet-blue.
+
+In comparing these two color lists, we see that the *^ indigo **
+and ** orange** of Sir Isaac Newton have been discarded. Both
+are indefinite, and refer to variable products of the vegetable king-
+dom. Violet is also borrowed from the same kingdom; and, in
+order to describe a violet, we say it is a purple violet or blue violet,
+as the case may be, just as we describe an orange as a red orange
+or a yellow orange. Their color difference is not expressed by
+the terms "orange" or "violet," but by the words **red,'*
+" yellow," " blue," or " purple," all of which are true color names
+and arouse an unmixed color image.
+
+(91) In the nursery a child learns to use the simple color
+names red, yellow, green, blue, and purple. When famiUarity
+with the color sphere makes him relate them to each other and
+place them between black and white by their degree of light and
+strength, there will be no occasion to revert to vegetables, ani-
+mals, minerals, or the ever-varying hues of sea and sky to express
+his color sensations.
+
+(9^) Another experiment accentuates the di£Ference between
+spectral and pigment color. When the spectrum is spread on the
+screen by the use of a prism, and a second prism is placed inverted
+beyond the first, it regathers the dispersed rays back into their
+original beam, making a white spot on the floor. This proves
+that all the colored rays of light combine to balance each other
+in whiteness. But if pigments which are the closest possible
+imitation of these hues are united on a painter's palette, either
+by the brush or the knife, they make gray^ and not white.
+
+(93) This is another illustration of the impurity of pigments.
+
+PRISMATIC COLOR
+
+for, instead of uniting to form white, they form gray, which is a
+darkened or impure form of white; and, lest this should be at-
+tributed to a chemical reaction between the various matters that
+serve as pigments, the experiment can be carried out without al-
+lowing one pigment to touch another by using Maxwell discs, as
+will be shown in the next chapter.
+
+(94) Before leaving these prismatic colors, let us study them in
+the light of what has already been learned of color dimensions.
+
+Not only do they present different values,
+but also different chromas. Their values
+range from darkness at each end, where red
+and purple become visible, to a brightness in
+the greenish yellow, which is almost white.
+So on the color tree described in Chapter II.,
+paragraph 34, yellow has the highest branch,
+green is lower, red is below the middle, with
+blue and purple lower down, near black.
+
+(95) Then in chroma they range from the powerful stimulation
+of the red to the soothing purple, with green occupying an inter-
+mediate step. This is also given on the color tree by the length
+of its branches.
+
+(96) In Fig. 15 the vertical curve describes the values of the
+spectrum as they grade from red through yellow, green, blue, and
+purple. The horizontal curve describes the chromas of the spec-
+trum in the same sequence; while the third curve leaning outward
+is obtained by uniting the first two by two planes at right angles
+to one another, and sums up the three qualities by a single descrip-
+tive line. Now the red and purple ends are far apart, and science
+forbids their junction because of their great difference in wave
+length. But the mind is prone to unite them in order to produce
+
+PRISMATIC COLOR 43
+
+the red-purples which we see in clouds at sunset, in flowers and
+grapes pnd the amethyst. Indeed, it has been done unhesitat*
+ingly in most color schemes in order to supply the opposite of
+green.
+
+(97) This gives a slanting circuit joining all the branch ends of
+the color tree, and has been Ukened to the rings of Saturn in chap-
+ter I., paragraph 17.
+A prismatic color sphere.
+
+(98) « With a little effort of the imagination we can picture a
+prismatic color sphere, using only the colors of light. In a cylin-
+drical chamber is hung a diaphanous ball similar to a huge
+soap bubble, which can display color on its surface without ob-
+scuring its interior. Then, at the proper points of the surround-
+ing wall, three pure beams of colored light are admitted, — one
+red, another green, and the third violet-blue.
+
+(99) They fall at proper levels on three sides of the sphere,
+while their intermediate gradations encircle the sphere with a
+complete spectrum plus the needed purple. As they penetrate
+the sphere, they unite to balance each other in neutrality. Pure
+whiteness is at the top, and, by some imaginary means that gradu-
+ally diminishes their light, they disappear in darkness below.
+
+(100) This ideal color system is impossible in the present state
+of our knowledge and implements. Even were it possible, its
+immaterial hues could not serve to dye materials or paint pict-
+ures. Pigments are, and will in all probabiUty continue to be,
+the practical agents of coloristic productions, however reluctant
+the scientist may be to accept them as the basis of a color system.
+It is true that they are chemically impure and imperfectly represent
+the colors of light. Some of them fade rapidly and undergo
+chemical change, as in the notable case of a green pigment tested
+
+44 PRISMATIC COLOR
+
+by this measured system, which in a few weeks lost four steps of
+chroma, nearly two steps of value, and swung into a bluer hue.
+
+(101) But the color sphere to be next described is worked out
+with a few reliable pigments, mostly natural earths, whose fading
+is a matter of years and so slight as to be almost imperceptible.
+Besides, its principal hues are preserved in safe keeping by im-
+perishable enamels, which can be used to correct any tendency of
+the pigments to distort the measured intervals of the color sphere.
+
+This meets the most serious objection to a pigment system.
+Without it a child has nothing tangible which he can keep in
+constant view to imitate and memorize. With it he builds up a
+mental image of measured relations that describe every color in
+nature, including the fleeting hues of the rainbow, although they
+appear but for a moment at rare intervals. Finally, it furnishes a
+simple notation which records every color sensation by a letter
+and two numerals. With the enlargement of his mental power he
+will unite these in a comprehensive grasp of the larger relations
+of color.
+
+Chapteb v.
+
+A PIGMENT COLOR SPHERE *
+
+How to make a color sphere with pigments.
+
+(102) The preceding chapters have built up an ideal color solid»
+in which every sensation of color finds its place and is clearly
+
+named by its degree of hue, value, and
+chroma.
+
+It has been shown that the neutral centre of
+the system is a balancing point for all colors,
+that a line through this centre finds opposite
+colors which balance and complement each
+other; and we are now ready to make a
+practical application, carrying out these ideal
+
+relations of color as far as pigments will permit in a color
+
+sphere* (Fig. 16).
+
+(103) The materials are quite simple. First a colorless
+globe, mounted so as to spin freely on its axis. Then a
+measured scale of value, specially devised for this purpose, ob-
+tained by the daylight photometer.f Next a set of carefully
+chosen pigments, whose reasonable permanence has been tested by
+long use, and which are prepared so that they will not glisten when
+spread on the surface of the globe, but give a uniformly mat surface.
+A glass palette, palette knife, and some fine brushes complete the list.
+
+^Patented Jan. 9, 1900. fPatented Nov. 19. 1901.
+
+COLOR SPHERE
+
+(104) Here is a list of the paints arranged in pairs to represent
+the five sets of opposite hues described in Chapter HI., paragraphs
+
+ColoT Pain,
+
+Pigments Used,
+
+Chemical Nature.
+
+Red
+
+Venetian red.
+
+Calcined native earth.
+
+and
+
+Blue-green.
+
+Viridian.
+
+Chromium sesquioxide.
+
+YeUow
+
+Raw Sienna.
+
+Native earth.
+
+and
+
+Purple-blue.
+
+Ultramarine.
+
+Artificial product.
+
+Green
+
+Emerald green.
+
+Arsenate of copper.
+
+and
+
+Red-purple.
+
+Purple madder.
+
+Extract of the madder plant.
+
+Blue
+
+Cobalt.
+
+Oxide of cobalt with alumina.
+
+and
+
+YeUow-red.
+
+Orange cadmium.
+
+Sulphide of cadmitun.
+
+Purple
+
+Madder and cobalt.
+
+See each pigment above.
+
+and
+
+Green-yellow.
+
+Emerald green and Sienna
+
+. See each pigment above.
+
+(105) These paints have various degrees of hue, value, and
+chroma, but can be tempered by additions of the neutrals, zinc
+white and ivory black, until each is brought
+to a middle value and tested on the value
+scale. After each pair has been thus bal-
+anced, they are painted in their appropriate
+spaces on the globe, forming an equator of
+balanced hues.
+
+(106) The method of proving this balance
+has already been suggested in Chapter IV. ,
+paragraph 93. It consist of an ingenious implement devised by
+Clerk-Maxwell, which gives us a result of mixing pigments without
+the chemical risks of letting tliem come in contact, and also meas*
+ures accurately the quantity of each which is used (Fig. 17).
+
+COLOR SPHERE 47
+
+(107) This is caUed a Maxwell disc, and is nothing more than
+a circle of firm cardboard, pierced with a central hole to fit the
+spindle of a rotary motor, and with a radial slit from rim to centre,
+so that another disc may be slid over the first to cover any desired
+fraction of its surface. Let us paint one of these discs with Ve-
+netian red and the other with viridian, the first pair in the list of
+pigments to be used on the globe.
+
+(108) Having dried these two discs, one is combined with the
+other on the motor shaft so that each color occupies half the circle.
+As soon as the motor starts, the two colors are no longer distin-
+guished, and rapid rotation melts them so perfectly that the eye
+sees a new color, due to their mixture on the retina. This new
+color is a reddish gray, showing that the red is more chromatic
+(t.e., its hue is purer and stronger) than the green. But by stop-
+ping the motor and sliding the green disc to cover more of the red
+one, there comes a point where rotation melts them into a per-
+fectly neutral gray. No hint of either hue remains, and the pair
+is said to balance.
+
+(109) Since this balance has been obtained by unequal areas
+of the two pigments, it must compensate for a lack of equal chroma
+in the hues (see paragraphs 76, 77) ; and, to measure this inequality,
+a slightly larger disc, with decimal divisions on its rim, is placed
+back of the two painted ones. If this scale shows the red as occupy-
+ing 3 J parts of the area, while blue-green occupies 6| parts, then
+the blue-green must be only half as chromatic as the red, since it
+takes twice as much to produce the balance.
+
+(110) The red is then grayed (diminished in chroma by additions
+of a middle gray) until it can occupy half the circle, with blue-
+green on the remaining half, and still produce neutrality when
+mixed by rotation. Each disc now reads 5 on the decimal scale.
+
+48 COLOR SPHERE
+
+Lest the graying of red should have disturbed its value, it is again
+tested on the photometric scale, and reads 4.7, showing it has been
+slightly darkened by the graying process. A little white is
+therefore added until its value is restored to 5.
+
+(111) The two opposites are now completely balanced, for they
+are equal in value (5), equal in chroma (5), and have proved
+their equality by uniting in equal areas to form a neutral mixture.
+It only remains to apply them in their proper position on the
+sphere.
+
+(112) A band is traced around the equator, divided in ten equal
+spaces, and lettered R, YR, Y, GY, G, BG, B, PB, P, and RP (see
+Fig. 18). This balanced red and blue-green are appUed with the
+brush to spaces marked R and BG, care being taken to fill, but
+not to overstep the bounds, and the color laid absolutely flat, that
+no unevenness of value or chroma may disturb the balance.
+
+(113) The next pair, represented by Raw Sienna and Ultra-
+marine, is similarly brought to middle value, balanced by equal
+areas on the Maxwell discs, and, when correct in each quality,
+is painted in the spaces Y and PB. Emerald Green and Purple
+Madder, which form the next pigment pair, are similarly tempered,
+proved, and applied, followed by the two remaining pairs, until
+the equator of the globe presents its ten equal steps of middle hues.
+
+An equator of ten balanced hues.
+
+(114) Now comes the total test of this cir-
+cuit of balanced hues by rotation of the sphere.
+
+.^^i As it gains speed, the colors flash less and
+
+less, and finally melt into a middle gray of
+"^iB, perfect neutrality. Had it failed to produce
+this gray and shown a tinge of any hue still
+persisting, we should say that the persistent hue was in excess*
+
+COLOR SPHERE 49
+
+or, conversely, that its opposite hue was deficient in chroma, and
+failed to preserve its share in the balance.
+
+(115) For instance, had rotation discovered the persistence of
+reddish gray, it would have proved the red too strong, or its
+opposite, blue-green, too weak, and we should have been forced
+to retrace our steps, applying a correction until neutrality was
+established by the rotation test.
+
+(116) This is the practical demonstration of the assertion
+(chapter I., paragraph 8) that a color has three dimensions which
+can be Tnea^sured, Each of these ten middle hues has proved its
+right to a definite place on the color globe by its measurements of
+value and chroma. Being of equal chroma, all are equidistant
+from the neutral centre, and, being equal in value, all are equally
+removed from the poles. If the warm hues (red and yellow) or
+the cool hues (blue and green) were in excess, the rotation test of
+the sphere would fail to produce grayness, and so detect its lack
+of balance.
+
+A chromatic tuning fork.
+
+(117) The five principal steps in this color equator are made in
+permanent enamel and carefully safeguarded, so that, if the pig-
+ments painted on the globe should change or become soiled, it
+could be at once detected and set right. These five are middle
+red (so called because midway between white and black, as well
+as midway between our strongest red and the neutral centre),
+middle yellow, middle green, middle blue, and middle purple.
+They may be called the chromatic tuning fork, for they
+serve to establish the pitch of colors, as the musical tuning fork
+preserves the pitch of sounds.
+
+60 COLOR SPHERE
+
+Completion of a pigment color sphere.
+
+(118) When the chromatic tuning fork has thus been obtained,
+
+the completion of the globe is only a matter of patience, for the
+
+same method can be applied at any level in
+
+the scale of value, and a new circuit of balanced
+
+V^Sfe^"^^*^^ ^^^ made to conform with its position between
+
+^^5n the poles of white and black.
+
+--4-^ (119) The surface above and below the
+
+HJ^/ equatorial band is set off by parallels to match
+
+^^^ ,, the photometric scale, making nine bands or
+
+* value zones in all, of which the equator is fifth,
+
+the black pole being 0 and the white pole 10.
+
+(120) Ten meridians carry the equatorial hues across all these
+value zones and trace the gradation of each hue through a com-
+plete scale from black to white, marked by their values, as shown in
+paragraph 68. Thus the red scale is R^ R^ , R^ , R* , R^ (middle
+red), R® , R^ , R® , and R^ , and similarly with each of the other hues.
+When the circle of hues corresponding to each level has been
+applied and tested, the entire surface of the globe is spread with
+a logical system of color scales, and the eye gratified with regular
+sequences which move by measured steps in each direction.
+
+(121) Each meridian traces a scale of value for the hue in which
+it lies. Each parallel traces a scale of hue for the value at whose
+level it is drawn. Any oblique path across these scales traces a
+regular sequence, each step combining change of hue with a change
+of value and chroma. The more this path approaches the verti-
+cal, the less are its changes of hue and the more its changes of
+value and chroma; while, the nearer it comes to the horizontal, the
+less are its changes of value and chroma, while the greater become
+its changes of hue. Of these two oblique paths the first may be
+
+COLOR SPHERE 51
+
+called that of a Luminist, or painter like Rembrandt, whose can-
+vases present great contrasts of light and shade, while the second
+is that of the Colorist, such as Titian, whose work shows great
+fulness of hues without the violent extremes of white and black.
+Total balance of the sphere teeted by rotation on any deeired axis.
+
+(122) Not only does the mount of the color sphere permit its
+rotation on the vertical axis (white-black), but it is so hung that
+it may be spun on the ends of any desired axis, as, for instance,
+that joining our first color pair, red and blue-green. With this
+pair as poles of rotation, a new equator is traced through all the
+values of purple on one side and of green-yellow on the other, which
+the rotation test melts in a perfect balance of middle gray, proving
+the correctness of these values. In the same way it may be hung
+and tested on successive axes, until the total balance of the entire
+spherical series is proved.
+
+(123) But this color system does not cease with the colors
+spread on the surface of a globe. The first illustration of an orange
+filled with color was chosen for the purpose of stimulating the
+imagination to follow a surface color inward to the neutral axis
+by regular decrease of chroma. A slice at any level of the solid,
+as at value 8 (Fig. 19), shows each hue of that level passing by
+even steps of increasing grayness to the neutral gray N^ of the axis.
+In the case of red at this level, it is easily described by the nota-
+tion Rf , Rf , Rf , of which the initial and upper numerals do not
+change, but the lower numeral traces loss of chroma by 3, 2, and
+1 to the neutral axis.
+
+(124) And there are stronger chromas of red outside the surface,
+which can be written Rf , Rf , Rf , etc. Indeed, our color measure-
+ments discover such differences of chroma in the various pigments
+used, that the color tree referred to in paragraphs 34, 35, is necessary
+
+52 COLOR SPHERE
+
+to bring before the eye their maximum chromas, most of which are
+well outside the spherical shell and at various levels of value.
+One way to describe the color sphere is to suggest that a color
+tree, the intervals between whose irregular branches are filled
+with appropriate color, can be placed in a turning lathe and
+turned down until the color maxima are removed, thus pro-
+ducing a color solid no larger than the chroma of its weakest
+pigment. Fig. 2.
+Charts of the color solid.
+
+(125) Thus it becomes evident that, while the color sphere is a
+valuable help to the child in conceiving color relations, in uniting
+the three scales of color measure, and in
+T furnishing with its mount an excellent test
+
+of the theory of color balance, yet it is always
+restricted to the chroma of its weakest color,
+the surplus chromas of all other colors being
+thought of as enormous mountains built out
+at various levels to reach the maxima of our
+pigments.
+
+(126) The complete color solid is, there-
+fore, of irregular shape, with mountains and valleys, correspond-
+ing to the inequalities of pigments. To display these inequalities
+to the eye, we must prepare cross sections or charts of the solid,
+some horizontal, some vertical, and others oblique.
+
+(127) Such a set of charts forms an atlas of the color solid,
+enabling one to see any color in its relation to all other colors,
+and name it by its degree of hue, value, and chroma. Fig. 20 is
+a horizontal chart of all colors which present middle value (5),
+and describes by an uneven contour the chroma of every hue at
+this level. The dotted inner circle is the equator of the color
+
+COLOR SPHERE 53
+
+sphere, whose principal hues, Rf , Yf , Gf , B|, and P|, form the
+chromatic tuning fork, paragraph 117.
+
+(128) In this single chart the eye readily distinguishes some
+three hundred different colors, each of which may be written by
+its hue, value, and chroma. And even the slightest variation of
+one of them can be defined. Thus, if the principal red were to
+fade slightly, so that it was a trifle lighter and a trifle weaker than
+the enamel, it would be written R^, showing it had lightened
+by 1 per cent, and weakened by 1 per cent. The discrimination
+made possible by this decimal notation is much finer than our
+present visual limit. Its use will stimulate finer perception of
+color.
+
+(129) Such a very elementary sketch of the Color SoHd and
+Color Atlas, which is all that can be given in the confines of
+this small book, will be elsewhere presented on a larger and more
+complete scale. It should be contrasted with the ideal form
+composed of prismatic colors, suggested in the last chapter, para-
+graphs 98, 99, which was shown to be impracticable, but whose
+ideal conditions it follows as far as the limitations of pigments
+permit.
+
+(130) Besides its value in education as setting all our color
+notions in order, and supplying a simple method for their clear
+expression, it promises to do away with much of the misunder-
+standing that accompanies the every-day use of color.
+
+(131) Our present color names are incongruous, irrational, and
+often ludicrous. This year the fashionable shades are "burnt
+onion** and "fresh spinach.** The florists talk of a "pink
+violet** and a "green pink.** A maker of inks describes
+the red as a "true crimson scarlet,** which is a contradic-
+tion in terms. These and a host of other misnomers, bOT-
+
+54 COLOR SPHERE
+
+rowed from most heterogeneous sources, become outlawed as
+sooD as the simple color names and measures of this system are
+adopted.
+Color anarchy is replaced by systematic color description.
+
+Chapter VI.
+
+COLOR NOTATION.
+
+Snsgestioii of a chromatic scoiv.
+
+(132) The last chapter traced a series of steps leading to the
+construction of a practical color sphere. Each color was tested
+by appropriate instruments to assure its degree
+of hue, value and chroma, before being placed
+in position. Then the total sphere was tested
+to detect any lack of balance.
+
+(133) Each color was also written by a
+letter and two numerals, showing its place in
+the three scales of hue, value, and chroma.
+This naturally suggests, not only a record
+of each separate color sensation, but also a union of these
+records in series and groups to form a color score, similar to
+the musical score by which the measured relations of sound are
+recorded.
+
+(134) A very simple form of color score may be easily imagined
+as a transparent envelope wrapped around the equator of the
+sphere, and forming a vertical cylinder (Fig. 21). On the envelope
+the equator traces a horizontal centre line, which is at 5 of the valite
+scale, with zones 6, 7, 8, and 9 as parallels above, and the zones
+4, 3, 2, and 1 below. Through ten equidistant points on this
+center line vertical lines are drawn, corresponding with the di-
+
+56 COLOR NOTATION
+
+visions of the hue scale, and marked R» YR, Y» 6Y, 6» BG, B,
+PB, P, and RP.
+
+(135) The transparent envelope is thus divided into one hundred
+compartments, which provide for ten steps of value in each of the
+ten middle colors. Now, if we cut open this envelope along one
+of the verticals, — as, for instance, red-purple (RP.)» it may be
+spread out, making a flat chart of the color sphere (Fig. 22).
+
+Why green is given the centre of the score.
+
+(136) A cylindrical envelope might be opened on any desired
+meridian, but it is an advantage to have green (6) at the centre
+
+of the chart, and it is there-
+fore opened at the opposite
+point, red-purple (RP.) To
+the right of the green centre
+are the meridians of green-
+"^^fiiT yellow (GY), yellow (Y),
+yellow-red (YR), and red
+(R), all of which are known as warm colors, because they contain
+yellow and red. To the left are the meridians of blue-green
+(BG), blue (B), purple-blue (PB), and purple (P), all of which
+are called cool cdors, because they contain blue. Green, being
+neither warm nor cold of itself, and becoming so only by addi-
+tions of yellow or of blue, thus serves as a balancing point or
+centre in the hue scale.*
+
+(137) The color score presents four large divisions or color
+fields made by the intersection of the equator with the meridian
+of green. Above the centre are all light colors, and below it are
+all dark colors. To the right of the centre are all warm colors,
+
+*To put thia in terms of the speetrum wave lengths, long waves at the red end of
+the spectrum give the sensation of warmth, while short waves at the violet end cause the
+■ensation of coolness. Midway between these extremes is the wave length of green.
+
+i
+
+C»/eoln\aiMg
+
+Wigm. ttkr.Qiuk.)
+
+COLOR NOTATION 57
+
+and to the left are all cool colors. Middle green (5Gf ) is the
+centre of balance for these contrasted qualities, recognized by all
+practical color workers. The chart forms a rectangle whose
+length equals the equator of the color sphere and its height equals
+the axis (a proportion of 3.14 : 1), representing a union and bal-
+ance of the scales of hue and of value. This provides for two
+color dimensions; but, to be complete, the chart must provide
+for the third dimension, chroma.
+
+(138) Replacing the chart around the sphere and joining its
+ends, so that it re-forms the transparent envelope, we may thrust
+a pin through at any point until it pierces the surface of the sphere.
+Indeed, the pin can be thrust deeper until it reaches the neutral
+axis, thus forming a scale of chroma for the color point where it
+enters (see paragraph 12). In the same way any colors on the
+sphere, within the sphere, or without it, can have pins thrust into
+the chart to mark their place, and the length by which each pin
+projects can be taken as a measure of chroma. If the chart is
+now unrolled, it retains the pins, which by their place describe the
+hue and value of a color, while their length describes its chroma.
+Pins Btnck into the score represent chroma.
+
+(139) With this idea of the third color dimension incorporated
+in the score we can discard the pin, and record its length by a
+numeral. Any dot placed on the score marks a certain degree
+of hue and value, while a numeral beside it marks the degree of
+chroma which it carries, uniting with the hue and value of that
+point to give us a certain color. Glancing over a series of such
+color points, the eye easily grasps their individual character, and
+connects them into an intelligible series.
+
+(140) Thus a flat chart becomes the projection of the color
+solid, and any color in that solid is transferred to the surface of
+
+58 COLOR NOTATION
+
+the chart, retaining its degrees of hue, value, and chroma. So
+far the scales have been spoken of as divided into ten steps, but
+they may be subdivided much finer, if desired, by use of the deci-
+mal point. It is a question of convenience whether to make a
+small score with only the large divisions or a much larger score with
+a hundred times as many steps. In the latter case each hue has
+ten steps, the middle step of hue being distinguished as 5Gf to
+suggest the four steps IG, 2G, 3G, 4G, which precede it, and 6G,
+7G, 8G, and 9G, which follow it toward blue-green.
+The score preserves color records in a convenient shape.
+
+Such a color score, or notation diagram, to be made small or
+
+large as the case demands, offers a very convenient means for
+
+recording color combinations, when pig-
+
+y/1 ments are not at hand.
+
+"r
+
+y
+
+(141) To display its three dimensions,
+a little model can be Qiade with three
+visiting cards, so placed as to present
+y^i^,\ their mutual intersection at ri^t angles
+5G^ is their centre of mutual balance. A central plane sep-
+arates all colors into two contrasted fields. To the right are
+all warm colors, to the left are aU cool colors. Each of these
+fields is again divided by the plane of the equator into lighter
+colors above and darker colors below. These four color fields
+are again subdivided by a transverse plane through 5Gf into
+strong colors in front and weak colors beyond or behind it.
+
+(142) Any color group, whose record must all be written to
+the right of the centre, is unduly warm, because red and yellow
+are dominant. One to the left of the centre must be unduly cool,
+because it is dominated by blue. A group written all above the
+
+1 — rri
+
+h-rrn
+
+m
+
+p
+
+g
+
+i . . (. w iVi
+
+Spii-
+
+s:: I I
+
+I^III
+
+J
+
+u
+
+|M
+
+60 COLOR NOTATION
+
+centre must be light to excess, while one written entirely below
+is dark to excess. Finally, a score written all in front of the centre
+represents only strong chromas, while one written behind it con-
+tains only weak chromas. From this we gather that a balanced
+composition of color preserves some sort of equilibrium, uniting
+degrees of warm and cool, of light and dark, and of weak and strong,
+which is made at once apparent by the dots on the score.
+
+(143) A single color, like that of a violet, a rose, or a butter-
+cup, appears as a dot on the score, with a numeral added for its
+chroma. A parti-colored flower, such as a nasturtium, is shown
+by two dots with their chromas, and a bunch of red and yellow
+flowers will give by their dots a color passage, or "silhouette,**
+whose warmth and lightness is unmistakable.
+
+The chroma of each flower written with the silhouette com-
+pletes the record. The hues of a beautiful Persian rug, with dark
+red predominating, or a verdure tapestry, in which green is
+dominant, or a Japanese print, with blue dominant, will trace
+upon the score a pattern descriptive of its color qualities. These
+records, with practice, become as significant to the eye of the
+artist as the musical score is to the musician. The general char-
+acter of a color combination is apparent at a glance, while its
+degrees of chroma are readily joined to fill out the mental image.
+
+(144) Such a plan of color notation grows naturally from the
+spherical system of measured colors. It is hardly to be hoped,
+in devising a color score, that it may not seem crude at first. But
+the measures forming the basis of this record can be verified by
+impartial instruments, and have a permanent value in the gen-
+eral study of color. They also afford some definite data as to
+personal bias in color estimates.
+
+(145) This makes it possible to collect in a convenient form.
+
+COLOR NOTATION 61
+
+two contrasting and valuable records, one preserving such effects
+of color as are generally called pleasing, and another of such
+groups as are found unpleasant to the eye. Out of such material
+something may be gained, more reliable than the shifting,
+personal and contradictory statements about color harmony now
+prevalent.
+
+Chapter VII.
+
+COLOR HARMONY.
+
+Colon may be grouped to please or to give annoyance.
+
+(146) Attempts to define the laws of harmonious color have not
+attained marked success, and the cause is not far to seek. The
+very sensations underlying these effects of concord or of discord
+are themselves undefined. The formula of my student days — ^that
+three parts of yellow, five parts of red, and eight parts of blue
+would combine harmoniously — ^was unable to define the kind
+of red, yellow, and blue intended; that is, the hue, value, and
+chroma of each of these colors was unknown, and the formula
+meant a different thing to each person who tried to use it.
+
+(147) It is true that a certain red, green, and blue, in the pro-
+portions of 5, 3, and 8, can be united on Maxwell discs to balance
+in a neutral gray; but the slightest change in either the hue, value,
+or chroma, of any one of them, upsets the balance. A new pro-
+portion is then needed to regain the neutral mixture. This has
+already been shown in the discussion of triple balance (para-
+graph 82).
+
+(148) Harmony of color has been still further complicated
+by the use of terms that belong to musical harmony. Now music
+is a tneasured art, and has found a set of intervals which are de-
+fined scientifically. The two arts have many points of simi-
+larity; and the impulses of sound waves on the ear, like those of
+
+COLOR HARMONY 63
+
+light waves on the eye, although far apart in the scale and differ-
+ing in important particulars, are still measured vibrations of the
+same ether. But the intervals of color sensation have not been
+measured, like those of music, nor has their infinite variety been
+organized into a fixed system.
+
+(149) Any effort to compare certain sounds to certain colors
+soon leads to the wildest vagaries.
+
+Harmony of sound is unlike harmony of color.
+
+(150) The poverty of color language tempts to a borrowing
+from the richer terminology of music. Musical terms, such as
+*' pitch, key, note, tone, chord, modulation, nocturne, and sym-
+phony," are frequently used in the description of color, serving
+by association to convey certain vague ideas.
+
+(151) In the same way the term color harmony, from associa-
+tion with musical harmony, presents to the mind an image of color
+arrangement, — varied, yet well proportioned, grouped in orderly
+fashion, and agreeable to the eye. But any attempt to define
+this image in terms of color is disappointing. Here is a beauti-
+ful Persian rug: why do we call it beautiful? One says "because
+its colors are rich.** Why are they rich? "Because they are
+deep in tone.** What does that mean? The double-bass and
+the fog-horn are deep in tone, but not necessarily beautiful on that
+account. "Oh, no," says another, "it is all in one harmonious
+hey.** But what is a key of color ? Is it made by all the values
+of one color, such as red, or by all the hues of equal value, such
+as the middle hues in our color solid ?
+
+(152) Certainly it is not, for the rug has both light and dark
+colors ; and, of the reds, yellows, greens, and blues, some are stronger
+and others weaker. Then what do we mean by a key of color ? One
+must either continue to flounder about or frankly confess ignorance.
+
+64 COLOR HARMONY
+
+(153) Musical harmony explains itself in clear language. It
+is illustrated by fixed and definite sound intervals, whose meas-
+ured relations form the basis of musical composition. Each key
+has an unmistakable character, and the written score presents
+a statement that means practically the same thing to every person
+of musical intelligence. But the adequate terms of color har-
+mony are yet to be worked out.
+
+Let us leave these musical analogies, retaining only the due
+that a measured and orderly relation underlies the idea of harmony.
+The color soUd which has been the subject of these pages is built
+upon measured color relations. It unites measured scales of
+hue, value, and chroma, and gives a definite color name to every
+sensation from the maxima of color Ught and color strength to
+their disappearance in darkness.
+
+(154) Must it not, therefore, contain aU the elements which
+can be combined to produce color harmony or color discord ?
+
+(155) Instead of theorizing, let us experiment. As a child
+at the piano, who first strikes random and widely separated notes,
+but soon seeks for the intervals of a familiar air, so let us, after
+roaming over the color globe and its charts, select one familiar
+color, and study what others will combine with it to please the eye.
+
+(156) Here is a grayish green stuflf for a dress, and the Kttle girl
+who is to wear it asks what other cplors she may use with it. First let
+us find it on our instrument, so as to realize its relation to other de-
+grees of color. Its value is 6, — one step above the equator of middle
+value. Its hue is green, G, and its chroma 5. It is written G|-.
+
+(157) Color paths lead out from this point in every direction.
+Where shall we find harmonious colors, where discordant, where
+those paths most frequently travelled? Are there new ones still
+to be explored ?
+
+COLOR HARMONY 65
+
+(158) There are three typical paths: one vertical^ with rapid
+change of value; another lateral^ with rapid change of hue; and
+a third inward^ through the neutral centre to seek the opposite
+color field. All other paths are combinations of two or three of
+these typical directions in the color solid.
+
+Three typical color paths.
+
+(159) 1. The vertical path finds only lighter and darker values
+of gray-green : — " self-colors or shades,** they are generally called,
+
+and offers a safe path, even for those de-
+ficient in color sensation, avoiding all com-
+plications of hue, and leaving the eye free
+to estimate different degrees of a single
+quality, — color light.
+
+(160) 2. The lateral path passes through
+neighboring hues on either side. In this case
+it is a sequence from blue, through green into
+yellow. This is simply change of hue, without change of value
+or chroma if the path be level, but, by inclining it, one end of
+the sequence becomes lighter, while the other end darkens. It
+thus becomes an intermediate between the first and second typ-
+ical paths, combining, at each step, a change of hue with a
+change of value. This is more complicated, but also more inter-
+esting, showing how the character of the gray-green dress wiU
+be set off by a lighter hat of I^eghom straw, and further improved
+by a trimming of darker blue-green. The sequence can be
+made still more subtle and attractive by choosing a straw whose
+yellow is stronger than the green of the dress, while a weaker
+chroma of blue-green is used in the trimming. This is clearly
+expressed by the notation thus: Yf , Gf , BGf , and written on the
+score by three dots and their chromas, — 7, 5, and 3 (see Fig. 23).
+
+66 COLOR HARMONY
+
+(161) 8. The inward path which leads by increase of gray to
+the neutral centre, and on to the opposite hue red-purple, RP|^,
+is full of pitfalls for the inexpert. It combines great change of
+hue and chroma, with small change of value.
+
+(162) If any other color point be chosen in place of gray-green,
+the same typical paths are just as easily traced, written by the
+notation, and recorded on the color score.
+
+These paths trace sequences from any point in the color solid.
+
+(163) In the construction of the color solid we saw that its
+scales were made of equal steps in hue, value, and chroma, and
+tested by balance on the centre of neutral gray. Any step will
+serve as a point of departure to trace regular sequences of the
+three types. The vertical type is a sequence of value only. It
+is somewhat tame, lacking the change of hue and chroma, but
+giving a monotonous harmony of regular values. The horizon-
+tal type traces a sequence of neighboring hues, less tame than the
+vertical type, but monotonous in value and chroma. The in-
+ward type connects opposite hues by a sequence of chroma bal-
+anced on middle gray, and is more stimulating to the eyes.
+
+(164) These paths have so far been treated as made up of equal
+steps in each direction, with the accompanying idea of equal
+quantities of color at each step. But by using unequal quantities
+of color, the balance may be preserved by compensations to the
+intervals that separate the colors (see paragraphs 109, 110).
+
+Unequal color quantities compensated by relations of hue, value, and
+chroma.
+
+(165) Small bits of powerful color can be used to balance large
+fields of weak chroma. For instance, a spot of strong reddish
+purple is balanced and enhanced by a field of gray-green. So
+an amethyst pin at the neck of the girFs dress will appear to ad-
+
+COLOR HARMONY 67
+
+vantage with the gown, and also with the L^hom straw. But
+a large field of strong color, such as a cloth jacket of reddish
+purple, would be fatal to the measured harmony we seek.
+
+(166) This use of a small point of strong chroma, if repeated
+at intervals, sets up a notion of rhythm; but, in order to be rhyth-
+mic, there must be recurrent emphasis, *'a succession of similar
+units, combining unlike elements." This quality must not be
+confused with the unaccented succession, seen in a measured scale
+of hue, value, or chroma.
+
+Paper masks to isolate color intervals.
+
+(167) A sheet of paper large enough to hide the color sphere
+may be perforated with three or more openings in a straight line, and
+applied against the surface, so as to isolate the steps of any se-
+quence which we wish to study. Thus the sequence given in
+paragraph 160, — Yf, Gf , BG^ — ^may be changed to bring it on the
+surface of the sphere, when it reads Yf , G^, BGf . A mask with
+round holes, spaced so as to uncover these three spots, relieves
+the eye from the distraction of other colors. Keeping the centre
+spot on green, the mask may be moved so as to study the effect
+of changing hue or value of the other two steps in the sequence.
+
+(168) The sequence is lightened by sliding the whole mask
+upward, and darkened by dropping it lower. Then the result
+of using the same intervals in another field is easily studied by
+moving the mask to another part of the solid.
+
+(169) Change of interval immediately modifies the character
+of a color sequence. This is readily shown by having an under-
+mask, with a long, continuous slit, and an over-mask whose per-
+forations are arranged in several rows, each row giving different
+spaces between the perforations. In the case of the girFs cloth-
+ing, the same sequence produces quite a different effect, if two
+
+66 COLOR HARMONY
+
+(161) 3. The inward path which leads by increase of gray to
+the neutral centre, and on to the opposite hue red-purple, RP|^,
+is full of pitfalls for the inexpert. It combines great change of
+hue and chroma, with small change of value.
+
+(162) If any other color point be chosen in place of gray-green,
+the same typical paths are just as easily traced, written by the
+notation, and recorded on the color score.
+
+These paths trace sequences from any point in the color solid.
+
+(163) In the construction of the color solid we saw that its
+scales were made of equal steps in hue, value, and chroma, and
+tested by balance on the centre of neutral gray. Any step will
+serve as a point of departure to trace regular sequences of the
+three types. The vertical type is a sequence of value only. It
+b somewhat tame, lacking the change of hue and chroma, but
+giving a monotonous harmony of regular values. The horizon-
+tal type traces a sequence of neighboring hues, less tame than the
+vertical type, but monotonous in value and chroma. The in-
+ward type connects opposite hues by a sequence of chroma bal-
+anced on middle gray, and is more stimulating to the eyes.
+
+(164) These paths have so far been treated as made up of equal
+steps in each direction, with the accompanying idea of equal
+quantities of color at each step. But by using unequal quantities
+of cohTy the balance may be preserved by compensations to the
+intervals that separate the colors (see paragraphs 109, 110).
+
+Unequal color quantities compensated by relations of hue, value, and
+chroma.
+
+(165) Small bits of powerful color can be used to balance large
+fields of weak chroma. For instance, a spot of strong reddish
+purple is balanced and enhanced by a field of gray-green. So
+an amethyst pin at the neck of the girPs dress will appear to ad-
+
+COLOR HARMONY ^^ ^
+
+vantage with the gown, and also with the L^hom straw. But
+a large field of strong color, such as a doth jacket of reddish
+purple, would be fatal to the measured harmony we seek.
+
+(166) This use of a small point of strong chroma, if repeated
+at intervals, sets up a notion of rhythm; but, in order to be rhyth-
+mic, there must be recurrent emphasis, ^a succession of similar
+units, combining unlike elements." This quality must not be
+confused with the unaccented succession, seen in a measured scale
+of hue, value, or chroma.
+
+Paper masks to isolate color intervals.
+
+(167) A sheet of paper large enough to hide the color sphere
+may be perforated with three or more openings in a straight line, and
+applied against the surface, so as to isolate the steps of any se-
+quence which we wish to study. Thus the sequence given in
+paragraph 160, — ^Yf , Gf, BGJ — ^may be changed to bring it on the
+surface of the sphere, when it reads Yf , Gf , BGf . A mask with
+round holes, spaced so as to uncover these three spots, relieves
+the eye from the distraction of other colors. Keeping the centre
+spot on green, the mask may be moved so as to study the effect
+of changing hue or value of the other two steps in the sequence.
+
+(168) The sequence is lightened by sliding the whole mask
+upward, and darkened by dropping it lower. Then the result
+of using the same intervals in another field is easily studied by
+moving the mask to another part of the solid.
+
+(169) Change of interval immediately modifies the character
+of a color sequence. This is readily shown by having an under-
+mask, with a long, continuous slit, and an over-mask whose per-
+forations are arranged in several rows, each row giving different
+spaces between the perforations. In the case of the girrs cloth-
+ing, the same sequence produces quite a different effect, if two
+
+68 COLOR HARMONY
+
+perforations of the over-mask are brought nearer to select a lighter
+yellow-green dress, while the ends of the sequence remain un-
+changed. To move the middle perforation near the other end,
+selects a darker bluish green dress, on which the trimming will
+be less contrasted, while the hat appears brighter than before,
+because of greater contrast.
+
+(170) The variations of color sequence which can thus be
+studied out by simple masks are almost endless; yet upon a meas-
+ured system the character of each effect is easily described, and,
+if need be, preserved by a written record.
+
+Invention of color groups.
+
+(171) Experiments with variable masks for the selection of
+color intervals, such as have been described, soon stimulate the
+imagination, so that it conceives sequences through any part of
+the color solid. The color image becomes a permanent mental
+adjunct. Five middle colors, tempered with white and black,
+permit us to devise the greatest variety of sequences, some light,
+others dark, some combining small difference of chroma ^th
+large difference of hue, others uniting large intervals of chroma
+with small intervals of hue, and so on through a well-nigh inex-
+haustible series.
+
+(172) As this constructive imagination gains power, the solid
+and its charts may be laid aside. We can now think color con-
+secutively. Each color suggests its place in the system, and may
+be taken as a point of departure for the invention of groups to
+carry out a desired relation.
+
+(173) This selective mental process is helped by the score de-
+scribed in the last chapter; and the quantity of each color chosen
+for the group is easily indicated by a variable circle, drawn round
+the various points on the diagram. Thus, in the case of the child's
+
+COLOR HARMONY 69
+
+clothes, a large circle around G^ gives the area of that color as
+compared with smaller circles around Y^ and BG|^, representing
+the area of the straw and the trimming.
+
+(174) liVhen the plotting of color groups has become instinc-
+tive from long practice, it opens a wide field of color study. Take
+as illustration the wings of butterflies or the many varieties of pan-
+sies. These fascinating color schemes can be written with indi-
+cations of area that record their differences by a simple diagram.
+In the same way, rugs, tapestries, mosaics, — ^whatever attracts
+by its beauty and harmony of color, — can be recorded and studied
+in measured terms; and the mental process of estimating hues,
+values, chromas, and areas by established scales must lead the
+color sense to finer and finer perceptions.
+
+The same process serves as well to record the most annoying
+and inharmonious color groups. When sufficient of these records
+have been obtained, they furnish definite material for a contrast
+of the color combinations which please, with those that cause dis-
+gust. Such a contrast should discover some broad law of color
+harmony. It will then be in measured terms which can be
+clearly given; not a vague personal statement, conveying different
+meanings to each one who hears it.
+Constant exercise needed to train the color sense.
+
+(175) Appreciation of beautiful color grows by exercise and
+discrimination, just as naturally as fine perception of music or
+literature. Each is an outlet for the expression of taste, — ^a lan-
+guage which may be used clumsily or with skill.
+
+(176) As color perception becomes finer, it discards the more
+crude and violent contrasts. A child revels in the strongest
+chromas he can find. The mark of the colorist is ability to em-
+ploy low chroma without impoverishing the color effect. As a
+
+70 COLOR HARMONY
+
+boy's shrieks and groans can be tempered to musical utterance,
+so his debauches in violent red, green, and purple must be replaced
+hj tempered hues.
+
+(177) Raphael, Titian, Velasquez, Corot, Chavannes, and
+Whistler are masters in the use of gray. Personal bias may lead
+one a little more toward warm color, and another slightly toward
+the cool field, in each case attaining a sense of harmonious bal-
+ance by tempered degrees of value and chroma.
+
+(178) It is not claimed that discipline in the use of subtle colors
+will make another Corot or Velasquez, but it will make for com-
+prehension of their skill. It is grotesque to watch a gaudily dressed
+person going into ecstasies over the delicate coloring of a Botti-
+celli, when the internal as well as the external evidence is against
+them.
+
+(179) The colors which we choose, not only in personal apparel,
+but in our rooms and decorations, are mute witnesses to a stage
+of color perception.
+
+If that perception is trained to finer distinctions, the mind can
+no longer be content T/vith coarse expression. It begins to feel
+an incongruity between the "loud" color of the wall paper, bought
+because it was fashionable, and the quiet hues of the rug, which
+was a gift from some artistic friend. It sees that, although the
+furniture is covered with durable and costly materials, their color
+"swears** at that of the curtains and wood-work. In short, the
+room has been jumbled together at various periods, without any
+plan or sense of color design.
+
+(180) Good taste demands that a room be furnished, not alone
+for convenience and comfort, but also with an eye to the beauty
+of the various objects, so that, instead of confusing and destroy-
+ing the colors, each may enhance the other. And, when this
+
+COLOR HARMONY 71
+
+sense of color hannony is aroused, it selects and arranges the books,
+the rugs, the lamp shade, the souvenirs of travel and friendship,
+the wall paper, pictures, and hangings, so that they fit into a color
+scheme, not only charming to the eye at first glance, but which
+continues to please the mind as it traces out an intelligent plan,
+bringing all into general harmony.
+
+(181) Nor will this cease when one room has been put to rights.
+Such a coloristic attitude is not satisfied until the vista into the
+next apartment is made attractive. Or should there be a suite
+of rooms, it demands that, with variety in each one, they all be
+brought into harmonious sequence. Thus the study of color
+finds immediate and practical use in daily life. It is a needed
+discipline of color vision, in the sense that geometry is a disci-
+pline of the mind, and it also enters into the pleasure and re-
+finement of life at every step. Skill or awkwardness in its use
+exerts as positive an influence upon us as do the harmonies and
+discords of sound, and a far more continuous one. It is thought
+a defect to be unmusical. Should it not be considered a mark
+of defective cultivation to be insensitive to color ?
+
+(182) In this slight sketch of color education it has been as-
+sumed that we are to deal with those who have normal percep-
+tions. But there are some who inherit or develop various degrees
+of color-blindness; and, although such cases are happily rare,
+a word in their behalf may be opportune.
+
+(183) A case of total color-blindness I have never seen, but
+a few are on record. When a child shows marks of this failing,
+a little care may save him much discomfort, and it may nearly
+disappear with patient training. If he mismatches some hues,
+confuses their names, seems incapable of the finer distinctions of
+color, study to find the hues which he estimates well, and then
+
+72 COLOR HARMONY
+
+help him to venture a little into the field where his perception is
+at fault. Some improvement is pretty sure to follow when this
+is sympathetically done. One student, who never outgrew the
+habit of giving a purplish hue to all his work, despite the use of
+various lights and colored objects to correct it, is the single ex-
+ception among hundreds whom it has been my privilege to watch
+as they improved their first crude estimates, and learned to ex-
+press their feeling for the subtlety of Nature's coloring.
+
+(184) To sum up, the first chapter suggests a measured color
+system in place of guess-work. The next describes the three color
+qualities, and sketches a child's growth in color perception. The
+tliird tells how colors may be mingled in such proportions as to
+balance. After the impracticability of using spectral color has
+been shown in the fourth chapter, the fifth proceeds to build a
+practical color solid. The sixth provides for a written record
+of color, and the last applies all that has preceded to suggestions
+for the study of color harmony.
+
+(185) Wide gaps appear in this outline. There is much that
+deserves fuller treatment. But, if the search for refined color
+and a clearer outlook upon its relations are stimulated by this
+fragmentary sketch, some of its faults may be overlooked.
+
+APPENDIX.
+
+GLOSSARY OF COLOB TERMS.
+
+A COLOR SYSTEM AND COURSE OF STUDY BASED
+
+ON THE COLOR SOLID AND ITS CHARTS.
+
+INDEX.
+
+GLOSSARY.
+
+The color definitions here employed have been taken from the
+Century Dictionary. Special attention is called to the cross refer-
+ences which serve to differentiate HUE^ VALUE, and CHROMA,
+
+After Image. — An image perceived after withdrawing the eye
+from a brilliantly illuminated object. Such images are
+called positive when their colors are the same as that of
+the object, and negative when they are its complementary
+colors.
+
+Blue. — Of the color of the clear sky; of the color of the spectrum
+between wave lengths .505 and .415 micron, and more es-
+pecially .487 and .460; or of such light mixed with white;
+azure, cerulean.
+
+Black. — Possessing in the highest degree the property of absorb-
+ing light; reflecting and transmitting little or no light; of the
+color of soot or coal; of the darkest possible hue; sable. Op-
+tically, wholly destitute of color, or absolutely dark, whether
+from the absence or the total absorption of light. Opposed
+to white.
+
+Bhown. — ^A dark color, inclined to red or yellow, obtained by
+mixing red, black, and yellow.
+
+CHROMA. — The degree of departure of a color sensation from
+that of white or gray ; the intensity of distinctive hue ; color
+intensity.
+
+Chromatic. — ^Relating to or of the nature of color.
+
+Cobalt Blue. — ^A pure blue tending toward cyan blue and of
+high luminosity; also called Hungary blue, Lethner*s blue»
+and Paris blue.
+
+Color. — Objectively, that quality of a thing or appearance which
+is perceived by the eye alone, independently of the fonn of
+the thing; subjectively, a sensation peculiar to the organ of
+vision, and arising from the optic nerve.
+
+CoLOB Constants. — ^The numbers which measure the quantities,
+as well as any other system of three numbers for defining
+colors, are called constants of color.
+
+Color Vabla^les. — Colors vary in chroi^ia, or freedom from ad-
+mixture of white light; in brightness, or luminosity; and in
+HUE, which roughly corresponds to the mean wave length of
+the light emitted.
+
+Color Blindness. — Incapacity for perceiving colors, independent
+of the capacity for distinguishing light and shade.
+
+Colors, Primary. — ^The red, green, and violet light of the spec-
+trum, from the mixture of which all other colors can be pro-
+duced. Also called fundamental colors.
+
+Dyestuffs. — In commerce, any dyewood, lichen, or dyecake used
+in dyeing and straining.
+
+Electric Light. — Light produced by electricity and of two
+general kinds, the arc light and the incandescent Ught. In
+the first the voltaic arc is employed. In the second a resisting
+conductor is rendered incandescent by the current.
+
+Enamel. — In the fine arts a vitreous substance or glass, opaque
+or transparent, and variously colored, applied as a coating
+on a surface of metal or of porcelain.
+
+Grating, Diffraction. — ^A series of fine parallel lines on
+a surface of glass, or polished metal, ruled very close to-
+gether, at the rate of 10,000 to 20,000 or even 40,000 to
+the inch; distinctively called a diffraction or a diffraction
+grating.
+
+Gray. — ^A color having little or no distinctive hue (chroma)
+and only moderate luminosity.
+
+Green. — ^The color of ordinary foliage; the color seen in the
+solar spectrum between wave-lengths 0.511 and 0.543 micron.
+
+Emerald Green. — ^A highly chromatic and extraordinarily lu-
+minous green of the color of the spectrum at wave length
+0.5S4 micron. It recalls the emerald by its brilliancy, but
+not by its tint; applied generally to the aceto-arsenate of
+copper. Usually known as Paris green.
+
+HUE. — Specifically and technically, distinctive quality of color-
+ing in an object or on a surface ; the respect in which red,
+yellow, green, blue, etc., differ one from another; that in
+which colors of equal luminosity and chroma may differ.
+
+Indigo. — ^The violet-blue color of the spectrum, extending, ac-
+cording to Helmholtz, from G two-thirds of the way to F in
+the prismatic spectrum. The name was introduced by New-
+ton, but has lately been discarded by the best writers.
+
+Light. — ^Adjective applied to colors highly luminous and more or
+less deficient in chroma.
+
+Luminosity. — Specifically, the intensity of light in a color, meas-
+ured photometrically; that is to say, a standard light has its
+intensity, or vis viva^ altered, until it produces the impression
+of being equally bright with the color whose light is to be
+determined; and the measure of the vis viva of the altered
+Ught, relatively to its standard intensity, is then taken as the
+luminosity of the color in question.
+
+Maxwell Color Discs. — ^Discs having each a single color, and
+slit radially so that one may be made to lap over another to
+any desired extent. By rotating these on a spindle, the effect of
+combining certain colors in varying proportions can be studied*
+
+Micron. — ^The millionth part of a metre, or ^^\(^(^ of an English
+inch. The term has been formally adopted by the Inter-
+national Conunission of Weights and Measures, representing
+the eiviUzed nations of the world, and is adopted by all me-
+trologists.
+
+Orange. — ^A reddish yellow color, of which the orange is the type.
+
+Vision, Persistence of. — ^The continuance of a visual impression
+upon the retina of the eye after the exciting cause is removed.
+The length of time varies with the intensity of the hght and
+the excitabiUty of the retina, and ordinarily is brief, though the
+duration may be for hours, or even days. The after image
+may be either positive or negative, the latter when the bright
+part appears dark and the colored parts in their corresponding
+contrast colors. It is because of this persistence that, for
+example, a firebrand moved very rapidly appears as a band
+or circle of light.
+
+Photometer. — ^An instrument used to measure the intensity of
+light. Specifically, to compare the relative intensities of the
+Ught emitted from various sources.
+
+Pigment. — ^Any substance that is or can be used by painters to
+impart color to bodies.
+
+Pink. — ^A red color of low chroma, but high luminosity, inclining
+toward purple.
+
+Primary Colors.— See Colors.
+
+Pure Color. — ^A color produced by homogeneous hght. Any
+very brilliant or decided color.
+
+Purple. — ^A color formed by the mixture of blue and red, includ-
+ing the violet of the spectrum above wave length 0.417, which
+is nearly a violet blue, and extending to, but not including,
+crimson.
+
+Bauvbow. — A bow or an arc of a circle, consisting of the pris-
+matic colors, formed by the refraction and the reflection of
+rays of light from drops of rain or vapor, appearing in the
+part of the heavens opposite to the sun.
+
+Red. — ^A color more or less resembling that of blood, or the lower
+end of the spectrum. Red is one of the most general color
+names, and embraces colors ranging in hue from aniline to
+scarlet iodide of mercury and red lead. A red yellower than
+vermilion is called scarlet. One much more crimson is called
+crimson red. A very dark red, if pure or crimson, is called
+maroon; if brownish, chestnut or chocolate. A pale red —
+that is, one of low chroma and high luminosity — ^is called
+a pink, ranging from rose pink or pale crimson to salmon
+pink or pale scarlet.
+
+Venetian Red. — ^An important pigment used by artists, some-
+what darker than brick red in color, and very permanent.
+
+Retina. — ^The innermost and chiefly nervous coat of the pos-
+terior part of the eyeball.
+
+Saturation, op Colors. — ^In optics the degree of admixture
+with white, the saturation diminishing as the amount of
+white is increased. In other words, the highest degree of
+saturation belongs to a given color when in the state of great-
+est purity.
+
+Scale. — ^A graded system, by reference to which the degree,
+intensity, or quality of a sense perception may be estimated.
+
+Shade. — Degree or gradation of defective luminosity in a color,
+often used vaguely from the fact that paleness, or high
+luminosity, combined with defective CHROBiA, is con-
+founded with high luminosity by itself. See Color, Hue,
+and Tint.
+
+Micron.— The raillioDth part of a metre, or ^^^PS ^^ ^ ^
+inch. The term has been formally adopted by tb^ ^
+national Commission of Weights and Measures* rept<^ ^
+the civilized nations of the world, and is adopted by
+
+trologists. -gthe^y'
+
+Orange. — A reddish yellow color, of which the orange i
+Vision, Persistence of. — The contmuance of a vxsuai
+
+upon the retina of the eye after the exciting eaiise . i^^ ,
+The length of Urae varies with the intensity <^^ ^ KoU^^
+the excitability of the retina ^ and ordinarily isD^ie ' -^^
+duration may be for hours, or even days- ^L ne ^
+
+may be either positive or negative, the lattei" wUe ^
+part appears dark and the colored parts in theiT e ^^^ ,
+contrast colors. It is because of this pei'Sisten ^^ ^^ ,
+example, a firebrand moved very rapidly ^-t*P^
+or circle of light, 'tite^^^'
+
+Photometer. — An instrument used to measure ^ A{x^ *'
+
+light. Specifically, to compare the relati^?'^ '"^^
+light emitted from various sources. ^ * ^ pst-U^^*^^
+
+PlGBiENT. — Any substance that is or can be ^li^^
+
+impart color to bodies. - osVtJ* *^
+
+Pink. — ^A red color of low chroma, but hig-i^ X^^^
+
+toward purple.
+Primary CoLORS.^ee Colors. «^^^^HL
+
+Pure Color. — ^A color produced by hom^*^^ ^^^^BL.
+
+very brilliant or decided color.
+Purple. — A color formed by the mixture of ^^
+ing the violet of the spectrum above w-^
+is nearly a violet blue, and extend"'
+crimson. X
+
+aid so reflecting to the eye, all
+' iimbined in the same proportion
+
+'I Till of light, of wave length 0.581
+-fricted to highly chromatic and
+*lnced in chrgbia, it becomes buff;
+n , a cool brown. See Brown,
+i rnnsisting of hydrated chromium
+hjish green of great permanency.
+
+Spectrum. — ^In physics the continuous band of light showing the
+successive prismatic colors, or the isolated lines or bands of
+color, observed when the radiation from such a source as the
+sun or an ignited vapor in a gas flame is viewed after having
+been passed through a prism (prismatic spectrum) or reflected
+from a diffraction grating (diffraction or interference spectrum) .
+See Rainbow.
+
+Tint. — ^A variety of a color; especially and properly, a luminous
+variety of low chroma; also, abstractly, the respect in which
+a color may be raised by more or less admixture of white,
+which at once increases the luminosity and diminishes the
+
+CHROBfA.
+
+Tone. — ^The prevailing effect of a color.
+
+Ultramarine. — ^A beautiful natural blue pigment, obtained from
+the mineral lapis-lazuli.
+
+VALUE. — In painting and the allied arts, relation of one object,
+part) or atmospheric plane of a picture to the others, with ref-
+erence to light and shade, the idea of HUE being abstracted.
+
+Vermilion. — ^The red sulphate of mercury.
+
+Violet. — ^A general class of colors, of which the violet flower is a
+highly chromatic example. The sensation is produced by a
+pure blue whose chroma has been diminished while its
+LUMINOSITY has been increased. Thus blue and violet are
+the same color, though the sensations are different. A mere
+increase of illumination may cause a violet-blue to appear
+violet, with a diminution of apparent CHROifA. This color,
+called violet or blue according to the quality of the sensation
+it excites, is one of the three fundamental colors of Young's
+theory. A deep blue tinged with red.
+
+ViRiDiAN. — Same as Veronese green.
+
+White. — ^A color transmitting, and so reflecting to the eye, all
+
+the rays of the spectrum, combined in the same proportion
+
+as in the impinging light.
+Yellow. — ^The color of gold and of light, of wave length 0.581
+
+micron. The name is restricted to highly chromatic and
+
+luminous colors. When reduced in chrgbia, it becomes buff;
+
+when reduced in LUMiNOsmr, a cool brown. See Brown.
+Veronese Green. — ^A pigment consisting of hydrated chromium
+
+sesquioxide. It is a clear bluish green of great permanency.
+
+Also called Viridian.
+
+A COLOR SYSTEM
+
+WITH
+
+COURSE OF STUDY
+
+BASED ON THE COLOR SOUD AND ITS CHARTS.
+
+See Chapter Il.t paragraphs 48, 49, arid 60.
+
+Copyrifirht, 1904, by A. H. Miinsell.
+
+A COLOR SYSTEM AND COURSE OF STUDY
+
+BASED ON THE COLOR SOI.ID AND ITS CHARTS,
+ADAPTED TO NINE YEARS OF SCHOOL. LIFE.
+
+Grade.
+
+Subject.
+
+Colors Studied.
+
+Illustration.
+
+Materials.
+
+Hum
+of color.
+
+Red. R.
+Yellow. Y.
+Green. G.
+Blue. B.
+Purple. P.
+
+Soufirht in
+Nature
+and Art.
+
+Borders
+
+and
+Rosettes.
+
+Colored
+crayons
+
+and
+papers.
+
+Hues
+of color.
+
+Yellow-red. VR.
+Green-yellow. GY.
+
+Purple-blue. PB!
+Red-purpie. RP.
+
+Sought in
+Nature
+and Art.
+
+Borders
+
+and
+Rosettes.
+
+Colored
+crayons
+
+and
+papers.
+
+Values
+of color.
+
+Lie[ht, middle, and dark. R.
+
+4* •« M tt p
+
+Sought in
+Nature
+and Art.
+
+Design.
+
+Small
+sphere.
+
+Values
+of color.
+
+6 values of YR. ^
+
+Sought in
+Nature
+and Art.
+
+Design.
+
+Charts.
+
+Ghbomas
+of color.
+
+8 chromas of R^.
+tt ♦» »t Y*
+
+tt 4( tt ^Jl*
+
+tt tt tt pc*
+
+Sought in
+Nature
+and Art.
+
+Design.
+
+Charts.
+
+Chkomas
+of color.
+
+3 chromas of YR*.
+
+t. pga
+RP«.
+
+tt tt tt pi t. pi J
+
+Sought in
+Nature
+and Art.
+
+Design.
+
+Large
+sphere.
+
+To OBSBBYE
+
+imitate color by hue, value, and chboma. Paints.
+
+&WBITB
+
+Quantity of color.
+Pairs of e<mal area and unequal area Paints.
+Balanced by hue, value, and chbobia.
+
+Quantity of color.
+
+Triads of equal area and unequal area Pamts.
+Balanced Dy hub, valub, and chboma.
+
+Copyright, 1004, by A. H. MunseU.
+
+STUDY OF SINGLE HUES AND THEIR SEQUENCE. Two Ybabs.
+
+FIRST GRADE LESSONS.
+
+1. Talk about familiar objects, to bring out color names, as t03rB, flowers,
+
+2. clothing, birds, insects, etc.
+
+3. Show soap bubbles and prismatic spectrum.
+
+4. Teach term hub. Hues of flowers, spectrum, plumage of birds, etc.
+
+5. Show uiDJ>ix* RBD. Find other reds.
+
+6. " TXLLOW. " yellows, and compare with reds.
+
+7. " OBKBN. *' greens, ** ** and yellows.
+
+8. ** BLUB. *' blues, ** preceding hues.
+
+9. " PURPLB. ** purples, " **
+lQ-15. Review fiyb mtddlb hubs,* match with colored papers, and place in circle.
+16-20. Show COLOR SPHBRB. Find sequence of five middle hues. Memorise order.
+
+21. Middle red imitated with crayon, named and written by initial R.
+
+26-30. Review, using middle hues* in borders and rosettes for deagn.
+
+Aim. — ^To recognize sequence of five middle hues. To name, match, imi-
+tate, write, and arrange them. .
+
+SECOND GRADE LESSONS.
+1-3. Review sequence of five middle hues.*
+
+4. Show a hue intbrmbdiatb between red and yellow. Find it in objects.
+
+5. C!ompare with red and yellow.
+
+6. Recognize and name tbllow-rbd. Match, imitate, and write YR.
+
+7S. Show GRBBN-TBLLOW between green and yellow. Treat as above, and write GY.
+0-10. ** BLUE-GRBEN ** bluc and green. " " ** BG.
+
+11-12. " PURPLE-BLUB " purplc and blue. '* " ** PB.
+
+13-14. ** RBD-PURPLB ** red and purple. " ** " RP.
+
+15-20. Make circle of ten hues. Place Intermediates, and memorise order so as to repeat
+
+forward or backward. Match, imitate, and write by initials.
+21-25. Find sequence of ten hues on color sphere. Compare with hues of natural objects.
+26-30. Review, using any two hues in sequence for borders and rosettes.
+
+Aim. — To recognize sequence of ten hues, made up of five middle* hues
+and the five intermediates. To name, match, write, imitate, and
+arrange them.
+
+* The term middle, as used in this course of color study, is understood to mean only
+the five principal hues which stand midway in the scales of value and chroma. Strictly
+speaking, their five intermediates are also midway of the scales; but they are obtained by
+nuxture of the five principal hues, as shown in their names, and are of secondary impor-
+tance.
+
+STUDY OF SINGLE VALUES AND THEIR SEQUENCE. Two Ybabs.
+
+THIRD GRADE LB8SON3.
+
+1. Review seqiienoe of ten hues.
+
+2. Recognise, name, match, imitate, write, and find them on the
+
+3. OOLOB SPHBBK. Also in objects.
+
+4. Teaoh use of term taItUS. C!olor value recognised apart from color hue.
+
+5. Find values of red, lighter and darker than the
+
+6. middle value already familiar.
+
+7. Tbbmm VAifUHBof BED. Find on sphere. Name as uqrt, ioddlb, and dabk
+
+values of red.
+
+8. ** Imitate with crayons, and write them as 1, 5, and 9.
+
+9. ** TELLOW. Ck>mpare with above.
+
+10. Recognise, name, match, and imitate with crayons.
+
+11. ** GBBEN. Compare, and treat as above.
+
+12. Find on sphere and in objects.
+
+17-20. Review, combining two values and a single hue for design.*
+
+Aim. — To recognize a sequence combining three values and five middle
+hues. To name, match, imitate, and arrange them.
+
+FOURTH GRADE LESSONS.
+
+1. Review sequence of three values in each of the five middle hues.
+
+2. To recognise, name, match, imitate, and
+
+3. find them on sphere and in objects.
+
+4. Show ITVB VAL17B8 of BBD. Find them on large color sphere. Number them
+
+5. 1,3, 5, 7, 9. Match, imitate, and write.
+
+6. ** BLUB-OBEBN, ** " " "
+
+7. " PURPLB BLUB compared with Yellow.^ -,__ . ,
+
+A «« n r-t \ ireat as atx>ve
+
+8. BED-puRPiA Green. I ,
+
+9. " TBLLOW-BED ** BlUC. [ ^
+
+in «« «« -n. 1 I review.
+
+10. OBBBN-TBLLOW Purplc.^
+
+Aim. — To recognize sequences combining five values in each of ten hues.
+To name, match, imitate, wbitb, and arrange them.
+
+* These ten lessons in this and succeeding grades are devoted to color perception only.
+Their application to design is apart of the general course in drawing, and will be so consid-
+ered in the succeeding grades. Note that, although thus far nothing has been said about
+complementary hues, the child has been led to associate them in opposite pairs by the color
+sphere. (See Chapter III., p. 27.)
+
+STUDY OF SINGLE CHROWLAS AND THEIR SEQUENCES- TwoYeaks*
+
+FIFTH GRADE LESSONS.
+
+1. Review sequenoes of hue and value. Find them on the oolor sphere. Name, mateh,
+
+imitate, write, and arrange them by hue and value.
+
+2. Teaoh uae of term ghboma. Compare three chromas with three values of red^
+
+Name them weak, middlb. and btbonq chromas.
+Find in nature and art.
+
+3. Thrbb chbomas of bbd. Compare with three of blue-green.
+
+4. Show ooLOB TREE. Suggest unequal ehroma of hoee.
+
+5. *' TXLLOW. Compare with three chromas of purple-blue*
+
+0. " ORBEN. " ** red-purple.
+
+7. ** BLUB. •• " yellow-red.
+
+8. ** PURPLE. ** ** green-yellow.
+
+9. Arrange five middle hues in circle, described as on the surface of the
+
+Color Sphere (middle chroma), with weaker chromas inside, and
+stronger chromas outside, the sphere.
+10. Review, — to find these sequences of chroma in nature and art.
+
+Aim, — To recognize sequences combining three chromas, middle value,
+and ten hues. To name, match, imitate, and arrange them.
+
+SIXTH GRADE LESSONS.
+
+1. Review sequences combining three chromas, five hues, and middle value.
+
+Find on Color Tree, name, match, imitate and arrange them.
+
+2. Thrbb chromab of lighter and darker rbd. Compare with middle red.
+
+8. Write '* '* *' ** as a fraction, chroma under value*
+
+using 1, 6, and 9. Thus R{
+
+4. find ** ** red, and compare with darker blue-green.
+
+5. Three ghrom as of lzqhtbr and darkbr tbllow, with purple-blue,
+fi. " *• " " GREEN, *• red-purple.
+
+7. •* ** " ** BLUB, ** yellow-red.
+
+8. •* ** ** ** PURPLE, " green-yellow.
+
+9. Colon in nature and art, defined by hue, value, and chroma. Named, matched, in^
+
+tated, written, and arranged by Color Sphere and Tree.
+10. Review, — to find sequences combining three chromas, five values, and ten hues.
+
+Aim. — To recognize sequences of chroma, as separate from sequences of
+hue Of sequences of value. ,To name, match, write, imitate, and
+arrange colors in terms of their hue, value, and chroma.
+
+;COLOR EXPRESSION IN TERMS OF THE HUES, VALUES,
+AND CHROMAS.
+
+SEVENTH GRADE LBSSONS.]
+■ 1. Review seqaenoeB of hue (initial), value (upper numeral), & ehroma (lower numeral).
+
+3. EzeriBises in expressing colors of natural objeots by the notation, and
+
+4. traoing their relation by the spherioal solid.
+
+5. Reds in Nature and Art, imitated, written, and traced **
+
+6. YuixowB
+
+7. Grbkns
+
+8. Blum
+
+9. PURPUM
+
+10. Onb oolob pais selected, defined, and arranged for design. (See note 4th Grade.)
+
+Aim. — To define any color by its hue, value, and chroma. To imitate
+with pigments and write it.
+
+EIGHTH GRADE 'LESSONS.
+
+1. Review sequences, and select colors which balance. Illustrate the term.
+
+2. Balancb of light and dark, — weak and strong, — hot and cold colors.
+
+3. Rbd and blue-green balanced in hue, value, and chroma, with bquai* abbas.
+
+4. Ybllow •* purple-blue ** "
+
+5. Grebn . " red-purple ** **
+
+0. Blub ** yellow-red "
+
+7. PuRPLB " green-yellow ** "
+
+8. Unbqual abbab of the above pairs, balanced by compensating qualities of hue
+
+9. value, and chroma. Examples from nature and art.
+10. Onb oolob paib of unequal areas selected, defined, and used in design.
+
+Aim. — To BALANCE colors by area, hue, value, and chroma. To imitate
+with pigments and write the balance by the notation.
+
+NINTH GRADE LESSONS.
+
+1. Review balance of color pairs, by area, hue, value, and chroma.
+
+2. To recognise, name, imitate, write, and record them*
+8. SsLBcnoN of two colors to balance a given bbd.
+
+4. " " " " TBLLOW.
+
+fi. " " " " BLUB.
+7. " " " " PURPLB.
+
+8-10. Tbiad of color, selected, balanced, written, and used in dengn.
+
+Aim. — To recognize triple balance of color, and express it in terms of area,
+hue, value, and chroma. Also to use it in design.
+
+INDEX BY PARAGRAPHS.
+
+Balance of color. 23, 47, 67, 75. 77, 81-86,
+Black, 12, 16, 22, 31. 41, 64. 65. 65, 91, 119.
+Charts of the color sphere. 14. 17, 126. 127.
+
+Chroma, 3, 4. 8, 11. 14, 21-24, 28, 39. 40,
+Strongest, 32, 34. 42.
+Chromatic tuning fork, 117, 118, 119-127.
+Circuit, inclined, 16, 17, 97.
+Color, apparatus. 3, 8, 14, 132.
+Atlas, 129.
+
+Balance, 23, 47, 67, 75-77, 81-86 (triple),
+Blindness, 182, 183.
+Complementary, 76, 77.
+Color, dimensions of, 3 8, 9, 13, 25, 63,
+
+Curves. 94.
+
+Hand as a holder of, 54-58.
+Language, poverty of, 5, 175.
+Measured, 3, 14, 32.
+Meridians, 136, 137.
+Mixture, 56-72.
+
+PHncipinl (5), 4. 16, 21, 26. 31, 34, 40.
+
+Frinoipal (5) and intermediates (5), 31,
+
+Kecordu, 145.
+
+Bbytbrn, 166.
+
+Bequencen, 47, 73, 79, 120, 166, 169-171,
+
+Sir Isaac Nffwton'n, 80,
+
+Standard, 4, 26, 35.
+
+Tones, 134.
+Coloristic art, 7, 38. 45, 177.
+Combined scales, 12, 14, 36, 37, 47.
+Complements, 76, 77.
+Course of color study, 48-50.
+Daylight photometer, 22, 103, 119
+Fading, 8, 23.
+Flat diagrams, 14.
+Fundamental sensations, 28.
+Green, 2, 32, 104, 136, 137, 140, 147, 148.
+Hue, 3, 4, 8. 9-11, 14, 18, 21-26, 34, 39, 40
+
+Ideal color system. 100.
+Lambert's pyramid, note to 31.
+Luminist, 121.
+Measurement of colors, 3, 8, 14, 116.
+Middle gray, 61, 65, 72.
+Mixture of hues, 56-72.
+Musical terms used for color, 6, 46, 148-
+
+Neutral gray, 11, 23, 25, 62, 64, 65, 72, 114,
+
+Notation diagram, 140.
+Personal bias, 144, 174.
+Primary sensations, 89.
+Prismatic color sphere, 98.
+Purple, 5.
+Rainbow, 15, 17.
+Red, middle. 1, 32, 41, 60, 66,72, 104, 110,
+
+Retina, 21.
+RCinge, note to 31.
+Shades and tints, 22.
+Spectrum, solar, 15-18, 27, 28. 87, 88, 92,
+
+Tone, 6.
+Value, 3, 8-11. 14. 21-24. 28. 34. 39. 40-
+
+Scale of, 12, 19, 25, 31, 34, 35, 64, 102,
+
+Vermilion, 42.
+Vertical (neutral) axis, 12, 25, 31, 34, 66,
+
+Warm and cold colors, 72, 123, note to 136,
+
+^ c^TVlUNSELL PHOTOMETER
+
+Patented November 19, 190 1
+
+A portable, daylight instrument, adapted to laboratory work
+in general, and of especial service in the comparison
+of color values. Placed in the course of
+Optical Measurements at the Mas-
+sachusetts Institute of
+Technology
+
+IN PREPARATION
+
+Ol COLOR cATLAS
+
+Also text-books and models specially designed to serve in
+the education of the color sense
+
+! NOIMO .MS
+A oowf notaMon,

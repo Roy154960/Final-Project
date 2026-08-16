@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "local-rag": {
+      "command": "C:\\Users\\YOUR_USERNAME\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "args": ["C:\\absolute\\path\\to\\project\\mcp_server\\server.py"]
+    },
+    "multi-agent-rag": {
+      "command": "C:\\Users\\YOUR_USERNAME\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "args": ["C:\\absolute\\path\\to\\project\\agents\\agent_mcp_server.py"]
+    }
+  }
+}

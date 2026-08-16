@@ -1,0 +1,798 @@
+/* ---------------------------------------------------------------------
+   Design system -- "atelier at night"
+   ---------------------------------------------------------------------
+   Subject: a multi-agent assistant over a corpus of historical painting
+   treatises (technique, famous-painting lookups, art-supply shopping,
+   corpus imagery). The palette leans on that world directly rather than
+   a generic dark-mode default: a near-black, slightly violet "ink"
+   background stands in for a darkened studio, warm gilt is the one
+   accent (evoking a gilded frame / varnish), and assistant messages read
+   as quiet marginal annotations (a thin gilt rule + a small serif label)
+   instead of stock chat bubbles. Fraunces (serif, a little bookish) is
+   used ONLY for the wordmark and specialist labels; Inter carries every
+   line of actual reading so long answers stay easy on the eyes.
+   ------------------------------------------------------------------- */
+
+:root {
+  /* Neutrals -- the "room" */
+  --ink: #15131c;
+  --panel: #1d1a25;
+  --panel-raised: #262130;
+  --border: #322d3d;
+  --border-soft: #241f2b;
+
+  /* Text */
+  --text: #ece6d9;
+  --text-dim: #c9c2d6;
+  --muted: #948da5;
+
+  /* The one accent -- gilt */
+  --gilt: #cc9f4f;
+  --gilt-bright: #e0b968;
+  --gilt-soft: rgba(204, 159, 79, 0.14);
+  --gilt-border: rgba(204, 159, 79, 0.35);
+
+  /* Message surfaces */
+  --user-bubble: #3b2a48;
+  --user-bubble-border: #4c3760;
+  --ai-panel: #211d2a;
+
+  /* Status */
+  --danger: #e0836f;
+  --danger-bg: rgba(224, 131, 111, 0.12);
+  --danger-border: rgba(224, 131, 111, 0.32);
+
+  --font-display: "Fraunces", "Iowan Old Style", ui-serif, Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.38);
+  --shadow-lift: 0 2px 10px rgba(0, 0, 0, 0.32);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--ink);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* A calm, theme-matched scrollbar everywhere, rather than the browser
+   default clashing against a near-black surface. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--panel-raised);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--gilt);
+  outline-offset: 2px;
+}
+
+.aui-app-shell {
+  height: 100vh;
+  display: flex;
+  background: var(--ink);
+}
+
+.aui-app {
+  height: 100vh;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header -- the wordmark carries the one serif moment in the whole app,
+   underlined by a thin gilt rule that stands in for a brushstroke. */
+.aui-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, var(--panel), var(--ink));
+}
+
+.aui-header h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--text);
+  position: relative;
+  display: inline-block;
+  padding-bottom: 6px;
+}
+
+.aui-header h1::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  bottom: 0;
+  width: 34px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gilt), transparent);
+}
+
+.aui-header-tagline {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.aui-thread-id {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+.aui-header button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.aui-header button:hover {
+  border-color: var(--gilt-border);
+  color: var(--gilt-bright);
+  background: var(--gilt-soft);
+}
+
+.aui-error-banner {
+  background: var(--danger-bg);
+  border-bottom: 1px solid var(--danger-border);
+  color: var(--danger);
+  font-size: 13px;
+  padding: 10px 24px;
+}
+
+/* Usage badge -- Groq free-tier requests-remaining-today, per model
+   (see components/UsageBadge.tsx). Deliberately quiet/small: this is a
+   passive status readout, not something that should compete with the
+   header's own title/tagline for attention. */
+.aui-usage-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  margin-right: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.aui-usage-label {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.aui-usage-pill {
+  border: 1px solid var(--border);
+  background: var(--panel-raised);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.aui-usage-pill--low {
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+
+.aui-usage-pill--fallback {
+  border-color: var(--gilt-border);
+  color: var(--gilt-bright);
+}
+
+/* Thread / Viewport */
+.aui-thread {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.aui-viewport {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.aui-empty {
+  color: var(--muted);
+  font-size: 14px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  max-width: 320px;
+}
+
+.aui-empty-icon {
+  color: var(--gilt);
+  opacity: 0.8;
+}
+
+.aui-scroll-to-bottom {
+  position: sticky;
+  bottom: 10px;
+  align-self: center;
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  box-shadow: var(--shadow-lift);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.aui-scroll-to-bottom:hover {
+  border-color: var(--gilt-border);
+  transform: translateY(-1px);
+}
+
+/* Messages -- fade/rise in gently on arrival; disabled globally under
+   prefers-reduced-motion above. */
+@keyframes aui-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.aui-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+  animation: aui-message-in 0.22s ease-out;
+}
+
+.aui-message-user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.aui-message-assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+  max-width: 88%;
+}
+
+.aui-bubble {
+  padding: 11px 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 14.5px;
+}
+
+.aui-bubble-user {
+  background: var(--user-bubble);
+  border: 1px solid var(--user-bubble-border);
+  border-radius: 14px 14px 3px 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Assistant replies read as a quiet marginal note -- a flat panel with a
+   thin gilt rule on the leading edge -- rather than a matching bubble on
+   the other side. This is the one signature device in the design;
+   everything else in the message list stays quiet around it. */
+.aui-bubble-assistant {
+  background: var(--ai-panel);
+  border: 1px solid var(--border-soft);
+  border-left: 2px solid var(--gilt-border);
+  border-radius: 3px 12px 12px 12px;
+}
+
+.aui-bubble-refused,
+.aui-bubble-error {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  border-left-color: var(--danger);
+  color: var(--text);
+}
+
+.aui-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--gilt-bright);
+  margin: 0 4px 5px;
+  text-transform: uppercase;
+}
+
+/* Composer */
+.aui-composer {
+  border-top: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.aui-composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+}
+
+.aui-composer-attach {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-raised);
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.aui-composer-attach:hover {
+  border-color: var(--gilt-border);
+  color: var(--gilt-bright);
+}
+
+.aui-attachment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  font-size: 12.5px;
+  color: var(--text);
+  margin: 0 6px 6px 0;
+}
+
+.aui-attachment-remove {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 6px;
+}
+
+.aui-attachment-remove:hover {
+  color: var(--danger);
+}
+
+/* Edit composer -- the inline replacement for a user bubble while
+   editing (see components/Message.tsx's ComposerPrimitive.If editing).
+   Deliberately reuses .aui-composer's own column layout, just narrower
+   and right-aligned to match the user-message column it sits inside. */
+.aui-edit-composer {
+  max-width: 100%;
+  margin: 0;
+}
+
+/* Per-message action bar (Edit / Retry) -- quiet by default, only
+   fully visible on hover/focus (autohide="not-last" on
+   ActionBarPrimitive.Root already hides it for every message except
+   the most recent one unless hovered). */
+.aui-action-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.aui-action-bar-button {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-family: var(--font-body);
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.aui-action-bar-button:hover {
+  border-color: var(--gilt-border);
+  color: var(--gilt-bright);
+}
+
+.aui-composer-input {
+  flex: 1;
+  resize: none;
+  background: var(--panel-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  font-family: var(--font-body);
+  max-height: 140px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.aui-composer-input::placeholder {
+  color: var(--muted);
+}
+
+.aui-composer-input:focus {
+  outline: none;
+  border-color: var(--gilt-border);
+  box-shadow: 0 0 0 3px var(--gilt-soft);
+}
+
+.aui-composer-send {
+  background: linear-gradient(180deg, var(--gilt-bright), var(--gilt));
+  color: #211705;
+  border: none;
+  border-radius: 10px;
+  padding: 0 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.aui-composer-send:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.aui-composer-send:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+/* Composer bar -- the floating panel that holds the tool selector and
+   the composer together, visually separated from the transcript above
+   it by a hairline + soft shadow rather than a hard border. */
+.aui-composer-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--panel);
+  padding: 14px 24px 18px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.aui-composer-bar .aui-composer {
+  border-top: none;
+  padding: 0;
+}
+
+/* Tool selector */
+.aui-tool-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.aui-tool-selector-select {
+  background: var(--panel-raised);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.aui-tool-selector-select:hover {
+  color: var(--text-dim);
+  border-color: var(--gilt-border);
+}
+
+.aui-tool-selector-select:focus {
+  outline: none;
+  border-color: var(--gilt-border);
+  color: var(--text);
+}
+
+.aui-tool-selector-error {
+  font-size: 11px;
+  color: var(--danger);
+}
+
+/* Sidebar -- browsing past conversations */
+.aui-sidebar {
+  width: 252px;
+  flex-shrink: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.aui-sidebar-header {
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.aui-sidebar-refresh {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.aui-sidebar-refresh:hover:not(:disabled) {
+  color: var(--gilt-bright);
+  background: var(--gilt-soft);
+}
+
+.aui-sidebar-refresh:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.aui-sidebar-error,
+.aui-sidebar-empty {
+  padding: 14px 16px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.aui-sidebar-error {
+  color: var(--danger);
+}
+
+.aui-sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.aui-sidebar-row {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  margin-bottom: 3px;
+}
+
+.aui-sidebar-item {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 9px 11px;
+  margin-bottom: 0;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.aui-sidebar-item:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.aui-sidebar-item:hover {
+  background: var(--panel-raised);
+}
+
+.aui-sidebar-item-active {
+  background: var(--gilt-soft);
+  border-color: var(--gilt-border);
+}
+
+.aui-sidebar-item-active .aui-sidebar-item-title {
+  color: var(--gilt-bright);
+}
+
+.aui-sidebar-item-title {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aui-sidebar-item-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.aui-sidebar-item-options {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.aui-sidebar-item-menu-btn {
+  height: 100%;
+  min-width: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.aui-sidebar-item-menu-btn:hover:not(:disabled) {
+  background: var(--panel-raised);
+  color: var(--text);
+}
+
+.aui-sidebar-item-menu-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.aui-sidebar-item-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  margin-top: 4px;
+  min-width: 172px;
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+}
+
+.aui-sidebar-item-menu button {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  font-size: 13px;
+  font-family: var(--font-body);
+  padding: 8px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.aui-sidebar-item-menu button:hover {
+  background: var(--gilt-soft);
+}
+
+.aui-sidebar-item-menu-danger {
+  color: var(--danger);
+}
+
+.aui-sidebar-item-menu-danger:hover {
+  background: var(--danger-bg);
+}
+
+/* Markdown content inside assistant messages -- react-markdown output,
+   scoped so headings/code inherit the app's own type system instead of
+   default browser styles. */
+.aui-md p {
+  margin: 0 0 10px;
+}
+.aui-md p:last-child {
+  margin-bottom: 0;
+}
+.aui-md a {
+  color: var(--gilt-bright);
+}
+.aui-md code {
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+.aui-md pre {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+.aui-md pre code {
+  background: none;
+  padding: 0;
+}

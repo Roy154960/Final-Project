@@ -1,0 +1,35 @@
+# Additive to mcp_server/requirements.txt (Phase 1) and the project's own
+# requirements.txt -- install all four.
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-ollama>=0.2.0
+
+# agents/mcp_client.py imports this directly (MultiServerMCPClient) --
+# pinned explicitly here too, not just left to mcp_server/requirements.txt,
+# because that file being installed into the SAME environment was only
+# ever true for this project's original single-venv, non-Docker layout.
+# Docker's backend image installs agents/*.txt and local_rag/requirements.txt
+# but deliberately NOT mcp_server/requirements.txt (the backend container
+# doesn't need mcp_server/'s source at all once MCP_TRANSPORT=http -- see
+# mcp_client.py's own build_client() docstring) -- which means this was a
+# real gap, not a Docker-specific patch: agents/mcp_client.py's own direct
+# dependency belongs declared here, regardless of Docker.
+langchain-mcp-adapters>=0.1.0
+
+# Phase 3's supervisor.py validates its routing decision with a Pydantic
+# model (RouteDecision) -- pulled in transitively by langchain-core
+# already, but pinned explicitly here since supervisor.py imports it
+# directly rather than only through LangChain's own usage.
+pydantic>=2.0
+
+# Note: create_react_agent (used in agents/specialists.py) is deprecated
+# as of langgraph 1.0 in favor of langchain.agents.create_agent, but is
+# still functional through at least langgraph 1.2.x -- you'll see a
+# LangGraphDeprecatedSinceV10 warning on import if pip resolves a 1.x
+# release. It's a warning, not a break; safe to ignore for this project,
+# or pin `langgraph<1.0` if you'd rather not see it.
+
+# agents/eval_routing.py's confusion-matrix PNG (routing-only eval --
+# see that file's own module docstring) is the only thing in agents/
+# that needs this; nothing else here does any plotting.
+matplotlib>=3.7

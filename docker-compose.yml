@@ -1,0 +1,159 @@
+# Method 2 of 2 for running this project in Docker (see docs/DOCKER.md
+# for Method 1, the manual `docker network create` + `docker run` walk-
+# through this is the compose equivalent of).
+#
+# Four services, one custom bridge network (inmind-net):
+#
+#   chroma-server (8000) <---- mcp-server (8765) <---- backend (8001) <---- frontend (8080)
+#         ^_________________________________________________|
+#
+#   - chroma-server: owns the one Chroma SQLite connection; both
+#     mcp-server and backend reach it over HTTP (CHROMA_CLIENT_MODE=http)
+#     instead of each opening their own PersistentClient against a
+#     shared volume -- see docker/chroma_server.Dockerfile's comment for
+#     why that split matters under concurrent writes.
+#   - mcp-server: mcp_server/server.py, MCP_TRANSPORT=http -- the Phase 1
+#     retrieve/generate_answer tools, now reachable over the network
+#     instead of only as a stdio subprocess.
+#   - backend: agents/api.py, talks to mcp-server over HTTP
+#     (MCP_TRANSPORT=http + MCP_SERVER_URL) and to chroma-server over
+#     HTTP for its own direct personal_rag calls.
+#   - frontend: the built React UI, served statically; talks to the
+#     backend from the BROWSER via its published host port, not over
+#     this compose network (see docker/frontend.Dockerfile's comment).
+#
+# Usage:
+#   cp .env.docker.example .env      # adjust OLLAMA_HOST / ports / etc.
+#   docker compose up --build
+#
+# Ollama itself is NOT a service here -- it's expected to already be
+# running on your host machine (`ollama serve`), same as your non-Docker
+# workflow. OLLAMA_HOST below points every container at it.
+
+services:
+  chroma-server:
+    build:
+      context: .
+      dockerfile: docker/chroma_server.Dockerfile
+    container_name: inmind-chroma-server
+    networks:
+      - inmind-net
+    volumes:
+      - chroma-data:/chroma/data
+    ports:
+      - "${CHROMA_SERVER_PORT:-8000}:8000"
+    restart: unless-stopped
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: docker/mcp_server.Dockerfile
+    container_name: inmind-mcp-server
+    networks:
+      - inmind-net
+    environment:
+      MCP_TRANSPORT: http
+      MCP_SERVER_HOST: 0.0.0.0
+      MCP_SERVER_PORT: "8765"
+      CHROMA_CLIENT_MODE: http
+      CHROMA_SERVER_HOST: chroma-server
+      CHROMA_SERVER_PORT: "8000"
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    extra_hosts:
+      # Docker Desktop (Windows/Mac) already resolves this; Docker Engine
+      # on Linux needs it added explicitly. Harmless either way.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # SAME named volume the backend service mounts at the same path --
+      # deliberate, not a copy-paste of that service's line. The
+      # personal_docs specialist's latest_uploaded_image tool runs HERE
+      # (in this container) and reads a raw image file straight off disk
+      # (local_rag/personal_rag.py's PERSONAL_UPLOADS_DIR), but that file
+      # was WRITTEN by the backend container's own upload endpoint
+      # (personal_rag.ingest_upload(), called in-process, never through
+      # MCP -- see that function's own docstring). Two separate volumes
+      # here would mean this container's copy of local_rag/data never
+      # actually has the file the backend just wrote, and the "show me
+      # the image I just sent" feature would silently return no image --
+      # not an error, since _image_to_data_uri() degrades a missing file
+      # to None by design, which makes this exact bug easy to miss
+      # without noticing the feature just stopped working.
+      - backend-rag-data:/app/local_rag/data
+      # Shared with backend (below), same path -- both containers' HF
+      # embedder/reranker resolve the SAME underlying model files, so
+      # this also means the ~90MB combined download happens ONCE total,
+      # by whichever container handles a request first, not once per
+      # container.
+      - hf-cache:/app/.cache/huggingface
+    ports:
+      - "${MCP_SERVER_PORT:-8765}:8765"
+    depends_on:
+      chroma-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: inmind-backend
+    networks:
+      - inmind-net
+    environment:
+      AGENT_API_HOST: 0.0.0.0
+      AGENT_API_PORT: "8001"
+      AGENT_API_CORS_ORIGINS: ${AGENT_API_CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      AGENT_API_DB_PATH: /app/data/chat_history.sqlite3
+      MCP_TRANSPORT: http
+      MCP_SERVER_URL: http://mcp-server:8765
+      CHROMA_CLIENT_MODE: http
+      CHROMA_SERVER_HOST: chroma-server
+      CHROMA_SERVER_PORT: "8000"
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - backend-data:/app/data
+      - backend-rag-data:/app/local_rag/data
+      - hf-cache:/app/.cache/huggingface
+    ports:
+      - "${BACKEND_PORT:-8001}:8001"
+    depends_on:
+      chroma-server:
+        condition: service_healthy
+      mcp-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        # Baked in at build time -- must be the URL your BROWSER can
+        # reach, i.e. the backend's published host port, not
+        # "http://backend:8001" (that only resolves inside inmind-net).
+        VITE_API_BASE_URL: http://localhost:${BACKEND_PORT:-8001}
+    container_name: inmind-frontend
+    networks:
+      - inmind-net
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  inmind-net:
+    driver: bridge
+
+volumes:
+  chroma-data:
+  # NOTE: only four named volumes now -- mcp-server intentionally shares
+  # backend-rag-data AND hf-cache with the backend service (see those
+  # services' own volumes: comments above) rather than getting its own
+  # copies.
+  backend-data:
+  backend-rag-data:
+  hf-cache:

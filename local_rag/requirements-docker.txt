@@ -1,0 +1,148 @@
+# Docker-image-only subset of local_rag/requirements.txt.
+#
+# ============================================================================
+# CURRENT STATE: torch-dependent local ML models are DELIBERATELY EXCLUDED.
+# ============================================================================
+# On request, ahead of a planned switch from local to online/hosted models.
+# This is NOT a "confirmed unreachable" trim like everything else below --
+# these packages ARE currently imported by real code. Excluding them means:
+#
+#   - mcp-server WILL FAIL TO START. mcp_server/server.py instantiates the
+#     reranker and embedder EAGERLY at module import time (`_embedder =
+#     HFEmbedder()` near line 369) -- not lazily. Without sentence-
+#     transformers/torch, that line raises on import and the container
+#     exits immediately. Every tool becomes unavailable, not just
+#     retrieval, until server.py's embedder/reranker construction is
+#     rewired to something that doesn't need torch (e.g. the already-
+#     existing embeddings/ollama_embedder.py for the embedder; the
+#     reranker has no non-torch alternative in this codebase yet).
+#
+#   - backend WILL START FINE. personal_rag.py loads HFEmbedder lazily
+#     (only when an upload/search actually happens), so agents/api.py's
+#     own import chain never touches it. Personal-document upload and
+#     search will fail at REQUEST time with a plain ModuleNotFoundError
+#     in the container logs, not at startup.
+#
+#   - mcp_server/image_tools.py's ClipEmbedder (image-search tool) will
+#     also fail wherever it's actually invoked, same reasoning as
+#     open-clip-torch below.
+#
+# Removed from this file: sentence-transformers, open-clip-torch, and the
+# dedicated CPU-only torch install step both Dockerfiles previously ran.
+# `ollama` (the thin HTTP client for VLM captioning via a host-side Ollama
+# server -- vlm/ollama_vlm.py) is KEPT: it's not a local model running IN
+# the container, it's a network client for one running on the host,
+# same category as chromadb-client below, and it's ~168KB regardless.
+# ============================================================================
+#
+# local_rag/requirements.txt itself is UNTOUCHED and stays the source of
+# truth for the non-Docker workflow (benchmark scripts, the offline
+# pipeline CLI, evaluation harness, quantization/serving experiments) --
+# this file exists purely because docker/backend.Dockerfile and docker/
+# mcp_server.Dockerfile were installing that entire file, including
+# packages neither container's actual code path ever imports.
+#
+# Every package below is confirmed reachable by a real trace of what
+# agents/api.py (backend) and mcp_server/server.py (mcp-server) actually
+# import, at runtime, including personal_rag.py's own ingestion/
+# captioning chain -- not a guess. Confirmed two ways: (1) grepped every
+# local_rag/ source file transitively reachable from both entry points
+# for each package's import statement, tracing lazy/conditional imports
+# (e.g. vlm/ollama_vlm.py's `import ollama as ollama_lib`) by reading the
+# calling code, not just pattern-matching; (2) actually imported both
+# `agents.api` and `mcp_server.server` against ONLY this trimmed set
+# (plus agents/requirements*.txt) in a clean check -- both succeeded,
+# with the only remaining failure being a sandboxed test environment's
+# network policy blocking the Hugging Face download itself, not a
+# missing package.
+#
+# Dropped entirely (each confirmed to have ZERO importers anywhere in
+# the code path either container actually runs):
+#   vllm, openai           -- local_rag/serving/*.py, offline/benchmark only
+#   bitsandbytes, accelerate -- quantization/*.py only, and not even
+#                                imported directly there by name
+#   qdrant-client          -- vectorstore/qdrant_store.py (unused
+#                              alternative to ChromaStore) + reset_project.py
+#   ragas                  -- evaluation/ragas_eval.py only
+#   arize-phoenix          -- utils/tracing.py, only imported by
+#                              local_rag/pipeline.py's own CLI, which
+#                              neither container runs
+#   unstructured[md]       -- zero real imports anywhere; every "unstructured"
+#                              hit in the codebase is the English word in a
+#                              comment/docstring, not the package
+#   nltk                   -- chunking/semantic.py + sentence_based.py only;
+#                              personal_rag.py uses chunk_recursive exclusively
+#   pdfplumber, pdf2image  -- table_extraction.py / unused; not reachable
+#                              from ingestion.loader's actual ingest_pdf path
+#   tenacity                -- utils/retry.py, zero importers anywhere
+#   diskcache               -- embeddings/cache.py, not imported by
+#                               hf_embedder.py or anything else
+#   psutil, tqdm            -- benchmark scripts only / zero importers
+#   fastapi, uvicorn,
+#   python-multipart         -- local_rag's OWN unused serving/api.py;
+#                               backend already has its own copies via
+#                               agents/requirements-api.txt, and mcp-server
+#                               doesn't run FastAPI at all (FastMCP, not
+#                               FastAPI, serves its HTTP transport)
+#   transformers (explicit)  -- never imported directly by anything either
+#                               container's code path reaches (hf_generator.py
+#                               / hf_vlm.py are both unreachable -- see
+#                               local_rag/ingestion/image_captioning.py's
+#                               load_vlm(), never called with vlm_backend=
+#                               "hf" anywhere in personal_rag.py); still
+#                               installed transitively via
+#                               sentence-transformers below regardless, at
+#                               no extra avoidable cost
+
+# --- Core ---
+numpy
+pydantic>=2.0
+python-dotenv          # config.py's `from dotenv import load_dotenv` -- see
+                        # note below: this was missing from EVERY requirements
+                        # file in the project (local_rag/requirements.txt
+                        # included), not something introduced by trimming.
+                        # config.py is transitively imported by nearly
+                        # everything, so this is genuinely load-bearing.
+
+# --- Ingestion (personal_rag.py's ingest_upload -> ingestion.loader) ---
+pymupdf              # PDF text + embedded image extraction (fitz) -- ingestion/ingest_pdf.py, ocr_fallback.py
+pillow                # image loading throughout ingestion + captioning
+pytesseract           # OCR fallback for scanned PDF pages -- ingestion/ingest_pdf.py (soft dep: try/except ImportError there, but real OCR needs it AND system tesseract-ocr, already in both Dockerfiles' apt-get layer)
+
+# --- Chunking ---
+langchain-text-splitters  # chunking/recursive.py -- the only chunker personal_rag.py actually calls
+
+# --- Embeddings ---
+# sentence-transformers, open-clip-torch, and torch itself are
+# DELIBERATELY OMITTED here -- see the header block at the top of this
+# file for exactly what breaks and why. embeddings/hf_embedder.py's
+# SentenceTransformer, retrieval/reranker.py's CrossEncoder, and
+# mcp_server/image_tools.py's ClipEmbedder are all currently unreachable
+# in these images until the code that constructs them is rewired to a
+# non-torch alternative.
+
+# --- VLM captioning (personal_rag.py's image upload path) ---
+ollama                # vlm/ollama_vlm.py's `import ollama as ollama_lib` -- the default vlm_backend="ollama" personal_rag.py actually uses (never "hf")
+
+# --- Vector store ---
+chromadb-client         # NOT plain `chromadb` -- see below
+# Deliberately the lightweight client package, not full `chromadb`. Both
+# containers only ever call chromadb.HttpClient (CHROMA_CLIENT_MODE=http,
+# set explicitly by docker-compose.yml and every manual `docker run`
+# command in docs/DOCKER.md) -- they never run PersistentClient/embedded
+# mode, so they never need the dependencies that back THAT (onnxruntime
+# for chromadb's own built-in embedding functions, kubernetes for its
+# cluster-deployment tooling -- 79MB + 83MB measured, neither reachable
+# from an HttpClient-only code path). Verified for real: ran a live
+# `chroma run` server and round-tripped upsert/query/count through
+# chromadb-client's HttpClient from a clean environment with nothing
+# else installed -- identical API, identical behavior.
+#
+# This is Docker-only for a real reason, not just convenience:
+# CHROMA_CLIENT_MODE defaults to "embedded" (unchanged non-Docker
+# behavior), and chromadb-client genuinely can't run PersistentClient --
+# local_rag/requirements.txt keeps full `chromadb` so your non-Docker
+# workflow, which relies on that default, is unaffected.
+
+# --- Retrieval (mcp-server's retrieve() tool specifically) ---
+rank-bm25               # retrieval/hybrid_retriever.py's BM25 side of hybrid search

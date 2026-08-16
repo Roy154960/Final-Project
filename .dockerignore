@@ -1,0 +1,47 @@
+# Keeps docker build's context (and every COPY inside the Dockerfiles
+# under docker/) from dragging in local-only state, caches, deliverable
+# documents, and secrets.
+ 
+.git
+.gitignore
+**/__pycache__/
+**/*.pyc
+.venv/
+venv/
+env/
+ 
+# Local data/state that should come from a volume, not the image
+local_rag/data/
+local_rag/data/chroma_db/
+agents/chat_history.sqlite3
+agents/*.sqlite3
+ 
+# Generated invoice files (mcp_server/invoice_tools.py's default
+# output dir -- see its own _invoice_output_dir())
+mcp_server/generated_invoices/
+ 
+# Root-level project deliverables/reference material -- not app source,
+# not needed to build or run any container. Confirmed via grep that
+# nothing in agents/, local_rag/, or mcp_server/'s actual code reads
+# from these paths (every "documents" hit in the codebase is a dict
+# key/Chroma field name, not a folder reference).
+documents/
+screenshots/
+*.pdf
+ 
+# Frontend build artifacts / deps (rebuilt inside the frontend image)
+frontend/node_modules/
+frontend/dist/
+ 
+# Env files -- passed in via docker-compose's env_file/environment, never
+# baked into an image
+.env
+.env.*
+!.env.docker.example
+ 
+# Editor/OS noise
+.vscode/
+.idea/
+*.log
+.DS_Store
+ 

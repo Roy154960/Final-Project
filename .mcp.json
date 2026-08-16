@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "local-rag": {
+      "command": "py",
+      "args": ["-3.12", "C:\\Users\\onene\\OneDrive\\Documents\\InMind\\InMind Academy\\Final Project\\Multi-Agent Pipeline final version\\mcp_server\\server.py"]
+    },
+    "multi-agent-rag": {
+      "command": "py",
+      "args": ["-3.12", "C:\\Users\\onene\\OneDrive\\Documents\\InMind\\InMind Academy\\Final Project\\Multi-Agent Pipeline final version\\agents\\agent_mcp_server.py"]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+
+# Per-machine env vars
+.env
+
+# Generated invoice PDFs/receipts (invoice_tools.py's own
+# INVOICE_OUTPUT_DIR / generated_invoices/ default) -- these are
+# generated output, not corpus content or source, and shouldn't be
+# committed. Folder structure preserved via .gitkeep alongside this
+# file so it exists before the first invoice is ever generated.
+generated_invoices/*
+!generated_invoices/.gitkeep

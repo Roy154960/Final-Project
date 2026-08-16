@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "local-rag": {
+      "type": "local",
+      "command": ["py", "-3.12", "C:\\Users\\onene\\OneDrive\\Documents\\InMind\\InMind Academy\\Final Project\\Multi-Agent Pipeline final version\\mcp_server\\server.py"],
+      "enabled": true,
+      "timeout": 600000
+    },
+    "multi-agent-rag": {
+      "type": "local",
+      "command": ["py", "-3.12", "C:\\Users\\onene\\OneDrive\\Documents\\InMind\\InMind Academy\\Final Project\\Multi-Agent Pipeline final version\\agents\\agent_mcp_server.py"],
+      "enabled": true,
+      "timeout": 600000
+    }
+  }
+}

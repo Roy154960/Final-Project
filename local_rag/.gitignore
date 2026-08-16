@@ -1,0 +1,34 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+
+# Virtualenvs
+.venv/
+venv/
+
+# Per-machine env vars (Groq key, model overrides, etc.)
+.env
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+
+# Runtime-generated data: staged uploads (RAW_DOCS_DIR), the Chroma
+# vector store (CHROMA_PERSIST_DIR), personal per-thread uploads
+# (PERSONAL_UPLOADS_DIR), the on-disk embedding cache
+# (embeddings/cache.py's CACHE_DIR), benchmark results
+# (BENCHMARK_RESULTS_DIR), and the incremental-ingest manifest
+# (ingestion/incremental_indexer.py's MANIFEST_PATH) -- see config.py
+# for all of these. Every one of them is regenerated just by running
+# the pipeline; none of it belongs in version control. Folder structure
+# itself is preserved via a .gitkeep in each subfolder (see the ones
+# alongside this file) so a fresh clone has these directories ready
+# before you ever run anything.
+data/**
+!data/**/
+!data/**/.gitkeep
+
+# Per-machine Groq usage/cost/trace logs (usage_tracker.py) -- can
+# contain per-thread/per-question metadata, never committed.
+logs/*
+!logs/.gitkeep

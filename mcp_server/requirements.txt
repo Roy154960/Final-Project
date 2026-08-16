@@ -1,0 +1,28 @@
+# Additive to the project's own requirements.txt — install both.
+fastmcp>=2.0
+langchain-mcp-adapters>=0.1.0
+
+# Added for the new internet-facing tools (web_tools.py, image_tools.py,
+# invoice_tools.py) -- all free, no API key, matching config.py's own
+# "everything free and local" framing.
+requests>=2.31.0     # Wikipedia REST API calls (web_tools.py)
+ddgs>=9.0.0           # general web search, no key (web_tools.py) --
+                       # the maintained successor to the old
+                       # `duckduckgo_search` package; has no SLA, so
+                       # every call site treats a failure as "return
+                       # empty," never as fatal -- see web_tools.py's
+                       # module docstring.
+
+# Only needed if you also run pipeline.py --multimodal and want
+# retrieve_images() to actually return results -- already covered by
+# the base project's own requirements.txt (open-clip-torch, torch,
+# ollama) if you've set that up. Not re-listed here to avoid a second,
+# possibly-conflicting pin of the same heavy packages.
+
+# Optional -- color_tools.py's named-color lookups work with ZERO extra
+# dependencies (a built-in ~70-name dictionary covers this). Installing
+# webcolors adds the ~150-name CSS3 set on top of that dictionary for
+# more precise "closest color name" results; if it's not installed,
+# color_tools.py logs that once at first use and falls back to the
+# built-in dictionary alone -- never a hard failure either way.
+webcolors>=24.0.0

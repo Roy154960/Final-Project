@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "local-rag": {
+      "type": "local",
+      "command": ["py", "-3.12", "C:\\absolute\\path\\to\\project\\mcp_server\\server.py"],
+      "enabled": true
+    },
+    "multi-agent-rag": {
+      "type": "local",
+      "command": ["py", "-3.12", "C:\\absolute\\path\\to\\project\\agents\\agent_mcp_server.py"],
+      "enabled": true
+    }
+  }
+}

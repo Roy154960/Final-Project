@@ -1,0 +1,13 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+
+# Per-machine env vars (Groq key, model overrides, etc.)
+.env
+
+# Per-machine LangGraph checkpoint DB -- real conversation history,
+# see api.py's own CHECKPOINT_DB_PATH / AGENT_API_DB_PATH env var.
+# Never shared between machines or committed.
+chat_history.sqlite3
+chat_history.sqlite3-wal
+chat_history.sqlite3-shm

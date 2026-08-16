@@ -1,0 +1,10 @@
+node_modules/
+dist/
+
+# Per-machine env vars
+.env
+.env.local
+.env.*.local
+
+# Editor/OS cruft
+.DS_Store

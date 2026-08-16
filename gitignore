@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+
+# Groq usage/cost/trace logs (local_rag/usage_tracker.py) -- dev-only,
+# per-machine, and can contain per-thread/per-question metadata that
+# should not end up in version control.
+local_rag/logs/
