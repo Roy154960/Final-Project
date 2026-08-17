@@ -330,6 +330,22 @@ invoice_tools = _import_optional_tool_module("invoice_tools")
 web_tools = _import_optional_tool_module("web_tools")
 color_tools = _import_optional_tool_module("color_tools")
 
+# framing_tools is the odd one out among these five: the other four
+# wrap LOCAL logic (or a public, third-party API) that lives entirely
+# inside this process. framing_tools.py's own request_quote() instead
+# makes a network call to framing_agent/ -- a separate, independently
+# deployed service (System B; see that package's own README.md) running
+# in its own container. Importing framing_tools.py here still only
+# imports the plain `requests`-based CLIENT code, never any part of
+# System B itself -- there is no Python import across that boundary in
+# either direction. Same guarded-import treatment as the other four
+# either way: if framing_tools.py itself fails to import (e.g. the
+# `requests` package genuinely missing, not just System B being
+# unreachable at CALL time, which request_quote() already handles on
+# its own), get_framing_quote() below degrades the same "unavailable"
+# way image_tools/invoice_tools/etc. already do.
+framing_tools = _import_optional_tool_module("framing_tools")
+
 # personal_rag.py lives in local_rag/ itself (_PIPELINE_ROOT, already on
 # sys.path above), not in mcp_server/ alongside the other four -- it's a
 # pipeline module (agents/api.py's upload endpoint calls it directly too),
@@ -958,6 +974,79 @@ def generate_color_palette(
     return color_tools.generate_palette(color=color or None, mood=mood or None, scheme=scheme or None)
 
 
+@mcp.tool()
+@_tool_safety_net
+def get_framing_quote(
+    width_cm: float,
+    height_cm: float,
+    medium: str,
+    destination_country: str,
+    frame_style: str = "",
+) -> dict:
+    """
+    Get a framing, glazing, and shipping cost estimate for ONE finished
+    artwork, from System B -- an independent Google ADK + FastAPI
+    service (framing_agent/, its own container) this tool reaches over
+    plain HTTP, never as a Python import. See framing_tools.py's own
+    module docstring for exactly why that boundary is drawn the way it
+    is.
+
+    Use this for a request about getting a finished piece FRAMED and/or
+    SHIPPED -- e.g. "how much would it cost to frame and ship this
+    16x20 oil painting to France," "what's a shipping estimate for a
+    watercolor to Lebanon." This is a DIFFERENT question from
+    search_art_supplies (raw materials -- brushes, canvas, paint -- not
+    a finished-piece service) and generate_invoice (totals items
+    already found via search_art_supplies) -- neither of those two
+    tools has any framing or shipping pricing data at all.
+
+    Args:
+        width_cm: Artwork width in centimeters.
+        height_cm: Artwork height in centimeters.
+        medium: What the artwork is made of, e.g. "oil on canvas",
+            "watercolor", "giclee print" -- used by System B to decide
+            whether glazing is conventionally included.
+        destination_country: Shipping destination, e.g. "Lebanon",
+            "France". Matched against System B's own (small,
+            illustrative) rate table -- an unrecognized country still
+            gets an estimate, flagged as rougher than usual, never a
+            hard failure.
+        frame_style: Optional requested frame style ("basic wood",
+            "modern metal", "classic ornate"). Leave empty for System
+            B's own default.
+
+    Returns:
+        {
+          "available": bool,   # False means System B itself couldn't
+                                 # be reached or errored -- see "error"
+          "quote": {...} | None,          # System B's full pricing
+                                            # breakdown (frame/glazing/
+                                            # shipping/subtotal), or
+                                            # None if unavailable
+          "explanation": str | None,      # ready-to-show paragraph
+          "explanation_source": "groq" | "ollama" | "template" | None,
+          "error": str | None,            # set only when available=False
+        }
+        Never raises: a stopped/unreachable/erroring framing-agent
+        container degrades to available=False with a plain "error"
+        string -- say so directly to the user rather than inventing a
+        quote from general knowledge, which this tool has none of.
+    """
+    if framing_tools is None:
+        return {
+            "available": False, "quote": None, "explanation": None,
+            "explanation_source": None,
+            "error": "The framing & shipping quote tool isn't available right now.",
+        }
+    return framing_tools.request_quote(
+        width_cm=width_cm,
+        height_cm=height_cm,
+        medium=medium,
+        destination_country=destination_country,
+        frame_style=frame_style,
+    )
+
+
 # ----------------------------------------------------------------------
 # Resources
 # ----------------------------------------------------------------------
@@ -998,12 +1087,27 @@ def tool_status() -> dict:
     search_art_supplies keeps coming back empty) can check this directly
     rather than guessing from tool output alone.
     """
+    # framing_tools' own status is two independent questions, unlike
+    # the other four: did the CLIENT module import (same "available"/
+    # "unavailable (failed to import)" the other four report), and,
+    # separately, is System B itself actually reachable RIGHT NOW over
+    # the network (framing_agent_health()) -- a healthy client module
+    # talking to a stopped container is a completely different failure
+    # from the module itself missing, and this resource's whole point
+    # is letting a developer tell those apart at a glance rather than
+    # guessing from a tool call's own error text.
+    framing_agent_status = "unavailable (failed to import)"
+    if framing_tools is not None:
+        health = framing_tools.framing_agent_health()
+        framing_agent_status = "available" if health else "client loaded, but System B is unreachable"
+
     return {
         "image_tools": "available" if image_tools is not None else "unavailable (failed to import)",
         "invoice_tools": "available" if invoice_tools is not None else "unavailable (failed to import)",
         "web_tools": "available" if web_tools is not None else "unavailable (failed to import)",
         "color_tools": "available" if color_tools is not None else "unavailable (failed to import)",
         "personal_rag": "available" if personal_rag is not None else "unavailable (failed to import)",
+        "framing_tools (System B)": framing_agent_status,
     }
 
 

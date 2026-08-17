@@ -258,6 +258,9 @@ _REFUSAL_MARKERS = (
     "couldn't recognize",
     "couldn't connect",
     "i need either a color",
+    "i'm still missing",
+    "framing & shipping quote service isn't reachable",
+    "framing & shipping quote service returned",
 )
 
 # Specialists whose answer is ALWAYS either a complete, confident result
@@ -277,6 +280,14 @@ _REFUSAL_MARKERS = (
 #   - color_palette: zero LLM calls (see that node's own comment) -- pure
 #     deterministic color math, either a real palette or one of
 #     color_tools.py's own fixed error strings.
+#   - framing_quote: any LLM use happens entirely on System B's side of
+#     the network boundary (framing_agent/agent.py's own ADK agent),
+#     never inside THIS node -- specialists.py's own framing_quote_node
+#     either relays System B's real numbers verbatim, or returns one of
+#     its own small set of fixed messages ("I'm still missing: ...",
+#     "the framing & shipping quote tool isn't available right now").
+#     No free-form judgment about whether the answer is complete happens
+#     in this codebase for this specialist at all.
 #
 # painting_lookup is deliberately NOT included, even though it also
 # calls a deterministic tool first: its FINAL step is a real, free-form
@@ -291,7 +302,9 @@ _REFUSAL_MARKERS = (
 # CONFIRMED live-run failure (color_palette's correct first answer
 # silently buried under a later, off-topic retrieval_qa answer) this
 # closes.
-_DETERMINISTIC_NEVER_HEDGES = frozenset({"image_qa", "product_search", "invoice", "color_palette"})
+_DETERMINISTIC_NEVER_HEDGES = frozenset(
+    {"image_qa", "product_search", "invoice", "color_palette", "framing_quote"}
+)
 
 # Whether `supervisor_node` skips its second-visit LLM call entirely and
 # FINISHes as soon as exactly one specialist has answered and that
@@ -923,6 +936,48 @@ def build_supervisor(
                     file=sys.stderr,
                 )
                 return {"route": "FINISH", "iteration_count": iteration_count, "messages": []}
+
+        # --- Early-stop net (always on, framing_quote-specific): a
+        # refusal from `framing_quote` -- "I'm still missing: <fields>"
+        # or "the framing & shipping quote tool isn't available right
+        # now" -- does NOT mean "wrong specialist, let the model try
+        # again." Unlike invoice's own version of this net just above,
+        # this one is unconditional, not gated behind a prior safety-net
+        # match: framing_quote is the ONLY specialist in this whole
+        # project with ANY framing/shipping/System-B access at all (the
+        # same "no other specialist has any access to this" reasoning
+        # the personal_docs/attachment net above already uses), so there
+        # is no "wrong specialist" case to route away to in the first
+        # place, missing fields or not.
+        #
+        # CONFIRMED live-run failure this closes: a real request naming
+        # a size, medium, AND a destination country still hit
+        # framing_quote's own "missing" branch (a SEPARATE, now-fixed
+        # bug in _DESTINATION_KEYWORDS not recognizing that particular
+        # country -- see that constant's own comment), and because that
+        # answer looks like a refusal, the general
+        # _DETERMINISTIC_NEVER_HEDGES net below (which deliberately
+        # excludes refusals) didn't fire either -- so the supervisor's
+        # normal LLM-based routing judgment took over and, exactly like
+        # the invoice failure documented in the comment above, walked
+        # through retrieval_qa, personal_docs, invoice, corpus_meta, and
+        # product_search in turn (none of them able to help) before
+        # finally giving up on product_search's own unrelated answer,
+        # burning five extra LLM calls and several repeat-route-guard
+        # overrides for nothing. Fixing the keyword gap alone would have
+        # stopped THIS specific case; this net additionally means the
+        # NEXT missing-field case (a medium, a dimension, System B being
+        # stopped) can never trigger the same cascade, regardless of why
+        # framing_quote came back short.
+        if len(attempts) == 1 and attempts[0][0] == "framing_quote":
+            print(
+                "[supervisor] early-stop (framing_quote): framing_quote's "
+                "answer -- refusal or not -- is final here; no other "
+                "specialist has any framing/shipping data at all. "
+                "FINISHing without a second supervisor LLM call.",
+                file=sys.stderr,
+            )
+            return {"route": "FINISH", "iteration_count": iteration_count, "messages": []}
 
         # --- Early-stop net (always on): a fully-deterministic
         # specialist's clean answer never needs a second opinion -- see

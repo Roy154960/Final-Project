@@ -35,6 +35,7 @@ import requests
 
 import groq_client
 import usage_tracker
+from config import GROQ_LARGE_MODEL, GROQ_SMALL_MODEL
 from generation.fallback_generator import FallbackGenerator
 from generation.ollama_generator import OllamaGenerator
 from vlm.fallback_vlm import FallbackVLM
@@ -90,13 +91,13 @@ def test_groq_chat_completion_success_records_usage():
         else 0
     )
     data = groq_client.groq_chat_completion(
-        messages=[{"role": "user", "content": "hi"}], model="llama-3.3-70b-versatile"
+        messages=[{"role": "user", "content": "hi"}], model=GROQ_LARGE_MODEL
     )
     _check("response content is what the fake API returned",
            data["choices"][0]["message"]["content"] == "hello from groq")
 
     snapshot = usage_tracker.get_usage_snapshot()
-    entry = snapshot["models"].get("llama-3.3-70b-versatile")
+    entry = snapshot["models"].get(GROQ_LARGE_MODEL)
     _check("rate-limit snapshot recorded from response headers", entry is not None)
     _check("rate-limit snapshot has the remaining-requests figure",
            entry.get("rpd_remaining") == "998")
@@ -114,7 +115,7 @@ def test_groq_chat_completion_429_raises_and_records_failure():
     requests.post = _fake_429_post
     try:
         groq_client.groq_chat_completion(
-            messages=[{"role": "user", "content": "hi"}], model="llama-3.1-8b-instant"
+            messages=[{"role": "user", "content": "hi"}], model=GROQ_SMALL_MODEL
         )
         raised = False
     except groq_client.GroqAPIError:
@@ -122,7 +123,7 @@ def test_groq_chat_completion_429_raises_and_records_failure():
     _check("a 429 raises GroqAPIError", raised)
 
     snapshot = usage_tracker.get_usage_snapshot()
-    entry = snapshot["models"].get("llama-3.1-8b-instant")
+    entry = snapshot["models"].get(GROQ_SMALL_MODEL)
     _check("failure recorded in the rate-limit snapshot", entry is not None)
     _check("failure sets backend_status to fallback_to_local",
            entry.get("backend_status") == "fallback_to_local")
@@ -132,7 +133,7 @@ def test_groq_chat_completion_network_error_raises_groq_api_error():
     requests.post = _fake_network_error_post
     try:
         groq_client.groq_chat_completion(
-            messages=[{"role": "user", "content": "hi"}], model="llama-3.3-70b-versatile"
+            messages=[{"role": "user", "content": "hi"}], model=GROQ_LARGE_MODEL
         )
         raised = False
     except groq_client.GroqAPIError:
@@ -147,7 +148,7 @@ def test_groq_chat_completion_no_api_key_raises_unavailable():
     groq_client.GROQ_API_KEY = None
     try:
         groq_client.groq_chat_completion(
-            messages=[{"role": "user", "content": "hi"}], model="llama-3.3-70b-versatile"
+            messages=[{"role": "user", "content": "hi"}], model=GROQ_LARGE_MODEL
         )
         raised = False
     except groq_client.GroqUnavailableError:
@@ -164,7 +165,7 @@ def test_estimate_cost_usd_is_zero_for_local_models():
     )
     _check(
         "a known Groq model produces a small positive reference cost",
-        usage_tracker.estimate_cost_usd("llama-3.1-8b-instant", 1_000_000, 1_000_000) > 0.0,
+        usage_tracker.estimate_cost_usd(GROQ_SMALL_MODEL, 1_000_000, 1_000_000) > 0.0,
     )
 
 

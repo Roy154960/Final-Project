@@ -7,8 +7,8 @@ Two ways to run the full stack in containers, same images either way:
 - **Method 2 — docker compose**: `docker-compose.yml` at the project
   root does the same thing in one command.
 
-Both wire up the same four containers on the same kind of custom bridge
-network:
+Both wire up the same four System-A containers on the same kind of
+custom bridge network:
 
 ```
 chroma-server (8000) <---- mcp-server (8765) <---- backend (8001) <---- frontend (8080)
@@ -26,6 +26,16 @@ chroma-server (8000) <---- mcp-server (8765) <---- backend (8001) <---- frontend
 - **frontend** — the built React/assistant-ui app, served statically.
   Talks to the backend from your **browser**, via the backend's
   published host port — not over the docker network at all.
+
+There's also a **fifth, genuinely independent container**:
+**framing-agent** (System B — see `framing_agent/README.md`), a
+separate Google ADK + FastAPI service mcp-server reaches over plain
+HTTP (`mcp_server/framing_tools.py`), never a Python import, and never
+given a `depends_on` relationship to any System-A container — the two
+systems don't share a startup order any more than they share code. It
+has its own build/run steps below (Method 1) and its own service block
+in `docker-compose.yml` (Method 2), separate from the four above on
+purpose.
 
 **Ollama is not containerized.** Every container reaches out to Ollama
 running on your host machine (`ollama serve`), same as your non-Docker
@@ -138,7 +148,7 @@ curl http://localhost:8000/api/v2/heartbeat
 manually — harmless to include on Desktop too.
 
 ```
-docker run -d --restart unless-stopped --name mcp-server --network inmind-net -p 8765:8765 --add-host host.docker.internal:host-gateway -e MCP_TRANSPORT=http -e MCP_SERVER_HOST=0.0.0.0 -e MCP_SERVER_PORT=8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-mcp-server:latest
+docker run -d --restart unless-stopped --name mcp-server --network inmind-net -p 8765:8765 --add-host host.docker.internal:host-gateway -e MCP_TRANSPORT=http -e MCP_SERVER_HOST=0.0.0.0 -e MCP_SERVER_PORT=8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -e FRAMING_AGENT_URL=http://framing-agent:8090 -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-mcp-server:latest
 ```
 
 **Do not move on to step 5 yet.** This image imports the same heavy ML
@@ -180,7 +190,7 @@ Two volumes worth noting here:
 Only once step 4's `docker ps` shows mcp-server as `healthy`:
 
 ```
-docker run -d --restart unless-stopped --name backend --network inmind-net -p 8001:8001 --add-host host.docker.internal:host-gateway -e AGENT_API_HOST=0.0.0.0 -e AGENT_API_PORT=8001 -e AGENT_API_CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080 -e AGENT_API_DB_PATH=/app/data/chat_history.sqlite3 -e MCP_TRANSPORT=http -e MCP_SERVER_URL=http://mcp-server:8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -v inmind-backend-data:/app/data -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-backend:latest
+docker run -d --restart unless-stopped --name backend --network inmind-net -p 8001:8001 --add-host host.docker.internal:host-gateway -e AGENT_API_HOST=0.0.0.0 -e AGENT_API_PORT=8001 -e AGENT_API_CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080 -e AGENT_API_DB_PATH=/app/data/chat_history.sqlite3 -e MCP_TRANSPORT=http -e MCP_SERVER_URL=http://mcp-server:8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -v inmind-backend-data:/app/data -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-backend:latest
 ```
 
 Note `MCP_SERVER_URL=http://mcp-server:8765` — `mcp-server` here is the
@@ -196,10 +206,39 @@ subprocess.
 docker run -d --restart unless-stopped --name frontend --network inmind-net -p 8080:8080 inmind-frontend:latest
 ```
 
+### 6b. Build and run framing-agent (System B — optional, independent)
+
+Not part of the four-container chain above, and not built in step 2 —
+called out separately because it genuinely doesn't depend on (or get
+depended on by) anything else here. Skip this entirely and every other
+service keeps working exactly as before; `get_framing_quote` (the one
+System-A tool that talks to it) just reports the framing service as
+unreachable, the same as if you'd started it and then stopped it.
+
+```
+docker build -f docker/framing_agent.Dockerfile -t inmind-framing-agent:latest .
+docker run -d --restart unless-stopped --name framing-agent --network inmind-net -p 8090:8090 --add-host host.docker.internal:host-gateway -e GROQ_API_KEY=your-key-here -e OLLAMA_HOST=http://host.docker.internal:11434 inmind-framing-agent:latest
+```
+
+`-e GROQ_API_KEY=...` is the same key/variable as mcp-server's and
+backend's own `-e GROQ_API_KEY=...` above — optional either way; omit
+it (or leave it empty) and this container tries `-e OLLAMA_HOST=...`
+next automatically (same host-reaching setup as every other container
+here, hence the `--add-host` flag), falling back further to a templated
+explanation if that isn't reachable either. `/quote` always returns
+full pricing data regardless of which of the three actually answered —
+see `framing_agent/server.py`'s own module docstring for the exact
+Groq → Ollama → template order. If mcp-server is
+already running, no restart is needed for it to start reaching
+framing-agent — `mcp_server/framing_tools.py` reads `FRAMING_AGENT_URL`
+fresh on every call, and step 4's own `docker run` for mcp-server
+already includes `-e FRAMING_AGENT_URL=http://framing-agent:8090`.
+
 ### 7. Verify
 
 ```
 curl http://localhost:8001/health
+curl http://localhost:8090/health   # only if you ran step 6b
 ```
 
 Then open `http://localhost:8080` in your browser.
@@ -207,7 +246,7 @@ Then open `http://localhost:8080` in your browser.
 ### Tearing down (manual method)
 
 ```
-docker rm -f frontend backend mcp-server chroma-server
+docker rm -f frontend backend mcp-server chroma-server framing-agent
 docker network rm inmind-net
 ```
 
@@ -219,6 +258,10 @@ Remove them explicitly if you actually want a clean slate:
 ```
 docker volume rm inmind-chroma-data inmind-backend-data inmind-backend-rag-data inmind-hf-cache
 ```
+
+`framing-agent` has no named volume of its own (see
+`docker-compose.yml`'s own note on this — it's fully stateless), so
+there's nothing to remove for it beyond the container itself.
 
 ---
 
@@ -237,11 +280,15 @@ machine.
 docker compose up --build
 ```
 
-Same four services, same network shape, same volumes — just declared in
-`docker-compose.yml` instead of typed out by hand. `depends_on` with
-`condition: service_healthy` means compose waits for chroma-server (and
-mcp-server, for backend) to pass its healthcheck before starting the
-next service, so you don't hit a race on first startup.
+Same four System-A services, same network shape, same volumes — just
+declared in `docker-compose.yml` instead of typed out by hand — plus
+the fifth, `framing-agent` (System B), also declared there but with no
+`depends_on` linking it to the other four, matching Method 1's step 6b
+above. `depends_on` with `condition: service_healthy` means compose
+waits for chroma-server (and mcp-server, for backend) to pass its
+healthcheck before starting the next service, so you don't hit a race
+on first startup — framing-agent starts independently, in parallel,
+since nothing else here is allowed to wait on it or vice versa.
 
 **If you already built the images with Method 1**, each service's
 `image:` here (`inmind-backend:latest`, etc.) is the exact same tag
@@ -302,7 +349,7 @@ Two things that break this:
 
 | Variable | Where it's read | Default | Purpose |
 |---|---|---|---|
-| `OLLAMA_HOST` | `local_rag/config.py` | `http://localhost:11434` (unset) | Where every container reaches your host's Ollama server |
+| `OLLAMA_HOST` | `local_rag/config.py`, `framing_agent/agent.py` | `http://localhost:11434` (unset) | Where every container (System A AND System B) reaches your host's Ollama server |
 | `CHROMA_CLIENT_MODE` | `local_rag/config.py` → `vectorstore/chroma_store.py` | `embedded` | `embedded` = local `PersistentClient` (original, non-Docker default); `http` = talk to a separate Chroma server |
 | `CHROMA_SERVER_HOST` / `CHROMA_SERVER_PORT` | same | `localhost` / `8000` | Only read when `CHROMA_CLIENT_MODE=http` |
 | `MCP_TRANSPORT` | `agents/mcp_client.py`, `mcp_server/server.py` | `stdio` | `stdio` = original local-subprocess behavior; `http` = real network port on both sides |
@@ -311,7 +358,12 @@ Two things that break this:
 | `AGENT_API_HOST` / `AGENT_API_PORT` | `agents/api.py` | `127.0.0.1` / `8001` | Already existed before Docker; `0.0.0.0` is required inside a container |
 | `AGENT_API_CORS_ORIGINS` | `agents/api.py` | `http://localhost:5173,...` | Must include wherever the frontend is actually reachable in the browser |
 | `AGENT_API_DB_PATH` | `agents/api.py` | next to `agents/api.py` | Pointed at a mounted volume in Docker so chat history survives a restart |
-| `GEMINI_API_KEY` | `local_rag/config.py` | unset | Optional, for personal-upload single-image captioning's online VLM backend |
+| `GROQ_API_KEY` | `local_rag/groq_client.py`, `framing_agent/server.py` | unset | Same key, all three of mcp-server/backend/framing-agent. Was previously **not wired into any container at all** even when set in your real `.env` (see mcp-server's own `environment:` block comment in `docker-compose.yml` for why) — fixed. Unset, everything falls back to local Ollama automatically |
+| `GEMINI_API_KEY` | `local_rag/config.py` | unset | Optional, for personal-upload single-image captioning's online VLM backend. A *different* Google product/key from `GROQ_API_KEY` — unrelated to framing-agent, which now uses Groq/Ollama, not Gemini |
+| `FRAMING_AGENT_URL` | `mcp_server/framing_tools.py` | `http://localhost:8090` | System B's own base URL; docker-compose.yml sets this to `http://framing-agent:8090` for mcp-server, the only System-A file that reads it |
+| `FRAMING_AGENT_GROQ_MODEL` | `framing_agent/agent.py` | `llama-3.3-70b-versatile` | Only read if `GROQ_API_KEY` is set — System B's own Groq model, same default as `local_rag/config.py`'s `GROQ_LARGE_MODEL` |
+| `FRAMING_AGENT_OLLAMA_MODEL` | `framing_agent/agent.py` | `llama3.2` | System B's own local-Ollama model, tried automatically if Groq isn't configured or fails |
+| `FRAMING_AGENT_PORT` | docker-compose.yml only | `8090` | Published host port for the `framing-agent` container |
 
 Every one of these keeps its exact original default — none of this
 changes non-Docker behavior (`python -3.12 -m agents.<module>` from the

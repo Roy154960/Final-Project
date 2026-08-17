@@ -14,8 +14,10 @@ anyway (rather than folded straight into FallbackGenerator) for the same
 reason OllamaGenerator/HFGenerator are each their own class: one small,
 independently-smoke-testable unit per backend.
 
-Model: llama-3.3-70b-versatile by default -- Groq's general-purpose
-"versatile" tier (current free-tier RPM/RPD/TPM at
+Model: openai/gpt-oss-120b by default (config.py's own GROQ_LARGE_MODEL
+-- updated 2026-08 after Groq deprecated the original
+llama-3.3-70b-versatile default; see that file's own comment) --
+Groq's general-purpose "large" tier (current free-tier RPM/RPD/TPM at
 https://console.groq.com/docs/rate-limits), matching the LARGE reasoning
 tier agents/llm_provider.py already picks for this project's other
 Groq-first call sites, since grounding an answer in retrieved chunks is

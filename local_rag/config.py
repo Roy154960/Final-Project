@@ -151,13 +151,40 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 # "Large"/"small" text reasoning tiers -- mirrors agents/specialists.py's
 # own _LARGE_REASONING_MODEL ("llama3.2" locally) / _SMALL_REASONING_MODEL
 # ("phi3" locally) split, see that module's "Model routing by difficulty"
-# section for the rationale this project already applies. Current
-# free-tier RPM/RPD/TPM for both at
-# https://console.groq.com/docs/rate-limits (checked 2026-08) -- both are
-# comfortably generous for one person's own testing, which is the only
-# use case this project's chatbot needs to cover.
-GROQ_LARGE_MODEL = "llama-3.3-70b-versatile"
-GROQ_SMALL_MODEL = "llama-3.1-8b-instant"
+# section for the rationale this project already applies.
+#
+# UPDATED 2026-08 after a confirmed live-run failure, not a hypothetical
+# one: the original values here (llama-3.3-70b-versatile,
+# llama-3.1-8b-instant) started returning HTTP 404 "model_not_found" on
+# every single call -- not the 429 rate-limit this project's retry/
+# fallback logic is designed around, a hard "this model doesn't exist
+# anymore." Confirmed against Groq's own deprecations page
+# (console.groq.com/docs/deprecations): Groq announced on 2026-06-17
+# that BOTH of the original model IDs above were being decommissioned,
+# with a full cutoff "by August 2026" -- which is now. Every Groq call
+# in this whole project (System A's own agents/llm_provider.py AND
+# System B's framing_agent/agent.py, which has its own separate default
+# matching this one) was silently falling straight to local Ollama on
+# EVERY call as a result, not just under real rate-limit pressure --
+# which is what made local generation feel so much slower than usual:
+# it wasn't occasional overflow to the fallback, it was 100% of calls
+# landing there.
+#
+# Replaced with Groq's own official recommended replacements from that
+# same deprecation notice -- not a guess at a plausible-sounding model
+# name: "We recommend migrating to openai/gpt-oss-20b (for Llama 3.1 8B
+# Instant) and openai/gpt-oss-120b ... (for Llama 3.3 70B Versatile)."
+# If Groq deprecates THESE too down the line, the exact same failure
+# shape will recur (a 404, not a 429) -- check
+# https://console.groq.com/docs/deprecations first if Groq starts
+# looking unreliable again; it may not be a rate limit either.
+#
+# Current free-tier RPM/RPD/TPM for both at
+# https://console.groq.com/docs/rate-limits (checked 2026-08) -- both
+# are comfortably generous for one person's own testing, which is the
+# only use case this project's chatbot needs to cover.
+GROQ_LARGE_MODEL = "openai/gpt-oss-120b"
+GROQ_SMALL_MODEL = "openai/gpt-oss-20b"
 
 # Groq's own hosted multimodal (text + vision) model -- see
 # https://console.groq.com/docs/vision for current support, limits, and

@@ -121,17 +121,85 @@ _META_PRICE_RE = re.compile(
 # Stripping a small, fixed set of common question-phrasing prefixes
 # before either lookup removes that noise at the source, rather than
 # trying to out-guess Wikipedia's own relevance ranking after the fact.
+#
+# "(the\s+)?" trailer ADDED after a second confirmed live-run failure:
+# "explain about the mona lisa" only matched the bare "explain"
+# alternative below, stripping just that one word and leaving "about the
+# mona lisa" behind as the "cleaned" query -- still noisy enough to
+# degrade the Wikipedia lookup, just less catastrophically than leaving
+# the whole sentence in. "describe"/"explain" now also optionally
+# swallow a following "about (the)?" the same way "tell me about"
+# already fully consumes its own "about".
 _QUESTION_WRAPPER_RE = re.compile(
     r"^\s*(please\s+)?"
     r"(tell me (more\s+)?about|"
     r"who (painted|created|made|drew|is the artist behind)|"
     r"what (is|are|was)|what's|"
-    r"describe|explain|"
+    r"(describe|explain)(\s+about)?|"
     r"give me (information|details) (on|about)|"
     r"can you tell me about|"
-    r"i want to know about)\s+",
+    r"i want to know about)\s+(the\s+)?",
     re.IGNORECASE,
 )
+
+
+# Unicode range for Arabic script (same ranges eval_language.py's own
+# _detect_language already uses for the identical purpose there -- see
+# that function's docstring). Used ONLY by _extract_latin_title_fallback
+# below, not for any language-identification decision elsewhere in this
+# file.
+_ARABIC_SCRIPT_RE = re.compile(r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]")
+_LATIN_RUN_RE = re.compile(r"[A-Za-z][A-Za-z0-9''\-\s]{2,}[A-Za-z0-9]")
+
+
+def _extract_latin_title_fallback(text: str) -> Optional[str]:
+    """
+    Last-resort extraction for a NON-English instruction wrapped around
+    an otherwise-untouched Latin-script painting name -- e.g. Arabic
+    "اشرح لي عن mona lisa" ("explain to me about mona lisa"),
+    where the instruction words are Arabic but the painting's own name
+    was typed in Latin script, unchanged, exactly as the person wrote
+    it.
+
+    CONFIRMED live-run failure this closes: _QUESTION_WRAPPER_RE above
+    is English-only by design (a small, fixed, hand-maintained phrase
+    list -- see that constant's own docstring on why it's deliberately
+    narrow, not general NLU) -- it does not match, and cannot strip, an
+    Arabic (or any non-Latin-script) instruction prefix at all. A real
+    run of "اشرح لي عن mona lisa" passed that ENTIRE string, Arabic
+    instruction and all, into the Wikipedia summary lookup, which
+    predictably found nothing -- while a completely separate, much
+    fuzzier general web search on the same polluted string still
+    happened to surface real, relevant sources (Wikipedia, Britannica),
+    producing the exact "no summary was found... [three sources listed
+    right below]" contradiction specialists.py's own painting_lookup_node
+    fix addresses on the OTHER side of this same failure.
+
+    Rather than hand-maintaining Arabic (and every other language's)
+    equivalent of _QUESTION_WRAPPER_RE's own phrase list -- an
+    ever-growing, never-complete translation burden -- this takes the
+    much more general approach the transcript itself already
+    demonstrates works: a painting title given inside an otherwise
+    non-Latin-script sentence is very often left in its own original
+    script, unchanged, exactly because it's a proper noun. So: if the
+    text contains BOTH Arabic-range characters AND a Latin-script run of
+    3+ letters, and stripping wrapper words (the normal path above)
+    didn't change anything, return just the LONGEST Latin-script run
+    instead -- that's almost always the actual title someone meant.
+
+    Returns None (meaning: no better candidate than the original text)
+    if the input has no Arabic-range characters at all, or no
+    Latin-script run of at least 3 letters -- so this never fires for a
+    plain English (or plain Arabic) query, only the specific mixed-script
+    case it exists for.
+    """
+    if not _ARABIC_SCRIPT_RE.search(text):
+        return None
+    runs = _LATIN_RUN_RE.findall(text)
+    if not runs:
+        return None
+    longest = max(runs, key=len).strip()
+    return longest or None
 
 
 def _clean_painting_query(painting_name: str) -> str:
@@ -139,7 +207,9 @@ def _clean_painting_query(painting_name: str) -> str:
     Strip a fixed set of common question-phrasing wrappers (and trailing
     punctuation) off `painting_name` before handing it to either
     Wikipedia lookup below -- see this module's comment above
-    `_QUESTION_WRAPPER_RE` for the confirmed live-run failure this fixes.
+    `_QUESTION_WRAPPER_RE` for the confirmed live-run failure this fixes,
+    and `_extract_latin_title_fallback`'s own docstring for the second,
+    mixed-script failure this now also closes.
 
     Deliberately narrow (a fixed prefix list, not general NLU) and
     applied ONLY inside search_famous_painting -- specialists.py's
@@ -154,7 +224,15 @@ def _clean_painting_query(painting_name: str) -> str:
     """
     cleaned = _QUESTION_WRAPPER_RE.sub("", painting_name.strip())
     cleaned = cleaned.strip().rstrip("?!.").strip()
-    return cleaned or painting_name.strip()
+    if cleaned and cleaned.lower() != painting_name.strip().lower():
+        return cleaned
+    # The English wrapper-strip above didn't change anything -- either
+    # there was no English wrapper to strip, or (per
+    # _extract_latin_title_fallback's own docstring) the wrapper is in a
+    # different script entirely. Try the mixed-script fallback before
+    # giving up and returning the original untouched.
+    latin_fallback = _extract_latin_title_fallback(painting_name)
+    return latin_fallback or cleaned or painting_name.strip()
 
 
 def _log(msg: str) -> None:

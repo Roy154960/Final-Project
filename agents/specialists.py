@@ -984,10 +984,31 @@ def _select_invoice_items(request_text: str, latest_batch: list[dict]) -> tuple[
 # and that worked example should keep agreeing on what "sounds like an
 # invoice request" means, not drift into two different definitions of
 # the same idea.
+#
+# "want"/"i'd like"/"i would like" ADDED after a confirmed live-run
+# failure: "I want the Dainayw Fine Detail Paint Brush Set" and "I want
+# these" (naming items _score_items_by_name below DID match against the
+# latest batch) both fell through this gate with the ORIGINAL list --
+# "want" wasn't on it -- so _looks_like_invoice_followup returned False
+# and the message went to the LLM-based supervisor routing instead,
+# which misrouted it back to product_search THREE times in a row before
+# the user finally said "buy" explicitly. Each of those extra
+# product_search rounds was a live web search, not a cache, and
+# returned progressively different (sometimes worse) results for the
+# same items -- by the time "buy" finally landed, the batch it matched
+# against had lost the real pricing data entirely, and the resulting
+# invoice could price NONE of the items. Adding "want" here is safe
+# specifically because _looks_like_invoice_followup ALSO requires a real
+# _score_items_by_name match against the latest batch (see that
+# function's own docstring) -- a bare "I want to learn more about oil
+# painting" still won't match with nothing in latest_batch resembling
+# it, so this doesn't turn every use of "want" into a false invoice
+# trigger, only "want" PLUS a genuine named-product match.
 _INVOICE_INTENT_PHRASES = (
     "buy", "purchase", "order", "invoice", "receipt", "checkout",
     "check out", "bill me", "add to cart", "how much", "cost",
-    "total", "i'll take", "i will take", "get me",
+    "total", "i'll take", "i will take", "get me", "want", "i'd like",
+    "i would like",
 )
 
 
@@ -1449,6 +1470,109 @@ def _looks_like_tool_error(content: object) -> bool:
     return any(p.search(text) for p in _TOOL_ERROR_PATTERNS)
 
 
+def _looks_like_degenerate_repeat(
+    text: object, *, min_repeat_len: int = 20, min_repeats: int = 4
+) -> bool:
+    """
+    True if `text` contains the same non-blank line, at least
+    `min_repeat_len` characters long, repeated `min_repeats`-or-more
+    times CONSECUTIVELY -- the classic small/local-model failure mode
+    where generation gets stuck looping the same sentence instead of
+    answering, until it hits its own max-token cutoff.
+
+    CONFIRMED live-run failure this guards against, not a hypothetical
+    one: painting_lookup_node's own synthesis call (see that function's
+    own comment) landed on the local Ollama fallback (see
+    llm_provider.py's own docstring on when that happens -- Groq being
+    rate-limited/unreachable) for a long, Arabic-language, multi-chunk
+    prompt, and degenerated into repeating the exact same
+    "[filename] short sentence." block -- copied verbatim from the
+    "[filename] chunk text" formatting PAINTING_LOOKUP_SYNTHESIZE_PROMPT_TEMPLATE's
+    own corpus_content block uses -- more than 30 times in a row, cut
+    off mid-word at the very end. The model didn't answer the question
+    at all; it echoed the shape of its own prompt back on a loop.
+
+    Deliberately checks CONSECUTIVE repeats of a meaningfully long,
+    whole LINE, not just any repeated short word or phrase -- so normal
+    prose that happens to reuse a short connector, or repeat a name
+    inside two different sentences, never false-positives. Splitting on
+    lines (rather than sentences or fixed-width windows) matches the
+    actual observed failure shape exactly: each repeated unit was its
+    own line, separated by blank lines, exactly like the
+    corpus_content block's own "\n\n"-joined chunks.
+    """
+    if not isinstance(text, str) or not text.strip():
+        return False
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    run_line: Optional[str] = None
+    run_count = 0
+    for line in lines:
+        if line == run_line:
+            run_count += 1
+        else:
+            run_line, run_count = line, 1
+        if len(line) >= min_repeat_len and run_count >= min_repeats:
+            return True
+    return False
+
+
+# Recognizes this project's OWN intended citation marker (see
+# local_rag/generation/prompts.py's RAG_SYSTEM_PROMPT/BRANCH_SYSTEM_PROMPT)
+# plus the ONE alternate style actually observed in a live run --
+# OpenAI's own native browsing-citation glyph, 【N†source】 -- from a model
+# that ignored the (at-the-time-softer) prompt instruction and defaulted
+# to its own training-data habit instead. See _looks_like_cited_answer's
+# own docstring for why detection needs to stay tolerant here even after
+# that prompt was tightened.
+_ALT_CITATION_RE = re.compile(r"【[^【】]{1,80}†[^【】]{1,80}】")
+
+
+def _looks_like_cited_answer(text: object) -> bool:
+    """
+    True if `text` contains this project's own "[source: ...]" citation
+    marker, OR the one alternate citation style a live run actually
+    produced (see _ALT_CITATION_RE's own comment) -- used by
+    retrieval_qa_node to decide whether an answer is a real, grounded,
+    generate_answer-produced result worth auto-attaching a related image
+    to, as opposed to a greeting reply or a "the corpus doesn't cover
+    this" answer, neither of which ever carries a citation at all.
+
+    CONFIRMED live-run failure this closes: generation/prompts.py's
+    RAG_SYSTEM_PROMPT originally only gave "[source: ...]" as a soft
+    example ("e.g. ..."), and after this project's own switch to Groq's
+    openai/gpt-oss models (see local_rag/config.py's own comment), real
+    answers came back citing as "some claim【1†page 17】" instead --
+    OpenAI's own native browsing-citation format, not this project's own.
+    A literal `"[source:" in answer.lower()` check (the ORIGINAL form of
+    this check, before this function existed) never matches that, so
+    retrieval_qa_node's own auto-image-attach silently never fired for
+    any answer in that citation style, even though the answer was
+    genuinely grounded and citation-bearing -- indistinguishable, to
+    that check, from an uncited greeting reply.
+
+    That prompt has SEPARATELY been tightened to insist on the intended
+    format explicitly and to name-and-forbid this exact alternate style
+    (see RAG_SYSTEM_PROMPT's own comment) -- this function is the second,
+    independent layer: even if a future model swap reintroduces some
+    OTHER citation habit neither of these two style checks recognizes,
+    the failure mode is "auto-image-attach doesn't fire for that one
+    answer" (a missed nice-to-have), never a crash or a wrong answer, so
+    staying narrow here (two known, confirmed styles) rather than trying
+    to pattern-match "anything that looks vaguely like a citation" is a
+    deliberate, low-risk choice -- a broader regex risks matching
+    bracketed text that ISN'T a citation at all (e.g. a genuine "[1]"
+    footnote-style reference in retrieved chunk text quoted back verbatim
+    inside an answer) and firing the image-attach logic on an answer that
+    was never actually grounded.
+    """
+    if not isinstance(text, str) or not text:
+        return False
+    lowered = text.lower()
+    if "[source:" in lowered:
+        return True
+    return bool(_ALT_CITATION_RE.search(text))
+
+
 def _extract_grounded_answer(messages: list) -> Optional[str]:
     """
     Return generate_answer's own tool output directly, instead of trusting
@@ -1511,6 +1635,184 @@ def _extract_grounded_answer(messages: list) -> Optional[str]:
               f"{fallback!r}", file=sys.stderr)
         return None
     return fallback
+
+
+# ---------------------------------------------------------------------
+# Shared helpers for framing_quote_node
+# ---------------------------------------------------------------------
+# Same split _parse_color_request above already uses for color_palette:
+# light, deterministic triage of the free-text request into structured
+# arguments here; the real domain logic (frame-style/glazing/shipping-
+# zone resolution, and every dollar figure) happens entirely on the
+# TOOL side -- for this specialist specifically, that means across the
+# network boundary into System B (framing_agent/, a separate Google ADK
+# + FastAPI service -- see get_framing_quote's own docstring in
+# mcp_server/server.py and mcp_server/framing_tools.py's module
+# docstring for exactly why that boundary is drawn the way it is). This
+# module never guesses a dimension, medium, or destination the user
+# didn't actually state -- see _parse_framing_request's own "missing"
+# list, the same "never invent a number/fact the input didn't provide"
+# principle invoice_tools.build_invoice's own "skipped" list already
+# applies to a missing price.
+
+_DIMENSION_RE = re.compile(
+    r"(\d+(?:\.\d+)?)\s*(cm|centimeters?|centimetres?|in|inch|inches|\")?"
+    r"\s*(?:x|×|by)\s*"
+    r"(\d+(?:\.\d+)?)\s*(cm|centimeters?|centimetres?|in|inch|inches|\")?",
+    re.IGNORECASE,
+)
+
+_CM_UNIT_WORDS = {"cm", "centimeter", "centimeters", "centimetre", "centimetres"}
+
+# Longest/most specific phrases first so e.g. "oil on canvas" is
+# captured whole rather than truncated to just "oil" -- same
+# "longest match wins" reasoning _parse_color_request's own
+# all_scheme_words sort already relies on.
+_MEDIUM_KEYWORDS = (
+    "oil on canvas", "acrylic on canvas", "watercolor", "watercolour",
+    "gouache", "giclee print", "giclée print", "charcoal drawing",
+    "ink drawing", "oil painting", "acrylic painting", "print",
+    "photograph", "photo", "pastel", "sketch", "drawing", "oil",
+    "acrylic", "canvas",
+)
+
+# A destination-recognition list on System A's own side -- deliberately
+# NOT the same table as framing_agent/pricing.py's own _ZONE_BY_COUNTRY.
+# That table lives entirely on System B's side of the network boundary;
+# this list only has to recognize that a country NAME is present in the
+# text well enough to pass it through as plain text. System B does the
+# real shipping-zone lookup once it arrives there -- the two lists are
+# allowed to drift (e.g. System B adding a country this list doesn't
+# know to look for yet) without breaking anything here, since an
+# unmatched destination just means this node asks the user to name one,
+# not that a shipping estimate becomes wrong.
+#
+# EXPANDED after a confirmed live-run failure, not a hypothetical one:
+# the original list here had ~20 entries -- mostly the Middle East plus
+# a handful of Western countries -- and "japan" wasn't one of them. A
+# real request naming Japan explicitly ("...shipped to japan") still
+# came back "I'm still missing: a shipping destination country," which
+# then cascaded the supervisor through nearly every other specialist
+# (retrieval_qa, personal_docs, invoice, corpus_meta, product_search)
+# before giving up -- see supervisor.py's own new framing_quote
+# early-stop net for the other half of that fix. This list now aims for
+# genuinely comprehensive (every commonly-referenced country, not just
+# a curated regional sample) specifically so this class of gap doesn't
+# recur for the next country nobody thought to add. Deliberately full
+# names only, no bare 2-letter ISO codes (a bare "in"/"us"/"is" as a
+# substring check would false-positive on a huge fraction of ordinary
+# English sentences) -- the few short forms below (uk/usa/uae) are kept
+# because they're common enough in casual writing to be worth the small
+# residual risk, not because short forms are safe in general.
+_DESTINATION_KEYWORDS = (
+    # Middle East
+    "united arab emirates", "uae", "saudi arabia", "lebanon", "syria",
+    "jordan", "iraq", "iran", "israel", "palestine", "yemen", "oman",
+    "qatar", "kuwait", "bahrain",
+    # North Africa / wider Africa
+    "egypt", "morocco", "algeria", "tunisia", "libya", "sudan",
+    "nigeria", "kenya", "ethiopia", "ghana", "south africa", "tanzania",
+    "uganda", "senegal", "ivory coast", "cameroon", "zimbabwe",
+    "zambia", "rwanda", "mozambique",
+    # Europe
+    "united kingdom", "uk", "ireland", "france", "germany", "italy",
+    "spain", "portugal", "netherlands", "belgium", "luxembourg",
+    "switzerland", "austria", "sweden", "norway", "denmark", "finland",
+    "iceland", "poland", "czech republic", "czechia", "slovakia",
+    "hungary", "romania", "bulgaria", "greece", "cyprus", "turkey",
+    "ukraine", "russia", "belarus", "estonia", "latvia", "lithuania",
+    "croatia", "serbia", "slovenia", "bosnia", "albania", "moldova",
+    "malta", "monaco", "montenegro", "north macedonia", "georgia",
+    "armenia", "azerbaijan",
+    # Americas
+    "united states", "usa", "canada", "mexico", "brazil", "argentina",
+    "chile", "colombia", "peru", "venezuela", "ecuador", "bolivia",
+    "paraguay", "uruguay", "cuba", "jamaica", "haiti", "dominican republic",
+    "costa rica", "panama", "guatemala", "honduras", "el salvador",
+    "nicaragua", "trinidad", "bahamas", "barbados",
+    # Asia
+    "china", "japan", "south korea", "north korea", "india", "pakistan",
+    "bangladesh", "sri lanka", "nepal", "afghanistan", "kazakhstan",
+    "uzbekistan", "mongolia", "vietnam", "thailand", "cambodia", "laos",
+    "myanmar", "malaysia", "singapore", "indonesia", "philippines",
+    "taiwan", "hong kong", "brunei", "bhutan", "maldives",
+    # Oceania
+    "australia", "new zealand", "fiji", "papua new guinea",
+)
+
+
+def _extract_dimensions_cm(text: str) -> Optional[tuple[float, float]]:
+    """
+    (width_cm, height_cm) from the first "NxN"-shaped pair found in the
+    text (e.g. "16x20", "40 x 50cm", "24in x 36in"), or None if no such
+    pair is present at all -- never guesses a missing pair.
+
+    Unit defaults to INCHES whenever neither number carries an explicit
+    unit -- art/framing sizing convention (e.g. "16x20", "24x36") means
+    inches far more often than centimeters when nothing is stated. An
+    explicit "cm"/"centimeters" on EITHER number overrides that default
+    for both (a mismatched pair like "16cm x 20in" is treated as fully
+    cm here -- deliberately permissive rather than rejecting an
+    ambiguous-but-plausible phrasing outright).
+    """
+    m = _DIMENSION_RE.search(text)
+    if not m:
+        return None
+    w_raw, w_unit, h_raw, h_unit = m.groups()
+    stated_unit = (w_unit or h_unit or "").strip().lower()
+    use_cm = stated_unit in _CM_UNIT_WORDS
+    width = float(w_raw)
+    height = float(h_raw)
+    if not use_cm:
+        width *= 2.54
+        height *= 2.54
+    return round(width, 1), round(height, 1)
+
+
+def _extract_medium(text: str) -> Optional[str]:
+    lowered = text.lower()
+    for kw in _MEDIUM_KEYWORDS:
+        if kw in lowered:
+            return kw
+    return None
+
+
+def _extract_destination(text: str) -> Optional[str]:
+    lowered = text.lower()
+    for kw in _DESTINATION_KEYWORDS:
+        if kw in lowered:
+            return kw
+    return None
+
+
+def _parse_framing_request(text: str) -> dict:
+    """
+    {"width_cm", "height_cm", "medium", "destination_country", "missing"}
+    -- `missing` lists, in plain English, exactly which of dimensions /
+    medium / destination the text didn't provide, so framing_quote_node
+    can ask for precisely what's absent instead of a generic "I didn't
+    understand." Empty `missing` means every field resolved and the
+    request is ready to send to get_framing_quote as-is.
+    """
+    dims = _extract_dimensions_cm(text)
+    medium = _extract_medium(text)
+    destination = _extract_destination(text)
+
+    missing = []
+    if dims is None:
+        missing.append('dimensions (e.g. "16x20 inches" or "40x50 cm")')
+    if medium is None:
+        missing.append('the medium (e.g. "oil on canvas", "watercolor")')
+    if destination is None:
+        missing.append("a shipping destination country")
+
+    return {
+        "width_cm": dims[0] if dims else None,
+        "height_cm": dims[1] if dims else None,
+        "medium": medium,
+        "destination_country": destination,
+        "missing": missing,
+    }
 
 
 async def build_specialists() -> dict[str, Specialist]:
@@ -1708,7 +2010,7 @@ async def build_specialists() -> dict[str, Specialist]:
         # closures resolve a name against the enclosing scope at CALL
         # time, and this node is never actually invoked until well after
         # build_specialists() has finished assigning them.
-        if isinstance(answer, str) and "[source:" in answer.lower():
+        if isinstance(answer, str) and _looks_like_cited_answer(answer):
             image_tool = retrieve_images_embedded_tool or retrieve_images_tool
             if image_tool is not None:
                 try:
@@ -2111,6 +2413,31 @@ async def build_specialists() -> dict[str, Specialist]:
     # other's output.
     search_painting_tool = tools_by_name.get("search_painting_online")
 
+    def _plain_painting_lookup_fallback(question: str, corpus_content: str, web_summary: str) -> str:
+        """
+        Last-resort answer for painting_lookup_node -- only reached when
+        the LLM synthesis step degenerated TWICE in a row (see
+        _looks_like_degenerate_repeat's own docstring for the confirmed
+        failure this exists for). Never shows the user the broken,
+        repeated output, but also never silently returns nothing: plain
+        string formatting directly over what was actually retrieved,
+        same "the data owns the content, not a possibly-broken
+        generation" preference this project applies elsewhere (e.g.
+        framing_agent/server.py's own _template_explanation on System
+        B's side of the network boundary).
+        """
+        parts = [
+            f'I found information about "{question}", but had trouble summarizing it '
+            "cleanly this time. Here's what was actually retrieved, unedited:"
+        ]
+        if corpus_content and corpus_content != "(nothing found in the corpus)":
+            parts.append(f"**From the corpus:**\n{corpus_content}")
+        if web_summary and web_summary != "(nothing found on the internet)":
+            parts.append(f"**From the web:**\n{web_summary}")
+        if len(parts) == 1:
+            parts.append("Unfortunately, nothing was found in the corpus or online for this painting.")
+        return "\n\n".join(parts)
+
     async def painting_lookup_node(state: AgentState) -> dict:
         question = _last_human_text(state)
 
@@ -2127,17 +2454,67 @@ async def build_specialists() -> dict[str, Specialist]:
             raw_web = await search_painting_tool.ainvoke({"painting_name": question})
             web_result = unwrap_tool_result(raw_web) or web_result
 
-        web_summary = web_result.get("summary") or "(nothing found on the internet)"
+        # CONFIRMED live-run bug this closes: search_famous_painting
+        # (mcp_server/web_tools.py) deliberately returns summary=None
+        # alongside a non-empty sources list when Wikipedia's own summary
+        # lookup came up empty but the general web search still found
+        # real, allowlisted sources -- that function's OWN comment says
+        # "caller decides how to phrase 'no summary, but see sources'."
+        # This is that phrasing, finally implemented: a flat "(nothing
+        # found on the internet)" whenever summary was falsy, regardless
+        # of sources, told the synthesis LLM there was nothing online at
+        # all even when three real Wikipedia/Britannica links were about
+        # to be appended right below its own answer -- producing exactly
+        # that contradiction in a live run ("no summary was found
+        # online," followed immediately by three internet sources).
+        sources = web_result.get("sources") or []
+        if web_result.get("summary"):
+            web_summary = web_result["summary"]
+        elif sources:
+            web_summary = (
+                "(no clean summary could be extracted, but the internet search did find "
+                "real sources on this -- see the source list, and feel free to say a "
+                "summary wasn't available while still naming what the sources appear to be about "
+                "based on their titles)"
+            )
+        else:
+            web_summary = "(nothing found on the internet)"
 
         synth_prompt = PAINTING_LOOKUP_SYNTHESIZE_PROMPT_TEMPLATE.format(
             painting_name=question, corpus_content=corpus_content, web_summary=web_summary
         )
-        response = await _llm_for(question).ainvoke(
-            [SystemMessage(content=synth_prompt), HumanMessage(content=question)]
-        )
+        synth_messages = [SystemMessage(content=synth_prompt), HumanMessage(content=question)]
+        response = await _llm_for(question).ainvoke(synth_messages)
         answer = response.content
 
-        sources = web_result.get("sources") or []
+        if _looks_like_degenerate_repeat(answer):
+            # CONFIRMED live-run failure -- see _looks_like_degenerate_repeat's
+            # own docstring for the exact incident (a local-Ollama-fallback
+            # synthesis call looping the same "[filename] sentence." block
+            # 30+ times on an Arabic, multi-chunk prompt). Retried ONCE,
+            # explicitly on llm_large -- deliberately bypassing _llm_for's
+            # own tier pick, since the point is to get a DIFFERENT model
+            # than whatever just degenerated: llm_large tries Groq first
+            # (see llm_provider.py), a completely different, much stronger
+            # model, before it would ever itself fall back to the same
+            # local model that just failed.
+            retry_response = await llm_large.ainvoke(synth_messages)
+            retry_answer = retry_response.content
+            if (
+                isinstance(retry_answer, str)
+                and retry_answer.strip()
+                and not _looks_like_degenerate_repeat(retry_answer)
+            ):
+                answer = retry_answer
+            else:
+                # Both attempts degenerated (rare -- would mean the retry
+                # landed on a broken model too, or Groq is unreachable and
+                # fell back to the same local model again). Never show the
+                # user a wall of repeated text -- degrade to a plain,
+                # unsynthesized answer built directly from what was
+                # actually retrieved instead.
+                answer = _plain_painting_lookup_fallback(question, corpus_content, web_summary)
+
         if sources:
             source_lines = "\n".join(f"- [{s['title']}]({s['url']})" for s in sources if s.get("url"))
             answer = f"{answer}\n\n**Sources:**\n{source_lines}"
@@ -2432,6 +2809,90 @@ async def build_specialists() -> dict[str, Specialist]:
         answer = _format_color_palette_answer(result)
         return {"messages": [AIMessage(content=answer, name="color_palette")]}
 
+    # --- Specialist 9: framing-quote ------------------------------------
+    # The ONE specialist in this file whose tool call crosses a real
+    # network boundary into an entirely separate, independently
+    # deployed service (System B -- framing_agent/, Google ADK +
+    # FastAPI, its own container) rather than staying inside this
+    # process or this project's own MCP server. get_framing_quote
+    # (mcp_server/server.py) is still called the exact same way every
+    # other tool in this file is called -- `.ainvoke({...})` against a
+    # handle pulled from `tools_by_name` -- specifically SO that this
+    # node doesn't need to know or care that the real work happens
+    # across that boundary; the MCP layer already hides it, the same
+    # way it hides retrieve()'s local ChromaDB call or
+    # search_art_supplies' own internet call behind an identical
+    # interface. See mcp_server/framing_tools.py's own module docstring
+    # for what happens on the wire.
+    framing_quote_tool = tools_by_name.get("get_framing_quote")
+
+    async def framing_quote_node(state: AgentState) -> dict:
+        question = _last_human_text(state)
+        parsed = _parse_framing_request(question)
+
+        if parsed["missing"]:
+            missing_list = "; ".join(parsed["missing"])
+            return {
+                "messages": [
+                    AIMessage(
+                        content=(
+                            "I can get a framing and shipping quote, but I'm still "
+                            f"missing: {missing_list}. Give me the artwork's size, "
+                            "what it's made of, and where it's shipping to, and "
+                            "I'll get a real quote."
+                        ),
+                        name="framing_quote",
+                    )
+                ]
+            }
+
+        if framing_quote_tool is None:
+            return {
+                "messages": [
+                    AIMessage(
+                        content="The framing & shipping quote tool isn't available right now.",
+                        name="framing_quote",
+                    )
+                ]
+            }
+
+        raw = await framing_quote_tool.ainvoke(
+            {
+                "width_cm": parsed["width_cm"],
+                "height_cm": parsed["height_cm"],
+                "medium": parsed["medium"],
+                "destination_country": parsed["destination_country"],
+                "frame_style": "",
+            }
+        )
+        result = unwrap_tool_result(raw) or {}
+
+        if not result.get("available"):
+            # System B was unreachable, errored, or timed out --
+            # request_quote()'s own "error" string is already
+            # human-readable and safe to show directly (see its
+            # docstring: never a raw stack trace), so it's surfaced
+            # as-is rather than wrapped in extra framing-node text that
+            # would just repeat the same information.
+            error = result.get("error") or (
+                "The framing & shipping quote service isn't available right now."
+            )
+            return {"messages": [AIMessage(content=error, name="framing_quote")]}
+
+        quote = result.get("quote") or {}
+        explanation = result.get("explanation") or "(no explanation returned)"
+        answer = explanation
+
+        subtotal = quote.get("subtotal_usd")
+        if subtotal is not None:
+            answer += f"\n\n**Estimated total: ${subtotal:.2f}**"
+
+        disclaimer = quote.get("disclaimer")
+        if disclaimer:
+            answer += f"\n\n_{disclaimer}_"
+
+        return {"messages": [AIMessage(content=answer, name="framing_quote")]}
+
     # Dict order here is NOT cosmetic -- it's `ordered_specialist_names`
     # in supervisor.py's build_supervisor(), i.e. the exact order
     # `_next_untried_route`'s fallback walk tries specialists in whenever
@@ -2469,12 +2930,21 @@ async def build_specialists() -> dict[str, Specialist]:
     # has the whole main corpus to fall back on -- personal_docs has
     # nothing to say at all in a thread nobody has uploaded a file into,
     # so it shouldn't be the very first thing a stuck-model walk tries.
+    # framing_quote sits right next to product_search/invoice for the
+    # same reason they were moved up: it's the specialist in this whole
+    # file MOST likely to come back with "I'm missing X" rather than a
+    # genuine answer (three separate free-text fields -- dimensions,
+    # medium, destination -- all have to actually be present in the
+    # message, a stricter bar than invoice's own single "is there a
+    # product_search batch yet" check), so a full repeat-route-guard
+    # walk should never be left to burn its LAST slot here.
     return {
         "retrieval_qa": retrieval_qa_node,
         "personal_docs": personal_docs_node,
         "corpus_meta": corpus_meta_node,
         "product_search": product_search_node,
         "invoice": invoice_node,
+        "framing_quote": framing_quote_node,
         "color_palette": color_palette_node,
         "multi_hop": multi_hop_node,
         "image_qa": image_qa_node,

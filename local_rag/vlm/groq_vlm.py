@@ -62,7 +62,7 @@ import sys
 from pathlib import Path
 
 from config import GROQ_VISION_MODEL
-from groq_client import groq_chat_completion
+from groq_client import groq_chat_completion, GROQ_VISION_REQUEST_TIMEOUT_SECONDS
 
 # Strips a <think>...</think> block (including the tags themselves) from
 # a model response -- see this module's own top docstring for exactly
@@ -105,6 +105,13 @@ class GroqVLM:
             # unset let a <think> block both corrupt captions and burn
             # through the rate limit several times faster than needed.
             reasoning_effort="none",
+            # A vision payload (full base64 image, not a few words of
+            # text) needs longer than groq_chat_completion's default
+            # text-completion timeout to finish uploading, especially
+            # over a slower connection -- see groq_client.py's own
+            # GROQ_VISION_REQUEST_TIMEOUT_SECONDS comment for the
+            # confirmed live TimeoutError this fixes.
+            timeout=GROQ_VISION_REQUEST_TIMEOUT_SECONDS,
         )
         try:
             content = data["choices"][0]["message"]["content"]

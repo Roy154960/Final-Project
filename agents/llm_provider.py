@@ -39,18 +39,34 @@ without tool-calling.
 Structured JSON routing (supervisor.py's `ollama_format`): forwarded
 ONLY to the local ChatOllama fallback, where it's still Ollama's own
 native `format=<json schema>` structured-decoding parameter (unchanged
-from before Groq was added). The Groq branch doesn't have that exact
-mechanism available for these particular models, so it instead sets
+from before Groq was added). The Groq branch instead sets
 `response_format={"type": "json_object"}` whenever `ollama_format` is
-set at all -- see https://console.groq.com/docs/structured-outputs:
-llama-3.3-70b-versatile/llama-3.1-8b-instant aren't on Groq's small
-strict-schema-mode model list, so JSON Object Mode (valid JSON
-guaranteed, schema NOT guaranteed) is the right degrade rather than an
-unsupported request. supervisor.py's own downstream handling already
-treats a malformed/schema-violating JSON response as one more
-"fallback route" case (see its own module docstring's four safety
-nets), so this degrade is absorbed by machinery that already existed
-before Groq was added, not a new failure mode this file introduces.
+set at all -- JSON Object Mode (valid JSON guaranteed, schema NOT
+guaranteed), not Groq's stricter `json_schema`/`strict: true` mode
+(https://console.groq.com/docs/structured-outputs). supervisor.py's own
+downstream handling already treats a malformed/schema-violating JSON
+response as one more "fallback route" case (see its own module
+docstring's four safety nets), so this degrade is absorbed by machinery
+that already existed before Groq was added, not a new failure mode this
+file introduces.
+
+WORTH REVISITING, not changed here: this project's ORIGINAL two Groq
+models (llama-3.3-70b-versatile/llama-3.1-8b-instant, deprecated by
+Groq 2026-06-17 -- see local_rag/config.py's own comment) genuinely
+weren't on Groq's strict-schema-mode model list, which is why this file
+settled on json_object mode. Their replacements
+(openai/gpt-oss-120b/openai/gpt-oss-20b, config.py's new defaults) are
+documented by Groq and LangChain's own ChatGroq reference as
+SUPPORTING strict mode -- but at least one Groq community report
+(Oct 2025) describes `strict: true` being silently ignored by
+openai/gpt-oss-120b in practice, contradicting that documentation. Not
+confident enough in either source alone to flip this file's actual
+behavior without testing it against a real account first -- json_object
+mode still works regardless of which of those two is currently true, so
+staying on it here is the safe default, not a stale oversight. If you
+want the stricter guarantee, test `response_format={"type":
+"json_schema", "json_schema": {...}, "strict": true}` against your own
+GROQ_API_KEY before switching this file over.
 """
 
 import asyncio
@@ -170,7 +186,7 @@ class GroqFallbackChatModel(BaseChatModel):
     own raw ChatOllama instances before this change.
 
     Fields (plain pydantic fields, per BaseChatModel's own convention):
-        groq_model:    Groq model id to try first (e.g. "llama-3.3-70b-versatile").
+        groq_model:    Groq model id to try first (e.g. "openai/gpt-oss-120b").
         ollama_model:  local Ollama model to fall back to (e.g. "llama3.2").
         tier:          "large" or "small" -- logging/tracing metadata only,
                        never sent to either backend.

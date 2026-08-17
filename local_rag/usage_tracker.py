@@ -84,9 +84,27 @@ _lock = Lock()
 # https://groq.com/pricing before using this for anything that actually
 # matters financially).
 GROQ_LIST_PRICES_PER_1M = {
+    # Current models -- see local_rag/config.py's own GROQ_LARGE_MODEL /
+    # GROQ_SMALL_MODEL comment for exactly why these replaced the two
+    # below on 2026-08. Figures cross-checked against Groq's own listed
+    # on-demand rates as reported by multiple independent trackers as of
+    # 2026-08 (re-check https://groq.com/pricing before this matters for
+    # anything financial, same caveat as ever).
+    "openai/gpt-oss-20b": {"input": 0.075, "output": 0.30},
+    "openai/gpt-oss-120b": {"input": 0.15, "output": 0.60},
+    "qwen/qwen3.6-27b": {"input": 0.60, "output": 3.00},
+    # DEPRECATED by Groq on 2026-06-17, fully decommissioned (every call
+    # now returns HTTP 404 "model_not_found") as of 2026-08 -- see
+    # config.py's own comment for the confirmed live-run failure this
+    # caused. Kept here, NOT deleted, purely so estimate_cost_usd() can
+    # still correctly price any OLDER rows already sitting in
+    # cost_log.jsonl from before this project switched models -- a
+    # historical log entry shouldn't suddenly become unpriceable just
+    # because the model it used is no longer callable. Never selected
+    # for a NEW call going forward; nothing in this project still passes
+    # either of these two model names to groq_chat_completion().
     "llama-3.1-8b-instant": {"input": 0.05, "output": 0.08},
     "llama-3.3-70b-versatile": {"input": 0.59, "output": 0.79},
-    "qwen/qwen3.6-27b": {"input": 0.60, "output": 3.00},
 }
 
 # The rate-limit response headers Groq documents at

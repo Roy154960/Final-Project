@@ -1,0 +1,292 @@
+{
+  "routing": [
+    {
+      "id": "RL1",
+      "language": "en",
+      "category": "retrieval_qa",
+      "expected_route": "retrieval_qa",
+      "query": "How do I mix a good glaze for oil painting?",
+      "actual_route": "retrieval_qa",
+      "correct": true,
+      "elapsed_seconds": 1.78,
+      "error": null
+    },
+    {
+      "id": "RL2",
+      "language": "fr",
+      "category": "retrieval_qa",
+      "expected_route": "retrieval_qa",
+      "query": "Comment m\u00e9langer un bon glacis pour la peinture \u00e0 l'huile ?",
+      "actual_route": "retrieval_qa",
+      "correct": true,
+      "elapsed_seconds": 0.94,
+      "error": null
+    },
+    {
+      "id": "RL3",
+      "language": "ar",
+      "category": "retrieval_qa",
+      "expected_route": "retrieval_qa",
+      "query": "\u0643\u064a\u0641 \u0623\u062d\u0636\u0651\u0631 \u0637\u0644\u0627\u0621 \u0632\u062c\u0627\u062c\u064a \u062c\u064a\u062f \u0644\u0644\u0631\u0633\u0645 \u0628\u0627\u0644\u0632\u064a\u062a\u061f",
+      "actual_route": "product_search",
+      "correct": false,
+      "elapsed_seconds": 180.25,
+      "error": null
+    },
+    {
+      "id": "RL4",
+      "language": "es",
+      "category": "retrieval_qa",
+      "expected_route": "retrieval_qa",
+      "query": "\u00bfC\u00f3mo mezclo un buen glaseado para pintura al \u00f3leo?",
+      "actual_route": "retrieval_qa",
+      "correct": true,
+      "elapsed_seconds": 1.69,
+      "error": null
+    },
+    {
+      "id": "RL5",
+      "language": "en",
+      "category": "corpus_meta",
+      "expected_route": "corpus_meta",
+      "query": "What documents are in your corpus?",
+      "actual_route": "corpus_meta",
+      "correct": true,
+      "elapsed_seconds": 1.55,
+      "error": null
+    },
+    {
+      "id": "RL6",
+      "language": "fr",
+      "category": "corpus_meta",
+      "expected_route": "corpus_meta",
+      "query": "Quels documents contient votre corpus ?",
+      "actual_route": "corpus_meta",
+      "correct": true,
+      "elapsed_seconds": 4.42,
+      "error": null
+    },
+    {
+      "id": "RL7",
+      "language": "ar",
+      "category": "corpus_meta",
+      "expected_route": "corpus_meta",
+      "query": "\u0645\u0627 \u0647\u064a \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0627\u0644\u0645\u0648\u062c\u0648\u062f\u0629 \u0641\u064a \u0645\u062c\u0645\u0648\u0639\u062a\u0643\u0645\u061f",
+      "actual_route": "corpus_meta",
+      "correct": true,
+      "elapsed_seconds": 17.56,
+      "error": null
+    },
+    {
+      "id": "RL8",
+      "language": "en",
+      "category": "multi_hop",
+      "expected_route": "multi_hop",
+      "query": "How does Cennini's advice on tempera compare to Vasari's on fresco?",
+      "actual_route": "multi_hop",
+      "correct": true,
+      "elapsed_seconds": 1.41,
+      "error": null
+    },
+    {
+      "id": "RL9",
+      "language": "fr",
+      "category": "multi_hop",
+      "expected_route": "multi_hop",
+      "query": "Comment les conseils de Cennini sur la d\u00e9trempe se comparent-ils \u00e0 ceux de Vasari sur la fresque ?",
+      "actual_route": "multi_hop",
+      "correct": true,
+      "elapsed_seconds": 1.14,
+      "error": null
+    },
+    {
+      "id": "RL10",
+      "language": "en",
+      "category": "image_qa",
+      "expected_route": "image_qa",
+      "query": "Show me a picture of an underpainting technique",
+      "actual_route": "image_qa",
+      "correct": true,
+      "elapsed_seconds": 11.69,
+      "error": null
+    },
+    {
+      "id": "RL11",
+      "language": "ar",
+      "category": "image_qa",
+      "expected_route": "image_qa",
+      "query": "\u0623\u0631\u0646\u064a \u0635\u0648\u0631\u0629 \u0644\u062a\u0642\u0646\u064a\u0629 \u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u062a\u062d\u0636\u064a\u0631\u064a",
+      "actual_route": "image_qa",
+      "correct": true,
+      "elapsed_seconds": 29.39,
+      "error": null
+    },
+    {
+      "id": "RL12",
+      "language": "en",
+      "category": "painting_lookup",
+      "expected_route": "painting_lookup",
+      "query": "Tell me about the Mona Lisa",
+      "actual_route": "painting_lookup",
+      "correct": true,
+      "elapsed_seconds": 2.14,
+      "error": null
+    },
+    {
+      "id": "RL13",
+      "language": "fr",
+      "category": "painting_lookup",
+      "expected_route": "painting_lookup",
+      "query": "Parle-moi de la Joconde",
+      "actual_route": "painting_lookup",
+      "correct": true,
+      "elapsed_seconds": 30.5,
+      "error": null
+    },
+    {
+      "id": "RL14",
+      "language": "ar",
+      "category": "painting_lookup",
+      "expected_route": "painting_lookup",
+      "query": "\u0623\u062e\u0628\u0631\u0646\u064a \u0639\u0646 \u0644\u0648\u062d\u0629 \u0627\u0644\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627",
+      "actual_route": "painting_lookup",
+      "correct": true,
+      "elapsed_seconds": 1.73,
+      "error": null
+    },
+    {
+      "id": "RL15",
+      "language": "en",
+      "category": "product_search",
+      "expected_route": "product_search",
+      "query": "What's a good brush for glazing techniques?",
+      "actual_route": "product_search",
+      "correct": true,
+      "elapsed_seconds": 30.94,
+      "error": null
+    },
+    {
+      "id": "RL16",
+      "language": "fr",
+      "category": "product_search",
+      "expected_route": "product_search",
+      "query": "Quel est un bon pinceau pour les techniques de glacis ?",
+      "actual_route": "retrieval_qa",
+      "correct": false,
+      "elapsed_seconds": 1.09,
+      "error": null
+    },
+    {
+      "id": "RL17",
+      "language": "en",
+      "category": "invoice",
+      "expected_route": "invoice",
+      "query": "How much would the brushes you found cost in total?",
+      "actual_route": "invoice",
+      "correct": true,
+      "elapsed_seconds": 31.49,
+      "error": null
+    },
+    {
+      "id": "RL18",
+      "language": "en",
+      "category": "color_palette",
+      "expected_route": "color_palette",
+      "query": "Give me a complementary color scheme based on cerulean blue",
+      "actual_route": "color_palette",
+      "correct": true,
+      "elapsed_seconds": 1.95,
+      "error": null
+    },
+    {
+      "id": "RL19",
+      "language": "fr",
+      "category": "color_palette",
+      "expected_route": "color_palette",
+      "query": "Donne-moi un sch\u00e9ma de couleurs compl\u00e9mentaires \u00e0 partir du bleu c\u00e9rul\u00e9",
+      "actual_route": "color_palette",
+      "correct": true,
+      "elapsed_seconds": 19.36,
+      "error": null
+    },
+    {
+      "id": "RL20",
+      "language": "en",
+      "category": "personal_docs",
+      "expected_route": "personal_docs",
+      "query": "What does the PDF I just uploaded say about this?",
+      "actual_route": "personal_docs",
+      "correct": true,
+      "elapsed_seconds": 0.92,
+      "error": null
+    },
+    {
+      "id": "RL21",
+      "language": "ar",
+      "category": "personal_docs",
+      "expected_route": "personal_docs",
+      "query": "\u0645\u0627\u0630\u0627 \u064a\u0642\u0648\u0644 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0630\u064a \u0631\u0641\u0639\u062a\u0647 \u0644\u0644\u062a\u0648 \u0639\u0646 \u0647\u0630\u0627 \u0627\u0644\u0645\u0648\u0636\u0648\u0639\u061f",
+      "actual_route": "retrieval_qa",
+      "correct": false,
+      "elapsed_seconds": 18.59,
+      "error": null
+    },
+    {
+      "id": "RL22",
+      "language": "en+fr",
+      "category": "retrieval_qa",
+      "expected_route": "retrieval_qa",
+      "query": "What is glacis, comme technique de peinture \u00e0 l'huile ?",
+      "actual_route": "retrieval_qa",
+      "correct": true,
+      "elapsed_seconds": 7.72,
+      "error": null
+    },
+    {
+      "id": "RL23",
+      "language": "en+ar",
+      "category": "painting_lookup",
+      "expected_route": "painting_lookup",
+      "query": "Tell me about \u0644\u0648\u062d\u0629 \u0627\u0644\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627",
+      "actual_route": "retrieval_qa",
+      "correct": false,
+      "elapsed_seconds": 32.83,
+      "error": null
+    },
+    {
+      "id": "RL24",
+      "language": "fr+ar",
+      "category": "product_search",
+      "expected_route": "product_search",
+      "query": "Je cherche un bon pinceau \u0644\u0644\u062a\u0642\u0646\u064a\u0627\u062a \u0627\u0644\u0632\u062c\u0627\u062c\u064a\u0629",
+      "actual_route": "product_search",
+      "correct": true,
+      "elapsed_seconds": 1.14,
+      "error": null
+    },
+    {
+      "id": "RL25",
+      "language": "ar+en",
+      "category": "color_palette",
+      "expected_route": "color_palette",
+      "query": "\u0623\u0639\u0637\u0646\u064a complementary color scheme \u0644\u0644\u0644\u0648\u0646 \u0627\u0644\u0623\u0632\u0631\u0642 \u0627\u0644\u0633\u0645\u0627\u0648\u064a",
+      "actual_route": "color_palette",
+      "correct": true,
+      "elapsed_seconds": 18.92,
+      "error": null
+    },
+    {
+      "id": "RL26",
+      "language": "arabizi",
+      "category": "retrieval_qa",
+      "expected_route": "retrieval_qa",
+      "query": "kif ba7ad zeit mnih lal glazing bl oil painting?",
+      "bonus": true,
+      "actual_route": "retrieval_qa",
+      "correct": true,
+      "elapsed_seconds": 8.67,
+      "error": null
+    }
+  ],
+  "fidelity": null
+}

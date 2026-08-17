@@ -1,0 +1,26 @@
+# System B's own dependency set -- deliberately NOT shared with, or
+# overlapping the installation of, agents/requirements.txt or
+# mcp_server/requirements.txt. Genuinely independent stack: this
+# service is never `pip install`-ed into the same environment as System
+# A, only run as its own container / its own process, reachable purely
+# over HTTP (see this package's own server.py module docstring).
+
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.0
+python-dotenv>=1.0.0
+
+# The actual second agent framework -- see agent.py's own module
+# docstring for exactly which google-adk API surface this project's
+# code targets, and how a version mismatch degrades (never crashes
+# server.py's /quote route). The `[extensions]` extra is REQUIRED, not
+# optional, here -- it's what provides
+# google.adk.models.lite_llm.LiteLlm, the piece that lets this ADK
+# agent's model be Groq or local Ollama instead of Gemini (see agent.py's
+# own top docstring on why: matching this project's OWN "no paid APIs,
+# Groq is the one hosted exception, always with a free local fallback"
+# convention). Installing plain `google-adk` without this extra leaves
+# LiteLlm unimportable -- confirmed directly: `from
+# google.adk.models.lite_llm import LiteLlm` raises ImportError with
+# exactly this fix in its own message on a plain `google-adk` install.
+google-adk[extensions]>=1.0.0

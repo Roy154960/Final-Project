@@ -69,9 +69,9 @@ PAINTING_LOOKUP_SYNTHESIZE_PROMPT_TEMPLATE = """You are the painting-lookup spec
 You have been given two independent sources below: (1) whatever the local corpus of painting *technique* treatises happens to say about it, if anything, and (2) a summary and sources found on the internet (Wikipedia and other reputable art references).
 
 Rules:
-- Write ONE short, combined answer (a few sentences) using both sources where both have something to say.
+- Write ONE well-developed answer, combining both sources where both have something to say -- long enough to actually use what's in the corpus content and internet summary below, not compressed down to a single clause. A question that names a specific painting is asking to be told about it properly: cover what it depicts, who made it and when (if given), and whatever else the two sources below actually say -- typically a substantial paragraph, more if there's genuinely more to draw from either source, never padded with filler once the sources are used up. Never invent length by repeating yourself or adding vague generalities not grounded in either source -- if a source only gives you one real fact, one real fact plus an honest "that's what's available" is still correct; the target is USING everything given, not hitting a word count.
 - If the corpus has nothing relevant, say so in one clause and rely on the internet summary -- do not pretend the corpus covered it.
-- If the internet summary is missing (search failed or found nothing), rely on the corpus alone and say the internet lookup didn't return anything, rather than silently dropping that source.
+- The internet summary below is one of three states, not two: a real summary, a note that a summary couldn't be extracted but real sources WERE found (rely on what those source titles tell you, and say plainly that a full summary wasn't available -- never claim "nothing was found online" when sources are about to be listed below your answer, that's a direct contradiction), or a note that nothing was found online at all (rely on the corpus alone in that case, and say the internet lookup didn't return anything). Read which of the three you were actually given below and answer accordingly -- do not collapse the middle case into the "nothing found" case.
 - Never add facts from your own general knowledge that aren't present in one of the two sources given to you below.
 - Do not fabricate or alter any URL -- the source links are appended separately, after your answer, exactly as given to you; you do not need to (and must not) write out URLs yourself.
 - Always answer in the SAME language the painting name below was originally asked in. If it ends in a parenthetical English translation (e.g. "من رسم الموناليزا (who painted the Mona Lisa)") -- an earlier contextualize step adds this only to help retrieval match this mostly-English corpus -- that bracketed translation is NOT the language to answer in; it exists purely to help find the right chunks and search results. Write your actual answer in the language of the wording BEFORE the parenthetical. The corpus content and internet summary below may themselves be in a different language than the question (this corpus is not single-language, and the internet summary is usually English regardless) -- that's expected; read them in whatever language they're actually in, and write your answer, in the question's own language, from what they say.
@@ -192,11 +192,19 @@ SPECIALIST_DESCRIPTIONS = {
         "Builds an itemized invoice with a computed total price for art "
         "supply products the user has previously expressed interest in "
         "earlier in this conversation (from product_search's results). "
-        "Use when the user asks for a total price, an invoice, a receipt, "
-        "or 'how much would this all cost'. Has nothing to work with (and "
+        "Use when the user asks for a total price, an invoice, a "
+        "receipt, or 'how much would this all cost' -- AND ALSO "
+        "whenever the user's message names, restates, or clearly points "
+        "back at ONE OR MORE SPECIFIC product titles product_search "
+        "already showed earlier in this conversation ('I want the "
+        "Dainayw Fine Detail Paint Brush Set', 'I'll take these', 'give "
+        "me the second and fourth one'), even with no word like 'buy', "
+        "'total', or 'invoice' anywhere in the message -- naming an "
+        "already-shown product back IS the purchase signal on its own, "
+        "not a request to search again. Has nothing to work with (and "
         "will say so) if no product_search has happened yet this "
-        "conversation -- route to product_search first if the user hasn't "
-        "actually searched for any products yet."
+        "conversation -- route to product_search first if the user "
+        "hasn't actually searched for any products yet."
     ),
     "color_palette": (
         "Builds a color palette for the user's OWN painting -- either from "
@@ -218,15 +226,42 @@ SPECIALIST_DESCRIPTIONS = {
         "Answers a question about an image, PDF, or text file the user has "
         "personally uploaded/attached into THIS conversation -- never the "
         "shared main corpus of painting treatises. Use whenever the user "
-        "refers to 'this file', 'the document/image/PDF/text file I "
-        "uploaded/attached', 'the file I just sent', or otherwise clearly "
-        "means something they personally provided in this chat rather than "
-        "the corpus. Has nothing to work with (and will say so) if nothing "
-        "has been uploaded into this conversation yet -- route to "
-        "retrieval_qa instead for a question about the corpus itself. Does "
-        "NOT cover 'find corpus images similar to the one I uploaded' -- "
-        "that's a request to SEE other, different images, so it belongs to "
-        "image_qa instead, even though it also references an upload."
+        "refers to 'this file', 'this image', 'this picture', 'the "
+        "document/image/PDF/text file I uploaded/attached', 'the file I "
+        "just sent', or otherwise clearly means something they personally "
+        "provided in this chat rather than the corpus -- this includes a "
+        "bare 'explain this image', 'what is this', or 'what does this "
+        "show' sent right after an upload, even with no explicit 'I "
+        "uploaded' wording, since 'this' plainly refers to the image just "
+        "sent. Has nothing to work with (and will say so) if nothing has "
+        "been uploaded into this conversation yet -- route to retrieval_qa "
+        "instead for a question about the corpus itself. Does NOT cover "
+        "'find corpus images similar to the one I uploaded' -- that's a "
+        "request to SEE OTHER, different images, so it belongs to image_qa "
+        "instead, even though it also references an upload. But any "
+        "request to have the uploaded image ITSELF explained, described, "
+        "or identified stays here, never image_qa -- image_qa cannot see "
+        "or describe the user's own upload, it can only search for or "
+        "display OTHER images."
+    ),
+    "framing_quote": (
+        "Gets a framing, glazing, and shipping cost ESTIMATE for a "
+        "FINISHED artwork -- the ONLY specialist that calls out to "
+        "System B (an independent framing/shipping service, a separate "
+        "Google ADK service in its own container, reached over the "
+        "network, never the corpus or a local calculation). Use for "
+        "'how much to frame/ship this painting', 'what would it cost to "
+        "get this framed and sent to <country>', or any request that "
+        "names a SIZE plus a shipping DESTINATION for a piece of art. "
+        "Needs three things in the message to actually run -- "
+        "dimensions, a medium, and a destination country -- and will "
+        "ask for whichever is missing rather than guess; that's expected "
+        "behavior, not a failure. Never route a request for raw ART "
+        "SUPPLIES (brushes, canvas, paint) here -- that's product_search, "
+        "which has zero framing/shipping data of its own. Never route a "
+        "request to total up previously-found SUPPLY prices here either "
+        "-- that's invoice. framing_quote is specifically about getting "
+        "a FINISHED piece framed and delivered somewhere, nothing else."
     ),
 }
 
@@ -259,6 +294,7 @@ SPECIALIST_PUBLIC_DESCRIPTIONS = {
     "invoice": "Builds an itemized invoice for art supplies found earlier in this chat.",
     "color_palette": "Generates a color palette from a color, hex code, or mood.",
     "personal_docs": "Answers questions about a file you've uploaded into this conversation.",
+    "framing_quote": "Gets a framing and shipping cost estimate for a finished artwork.",
 }
 
 
@@ -294,9 +330,27 @@ SPECIALIST_ROUTING_EXAMPLES = {
         'named -- asking for OTHER works) -> retrieval_qa, not painting_lookup'
     ),
     "product_search": '"What\'s a good brush for glazing techniques?" -> product_search',
-    "invoice": '"How much would the brushes you found cost in total?" -> invoice',
+    "invoice": (
+        '"How much would the brushes you found cost in total?" -> invoice\n'
+        '- "I want the Dainayw Fine Detail Paint Brush Set" (a product '
+        'title product_search already showed earlier this conversation) '
+        '-> invoice, NOT product_search again -- naming it back is the '
+        'purchase signal on its own'
+    ),
+    "framing_quote": (
+        '"How much would it cost to frame and ship this 16x20 inch oil '
+        'painting to France?" -> framing_quote\n'
+        '- "What\'s a good brush for glazing techniques?" (a SUPPLY, not a '
+        'finished piece) -> product_search, NOT framing_quote'
+    ),
     "color_palette": '"Give me a complementary color scheme based on cerulean blue" -> color_palette',
-    "personal_docs": '"What does the PDF I just uploaded say about this?" -> personal_docs',
+    "personal_docs": (
+        '"What does the PDF I just uploaded say about this?" -> personal_docs\n'
+        '- "Explain this image" (sent right after uploading an image, no '
+        'other context given) -> personal_docs, NOT image_qa -- "this '
+        'image" means the one just uploaded, and explaining it is not a '
+        'request to see a DIFFERENT or similar corpus image'
+    ),
 }
 
 
@@ -317,10 +371,11 @@ Specific routing distinctions worth getting right (each one has caused a real mi
 - A message that is ONLY a greeting, thanks, or social small talk -- "hi", "hello", "hey", "good morning", "thanks!" -- with no actual question about art or painting anywhere in it -> retrieval_qa. retrieval_qa replies directly and briefly to this itself, without retrieving anything -- do not treat a bare greeting as a content question needing a citation, and do not route it to corpus_meta or any other specialist.
 - A question that names one SPECIFIC famous painting by title (e.g. "the Mona Lisa", "Starry Night") -> painting_lookup, not retrieval_qa. painting_lookup checks the corpus itself as one of its two sources, so nothing is lost by not using retrieval_qa first. This does NOT extend to a follow-up asking what OTHER works the same artist made ("what else did X paint", "what other paintings did she make", "did he make anything else") -- that names no single artwork, so it stays with retrieval_qa; painting_lookup's own internet lookup has nothing to search for without one specific named piece to look up.
 - A question about buying, price, or comparing physical art SUPPLIES/TOOLS (brushes, canvases, paints, easels) -> product_search, ALWAYS, even if the question is phrased like a technique question (e.g. "what's a good brush for glazing" is still a product question, not a retrieval_qa technique question -- "how do I glaze" IS a retrieval_qa technique question). The corpus has zero product data, so retrieval_qa or corpus_meta can never correctly answer a product question.
-- A request to SEE, VIEW, or get a picture of something -> image_qa. A request to have something EXPLAINED in words -> retrieval_qa or painting_lookup as appropriate, not image_qa.
-- A request for a total price, invoice, or receipt for products already discussed -> invoice.
+- A request to SEE, VIEW, or get a picture of something FROM THE CORPUS -> image_qa. A request to have something EXPLAINED in words -> retrieval_qa or painting_lookup as appropriate, not image_qa. EXCEPTION -- read the personal_docs rule below FIRST whenever the message could be about something the user uploaded: if the picture to see, or the thing to be explained, is an image the user personally uploaded into THIS conversation (e.g. "explain this image", "what is this", asked right after an upload, with no mention of the corpus) -> personal_docs instead, never image_qa and never retrieval_qa/painting_lookup. Only fall back to this SEE/EXPLAIN rule as written when no personal upload is in play.
+- A request for a total price, invoice, or receipt for products already discussed -> invoice. This ALSO covers a message that names, restates, or clearly points back at ONE OR MORE SPECIFIC products product_search already returned earlier in this conversation -- a product title repeated back verbatim or near-verbatim, "I want these", "I'll take the first one", "give me the Dainayw set" -> invoice too, even with no explicit "buy"/"total"/"invoice"/"purchase" wording at all. Naming an already-shown item back IS the purchase signal by itself. Do NOT route this back to product_search for another live search of the same items -- CONFIRMED live-run problem this avoids: product_search is a real-time web search, not a cache, so repeating it for something already found can return a DIFFERENT, sometimes worse, result set for the exact same query, occasionally losing the pricing data invoice actually needs -- re-searching something already named back is actively harmful, not just a slower path to the same answer. Only route to product_search again if the user is clearly asking to see NEW, DIFFERENT, or MORE options than what was already shown, not naming back something already on the list.
+- A request to get a FINISHED artwork framed and/or shipped somewhere -- naming (or implying) a size plus a shipping destination, e.g. "how much to frame and ship this painting to Lebanon" -> framing_quote, ALWAYS, even if it's also phrased like a price question. Do NOT route this to product_search (that's for buying raw SUPPLIES -- brushes, canvas, paint -- never a framing/shipping service) or to invoice (that only totals supplies already found via product_search, and has no framing/shipping data at all). framing_quote calls an entirely separate service for this, so it's the only specialist with real numbers for it.
 - A request to GENERATE, SUGGEST, or PICK colors, a color palette, or a color scheme (monochromatic/analogous/complementary/triadic) for the user's own painting -> color_palette, ALWAYS, even if phrased as a question about what a color or mood "means" or "feels like". This includes the reverse direction too (naming a mood/feeling and asking what color fits it). Only route a color-THEORY question to retrieval_qa if it explicitly asks what a specific historical treatise in the corpus says about color theory, not to generate anything new.
-- A question that refers to a file, image, or PDF the user personally uploaded or attached IN THIS CONVERSATION ("this file", "the document I attached", "what does my PDF say") -> personal_docs, never retrieval_qa or corpus_meta -- those two only ever see the shared main corpus, never anything the user personally provided in chat.
+- A question that refers to a file, image, or PDF the user personally uploaded or attached IN THIS CONVERSATION ("this file", "this image", "this picture", "the document I attached", "what does my PDF say", or a bare "explain this" / "what is this" sent right after an upload) -> personal_docs, never retrieval_qa, corpus_meta, OR image_qa -- none of those three see anything the user personally provided in chat; retrieval_qa/corpus_meta only see the shared corpus, and image_qa can only search or display OTHER images, never explain the upload itself. This rule takes PRIORITY over the SEE/VIEW -> image_qa rule above whenever an upload is what's actually being asked about -- image_qa stays reserved for corpus images and for an explicit image-to-image search request ("find images similar to / that resemble the one I uploaded").
 
 Worked examples (question -> correct route) -- when a real question closely resembles one of these, route it the same way:
 {routing_examples}

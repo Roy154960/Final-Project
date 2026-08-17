@@ -23,6 +23,9 @@ Examples:
     # Advanced ask: route the query, expand it, rerank, then compress context
     python pipeline.py ask "What does the report say about Q3 revenue?" \
         --embedder hf --store chroma --retrieval router --rerank --compress --generator ollama
+
+    # Wipe the corpus for a fresh start (prompts for confirmation)
+    python pipeline.py clear --all
 """
 
 import argparse
@@ -624,6 +627,162 @@ def cmd_ask(args):
     print(f"\n--- Answer ({generator.name}) ---\n{answer}")
 
 
+def _clear_vector_collection(store_name: str, which: str, embedder_choice: str) -> None:
+    """
+    Deletes then immediately recreates the named ChromaDB/Qdrant
+    collection -- leaves a genuinely empty, immediately-usable
+    collection behind, not just one whose count() happens to read 0,
+    and not a half-deleted, broken one either.
+
+    `which`: "text" (CHROMA_COLLECTION/QDRANT_COLLECTION -- everything
+    retrieval_qa and friends search) or "images" (CHROMA_IMAGE_COLLECTION/
+    QDRANT_IMAGE_COLLECTION -- the separate CLIP-embedding collection;
+    see pipeline.py's own get_image_store docstring for why it's kept
+    apart from the text one). Recreating "text" does NOT remove the
+    image-caption chunks build_caption_chunks() dual-indexes into the
+    TEXT store alongside real prose (see that function's own docstring)
+    -- those live in the SAME collection as everything else and are
+    cleared right along with it; there's no way to keep "only the
+    prose" half of a text-collection clear.
+
+    `embedder_choice`: only actually used for `--store qdrant`, where
+    recreating a collection needs a real vector dimensionality up
+    front -- Qdrant collections are dimension-fixed at creation time,
+    unlike Chroma's (see ChromaStore.__init__: no dimensions argument
+    at all, Chroma infers this per-upsert). Loading a real embedder
+    just to read its own .dimensions attribute is the SAME thing
+    cmd_ingest/cmd_ask already do (see get_store's own call sites
+    above) -- reused here rather than hardcoding a dimension number
+    that could silently bake in the WRONG size and break every future
+    upsert against a freshly "cleared" Qdrant collection. Chroma's own
+    path below never loads an embedder at all -- ignored entirely,
+    since Chroma doesn't need it.
+    """
+    from config import (
+        CHROMA_COLLECTION, CHROMA_IMAGE_COLLECTION,
+        QDRANT_COLLECTION, QDRANT_IMAGE_COLLECTION,
+    )
+
+    if store_name == "chroma":
+        collection_name = CHROMA_COLLECTION if which == "text" else CHROMA_IMAGE_COLLECTION
+        dimensions = 0  # unused by ChromaStore -- see this function's own docstring
+    else:
+        collection_name = QDRANT_COLLECTION if which == "text" else QDRANT_IMAGE_COLLECTION
+        embedder = get_embedder("clip" if which == "images" else embedder_choice)
+        dimensions = embedder.dimensions
+
+    store = get_store(store_name, dimensions, collection_name=collection_name)
+    before = store.count()
+    store._client.delete_collection(collection_name)
+    # Recreate through the SAME constructor path (get_store -> ChromaStore/
+    # QdrantStore.__init__) every other part of this project already uses
+    # to create a collection, rather than re-implementing the creation
+    # params (distance metric, vector size) by hand a second time here.
+    get_store(store_name, dimensions, collection_name=collection_name)
+    print(f"  Cleared {store_name} '{which}' collection ({collection_name}): {before} item(s) removed.")
+
+
+def _clear_directory(path: Path, label: str) -> None:
+    """
+    Deletes every FILE inside `path`, recursively, then removes any
+    subdirectories left empty by that -- but never the top-level `path`
+    itself, so anything elsewhere in this project that assumes
+    RAW_DOCS_DIR/CACHE_DIR/PERSONAL_UPLOADS_DIR exists as a directory
+    (see config.py's own startup `for d in (...): d.mkdir(...)` loop)
+    keeps working immediately afterward without needing that loop to
+    run again first.
+    """
+    path = Path(path)
+    if not path.exists():
+        print(f"  {label}: nothing to clear ({path} doesn't exist).")
+        return
+    n_files = 0
+    for item in path.rglob("*"):
+        if item.is_file():
+            item.unlink()
+            n_files += 1
+    # Deepest-first so a parent directory is only removed after its own
+    # now-empty children already have been.
+    for item in sorted((p for p in path.rglob("*") if p.is_dir()), key=lambda p: -len(p.parts)):
+        try:
+            item.rmdir()
+        except OSError:
+            pass  # not actually empty (a hidden/system file survived unlink) -- leave it, not worth failing the whole clear over
+    print(f"  Cleared {label} ({path}): {n_files} file(s) removed.")
+
+
+_CLEAR_TARGET_DESCRIPTIONS = {
+    "text": "the main TEXT collection -- every retrieval_qa/multi_hop/painting_lookup chunk, "
+            "INCLUDING dual-indexed image captions (see build_caption_chunks)",
+    "images": "the separate IMAGE collection -- CLIP embeddings image_qa searches",
+    "raw_files": "data/raw -- staged source files/images from past ingestion runs",
+    "cache": "the embedding cache -- safe to clear, just means the next ingest recomputes "
+             "embeddings instead of reusing cached ones",
+    "personal_uploads": "data/personal_uploads -- files people have attached directly into "
+                         "chat conversations (personal_docs/personal_rag), separate from the "
+                         "main corpus",
+}
+
+
+def cmd_clear(args):
+    """
+    Empties the local RAG -- deletes and recreates the requested vector
+    collection(s), and/or deletes the contents of the requested local
+    data directories, so a fresh `ingest` run starts from genuinely
+    nothing rather than layering on top of whatever was there before.
+
+    Nothing is cleared with NO flags at all and no --all -- an empty
+    selection prints what's available and exits, rather than silently
+    doing nothing (easy to misread as "it worked") or guessing a
+    destructive default. See _CLEAR_TARGET_DESCRIPTIONS above for
+    exactly what each flag/--all actually touches.
+    """
+    if args.all:
+        targets = ["text", "images", "raw_files"]
+    else:
+        targets = [
+            name for name, flag in (
+                ("text", args.text), ("images", args.images),
+                ("raw_files", args.raw_files), ("cache", args.cache),
+                ("personal_uploads", args.personal_uploads),
+            ) if flag
+        ]
+
+    if not targets:
+        print("Nothing selected -- pass --all, or one or more of:")
+        for name, desc in _CLEAR_TARGET_DESCRIPTIONS.items():
+            print(f"  --{name.replace('_', '-')}: {desc}")
+        print("\nRun `python pipeline.py clear --help` for the full flag list. Nothing was deleted.")
+        return
+
+    print(f"About to clear ({args.store}):")
+    for t in targets:
+        print(f"  - {_CLEAR_TARGET_DESCRIPTIONS[t]}")
+
+    if not args.yes:
+        confirm = input("\nThis is IRREVERSIBLE. Type 'yes' to continue: ").strip().lower()
+        if confirm != "yes":
+            print("Cancelled -- nothing was deleted.")
+            return
+
+    print()
+    if "text" in targets:
+        _clear_vector_collection(args.store, "text", args.embedder)
+    if "images" in targets:
+        _clear_vector_collection(args.store, "images", args.embedder)
+    if "raw_files" in targets:
+        from config import RAW_DOCS_DIR
+        _clear_directory(RAW_DOCS_DIR, "raw source files")
+    if "cache" in targets:
+        from embeddings.cache import CACHE_DIR
+        _clear_directory(CACHE_DIR, "embedding cache")
+    if "personal_uploads" in targets:
+        from config import PERSONAL_UPLOADS_DIR
+        _clear_directory(PERSONAL_UPLOADS_DIR, "personal uploads")
+
+    print("\nDone. Run `python pipeline.py ingest ...` to rebuild from a clean slate.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Local multimodal RAG pipeline")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -698,6 +857,32 @@ def main():
     ask_parser.add_argument("--cache", action="store_true", help="Cache embeddings on disk")
     ask_parser.add_argument("--top-k", dest="top_k", type=int, default=5)
     ask_parser.set_defaults(func=cmd_ask)
+
+    clear_parser = subparsers.add_parser(
+        "clear", help="Empty the local RAG -- delete and recreate vector collection(s) and/or "
+                      "clear local data directories, for a genuinely fresh start"
+    )
+    clear_parser.add_argument("--store", choices=["chroma", "qdrant"], default="chroma")
+    clear_parser.add_argument("--embedder", choices=["hf", "ollama", "clip"], default="hf",
+                               help="Only used with --store qdrant, to determine the recreated "
+                                    "text collection's own vector size -- see "
+                                    "_clear_vector_collection's own docstring. Ignored for "
+                                    "--store chroma (not needed there).")
+    clear_parser.add_argument("--all", action="store_true",
+                               help="Clear text + images + raw_files (the core corpus) -- NOT "
+                                    "cache or personal_uploads, see those flags below if you "
+                                    "want those too")
+    clear_parser.add_argument("--text", action="store_true", help="Clear the main text collection")
+    clear_parser.add_argument("--images", action="store_true", help="Clear the CLIP image collection")
+    clear_parser.add_argument("--raw-files", dest="raw_files", action="store_true",
+                               help="Delete data/raw's staged source files")
+    clear_parser.add_argument("--cache", action="store_true", help="Delete the embedding cache")
+    clear_parser.add_argument("--personal-uploads", dest="personal_uploads", action="store_true",
+                               help="Delete data/personal_uploads -- per-conversation chat "
+                                    "attachments, separate from the main corpus")
+    clear_parser.add_argument("-y", "--yes", action="store_true",
+                               help="Skip the interactive confirmation prompt")
+    clear_parser.set_defaults(func=cmd_clear)
 
     args = parser.parse_args()
     args.func(args)

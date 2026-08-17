@@ -45,27 +45,57 @@ from typing import Any, Optional
 
 import requests
 
-from config import GROQ_API_KEY
+from config import GROQ_API_KEY, GROQ_SMALL_MODEL
 import usage_tracker
 
 GROQ_API_BASE = "https://api.groq.com/openai/v1"
 
 # Generous but bounded -- a hosted call over the open internet needs a
 # real ceiling so one slow/stuck request can't hang a chat turn
-# indefinitely -- long enough for a normal reasoning/generation/vision
+# indefinitely -- long enough for a normal TEXT reasoning/generation
 # call on Groq's own famously-fast inference under ordinary conditions.
 # Overridable via env var for anyone on a slow connection.
 GROQ_REQUEST_TIMEOUT_SECONDS = float(os.environ.get("GROQ_REQUEST_TIMEOUT_SECONDS", "20"))
+
+# Separate, longer timeout for VISION calls specifically -- see
+# groq_chat_completion's own `timeout` parameter and vlm/groq_vlm.py's
+# GroqVLM._generate, the one caller that passes this instead of the
+# plain text timeout above. CONFIRMED live problem this fixes: a vision
+# request's payload is a full base64-encoded image embedded in the JSON
+# body -- routinely tens to hundreds of KB, versus a text completion's
+# few hundred bytes to a couple KB -- and requests' `timeout` bounds the
+# WRITE (upload) phase of a request, not just how long the server takes
+# to respond. A live run hit `TimeoutError('The write operation timed
+# out')` while still trying to SEND a vision request, well before Groq's
+# server ever started processing it -- 20s was simply too tight to
+# finish uploading an image payload over a slower connection, even
+# though Groq's own inference is fast once a request actually arrives.
+# Overridable via env var, same as the text one above.
+GROQ_VISION_REQUEST_TIMEOUT_SECONDS = float(os.environ.get("GROQ_VISION_REQUEST_TIMEOUT_SECONDS", "60"))
 
 # Ceiling on how long the one-retry-on-429 path (see groq_chat_completion's
 # own docstring) will ever sleep, no matter what Groq's `retry-after`
 # header says -- a single reasoning call blocking for an unbounded amount
 # of time defeats the entire point of Groq being the FAST path (that's
-# what local Ollama fallback is for). Groq's documented retry-after values
-# for a single-request-over-budget case are normally well under this
-# anyway; this only matters as a backstop against an unusually large
-# value.
-_MAX_RETRY_AFTER_SLEEP_SECONDS = 8.0
+# what local Ollama fallback is for).
+#
+# RAISED from 8.0 to 15.0 after a confirmed live-run inefficiency, not a
+# hypothetical one: a real session under active back-to-back testing hit
+# `retry-after='12'` -- capped down to 8.0s under the old value, so the
+# retry fired 4 seconds too early and got hit with a SECOND 429
+# immediately (`retry-after=23s` that time), burning the one retry this
+# function allows for nothing and falling back to local Ollama (a
+# noticeably weaker model -- see specialists.py's own
+# _looks_like_degenerate_repeat for a confirmed case of exactly how much
+# weaker) when a few more seconds of waiting would have let the SAME
+# retry actually succeed on Groq. 15.0s comfortably covers that specific
+# 12s observation while still refusing to wait out an unusually large
+# value (the 23s second-429 in that same session, for instance) --
+# still a real ceiling, just one sized off an actual observed rate-limit
+# recovery window instead of an arbitrary round number. Overridable via
+# env var, same as GROQ_VISION_REQUEST_TIMEOUT_SECONDS above, if your
+# own Groq account's free-tier rate-limit windows run differently.
+_MAX_RETRY_AFTER_SLEEP_SECONDS = float(os.environ.get("GROQ_MAX_RETRY_AFTER_SLEEP_SECONDS", "15.0"))
 
 
 def _log(msg: str) -> None:
@@ -90,6 +120,54 @@ def _parse_retry_after(raw: Optional[str]) -> Optional[float]:
     except ValueError:
         return None
     return max(0.0, min(seconds, _MAX_RETRY_AFTER_SLEEP_SECONDS))
+
+
+def _is_transient_json_validate_failure(resp: requests.Response) -> bool:
+    """
+    True if `resp` is Groq's own `HTTP 400 json_validate_failed` --
+    "Failed to validate JSON. Please adjust your prompt." -- with an
+    EMPTY (or missing) `failed_generation` field specifically, meaning
+    the model produced no usable output at all rather than a real,
+    schema-violating one. Distinguishing these matters: a genuinely
+    malformed generation (some actual, wrong JSON in `failed_generation`)
+    means the model tried and got the shape wrong, which is unlikely to
+    self-correct on an immediate retry with the identical prompt; an
+    EMPTY `failed_generation` looks more like a one-off decoding hiccup
+    -- CONFIRMED as an ongoing, model-side issue specifically with
+    `openai/gpt-oss-20b` (multiple Groq community reports describing
+    exactly this shape), not something wrong with the request itself. A
+    live run hit this three times in one session, each time immediately
+    falling back to local Ollama (a noticeably weaker model for this
+    project's own routing/reasoning calls) without ever trying Groq
+    again for that call -- worth one quick, cheap retry first, same
+    "give Groq a second, honest shot before falling back" reasoning
+    groq_chat_completion's own 429-retry path already uses, just for a
+    different failure shape.
+
+    Returns False (no retry) for any other 400 -- a real schema
+    mismatch, a bad API key shape, an oversized payload, etc. -- where
+    retrying the identical request is very unlikely to produce a
+    different result and would just add latency before the (correct,
+    expected) fallback to local Ollama.
+    """
+    if resp.status_code != 400:
+        return False
+    try:
+        body = resp.json()
+    except ValueError:
+        return False
+    error = body.get("error") or {}
+    if error.get("code") != "json_validate_failed":
+        return False
+    return not error.get("failed_generation")
+
+
+# How long to wait before the one json_validate_failed retry below --
+# deliberately short and fixed (not Groq's own retry-after logic, which
+# only applies to 429s) since this isn't a rate-limit backoff, just
+# enough of a pause that two back-to-back identical requests don't read
+# as hammering Groq's API over a single transient decoding hiccup.
+_JSON_VALIDATE_RETRY_DELAY_SECONDS = 1.0
 
 
 class GroqUnavailableError(RuntimeError):
@@ -135,6 +213,7 @@ def groq_chat_completion(
     temperature: float = 0.0,
     max_tokens: Optional[int] = None,
     reasoning_effort: Optional[str] = None,
+    timeout: Optional[float] = None,
     node: Optional[str] = None,
     request_id: Optional[str] = None,
     thread_id: Optional[str] = None,
@@ -189,6 +268,13 @@ def groq_chat_completion(
     existing Ollama fallback takes over unchanged -- this only removes
     the single-429-and-give-up reflex, it doesn't change what happens
     when Groq is genuinely out of headroom for longer than that.
+
+    Separately, also retries ONCE on a specific HTTP 400 shape -- Groq's
+    own `json_validate_failed` with an empty `failed_generation` -- see
+    `_is_transient_json_validate_failure`'s own docstring for exactly
+    why that one shape (and only that shape) is worth a retry rather
+    than an immediate fall-through to the caller's Ollama fallback.
+
     Called on a worker thread by _agenerate's own run_in_executor (see
     llm_provider.py), so this function's blocking `time.sleep` below
     never stalls the event loop other concurrent turns are running on.
@@ -237,7 +323,26 @@ def groq_chat_completion(
                 "Content-Type": "application/json",
             },
             json=payload,
-            timeout=GROQ_REQUEST_TIMEOUT_SECONDS,
+            # CONFIRMED live problem this `timeout` override param
+            # exists for: a vision request's payload is a full base64-
+            # encoded image embedded in the JSON body (see vlm/
+            # groq_vlm.py's GroqVLM._encode_image) -- routinely tens to
+            # hundreds of KB even for a modest image, versus a text
+            # completion's payload which is a few hundred bytes to a
+            # couple KB of plain text. requests' `timeout` bounds the
+            # WRITE (upload) phase of the request, not just how long the
+            # server takes to respond -- a live run hit exactly this:
+            # `TimeoutError('The write operation timed out')` while
+            # still trying to SEND a vision request, well before Groq's
+            # server even started processing it. The default
+            # GROQ_REQUEST_TIMEOUT_SECONDS (20s) is generous for a text
+            # completion's tiny payload but was too tight for finishing
+            # the upload of an image payload over a slower connection --
+            # see GroqVLM._generate's own call for the longer timeout it
+            # passes here instead. Defaults to
+            # GROQ_REQUEST_TIMEOUT_SECONDS when the caller doesn't
+            # override it, unchanged from before this parameter existed.
+            timeout=timeout if timeout is not None else GROQ_REQUEST_TIMEOUT_SECONDS,
         )
 
     t0 = time.perf_counter()
@@ -263,6 +368,25 @@ def groq_chat_completion(
             except requests.exceptions.RequestException as e:
                 usage_tracker.record_groq_failure(model, f"network error on retry: {e}")
                 raise GroqAPIError(f"Groq request failed on retry: {e}") from e
+    elif _is_transient_json_validate_failure(resp):
+        # See _is_transient_json_validate_failure's own docstring for
+        # exactly why this specific 400 shape gets one retry -- same
+        # "give Groq a second shot before falling back" reasoning as the
+        # 429 branch above, just triggered by a different response shape
+        # and with a short fixed delay instead of Groq's own
+        # rate-limit-specific retry-after value (which doesn't apply
+        # here at all).
+        _log(
+            f"400 json_validate_failed for {model} (empty failed_generation -- "
+            f"looks transient, see this project's own comment) -- retrying once "
+            f"after {_JSON_VALIDATE_RETRY_DELAY_SECONDS:.1f}s"
+        )
+        time.sleep(_JSON_VALIDATE_RETRY_DELAY_SECONDS)
+        try:
+            resp = _post()
+        except requests.exceptions.RequestException as e:
+            usage_tracker.record_groq_failure(model, f"network error on retry: {e}")
+            raise GroqAPIError(f"Groq request failed on retry: {e}") from e
 
     latency_ms = round((time.perf_counter() - t0) * 1000, 1)
 
@@ -305,10 +429,18 @@ def groq_chat_completion(
 
 if __name__ == "__main__":
     # Smoke test: `python -m groq_client "What is the capital of France?"`
+    # Uses GROQ_SMALL_MODEL from config.py, not a hardcoded literal --
+    # this file's own model string went stale once before (hardcoded
+    # "llama-3.1-8b-instant" here kept working right up until Groq
+    # decommissioned it in 2026-08, at which point this smoke test would
+    # have started failing with a confusing 404 for a reason that had
+    # nothing to do with groq_client.py's own code), so importing the
+    # live value config.py already tracks means this can't drift out of
+    # sync with the rest of the project a second time.
     question = sys.argv[1] if len(sys.argv) > 1 else "Say hello in five words."
     result = groq_chat_completion(
         messages=[{"role": "user", "content": question}],
-        model="llama-3.1-8b-instant",
+        model=GROQ_SMALL_MODEL,
         node="smoke_test",
     )
     print(result["choices"][0]["message"]["content"])

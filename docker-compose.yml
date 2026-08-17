@@ -2,10 +2,23 @@
 # for Method 1, the manual `docker network create` + `docker run` walk-
 # through this is the compose equivalent of).
 #
-# Four services, one custom bridge network (inmind-net):
+# Five services, one custom bridge network (inmind-net). Four of them
+# (chroma-server, mcp-server, backend, frontend) are System A -- the
+# LangGraph pipeline -- wired together the same way they always have
+# been. The fifth, framing-agent, is System B: a genuinely independent
+# Google ADK + FastAPI service (see framing_agent/README.md) that
+# mcp-server reaches over plain HTTP (mcp_server/framing_tools.py) --
+# never a Python import, and deliberately NOT given a `depends_on`
+# relationship to mcp-server below -- these are two independent
+# systems, not one system with an extra startup step, and
+# mcp_server/server.py's own get_framing_quote tool already degrades
+# gracefully (see framing_tools.py's own module docstring) if
+# framing-agent isn't reachable yet, or at all.
 #
 #   chroma-server (8000) <---- mcp-server (8765) <---- backend (8001) <---- frontend (8080)
 #         ^_________________________________________________|
+#
+#   framing-agent (8090) <···· plain HTTP, no compose-level dependency ····· mcp-server
 #
 #   - chroma-server: owns the one Chroma SQLite connection; both
 #     mcp-server and backend reach it over HTTP (CHROMA_CLIENT_MODE=http)
@@ -21,14 +34,27 @@
 #   - frontend: the built React UI, served statically; talks to the
 #     backend from the BROWSER via its published host port, not over
 #     this compose network (see docker/frontend.Dockerfile's comment).
+#   - framing-agent: System B -- an independent Google ADK + FastAPI
+#     service (framing_agent/), its own container, its own Dockerfile
+#     (docker/framing_agent.Dockerfile), its own requirements.txt never
+#     installed into any System-A container. GROQ_API_KEY below is
+#     optional -- unset, this service tries local Ollama for the
+#     explanation instead, falling back further to a templated
+#     (non-LLM) one if that isn't reachable either; see
+#     framing_agent/server.py's own module docstring for the full
+#     Groq -> Ollama -> template order.
 #
 # Usage:
-#   cp .env.docker.example .env      # adjust OLLAMA_HOST / ports / etc.
+#   cp .env.docker.example .env      # adjust OLLAMA_HOST / GROQ_API_KEY / ports / etc.
 #   docker compose up --build
 #
 # Ollama itself is NOT a service here -- it's expected to already be
 # running on your host machine (`ollama serve`), same as your non-Docker
-# workflow. OLLAMA_HOST below points every container at it.
+# workflow. OLLAMA_HOST below points every container at it, including
+# framing-agent, which (like every other service here) tries Groq first
+# and falls back to that same host Ollama -- see local_rag/groq_client.py
+# and agents/llm_provider.py for the identical pattern on System A's own
+# side.
 
 services:
   chroma-server:
@@ -59,6 +85,32 @@ services:
       CHROMA_SERVER_HOST: chroma-server
       CHROMA_SERVER_PORT: "8000"
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      # PRE-EXISTING GAP CLOSED HERE: this container's own
+      # local_rag/config.py calls load_dotenv() (see that file's own
+      # docstring), but a container never has the project root's real
+      # .env file copied in (.dockerignore excludes it, same as any
+      # other Docker image would for a secrets file) -- so without this
+      # line, GROQ_API_KEY was NEVER actually reaching this container
+      # even if it's set in your real .env, and every reasoning call in
+      # this container (agents/llm_provider.py's GroqFallbackChatModel,
+      # generation/fallback_generator.py) was silently always falling
+      # straight to local Ollama, never actually attempting Groq at all
+      # -- confirmed by grep: this line was simply absent before.
+      # ${GROQ_API_KEY:-} reads it from the .env file docker-compose
+      # ITSELF loads (project root .env, via `cp .env.docker.example
+      # .env` per this file's own top comment), which is a different
+      # mechanism from load_dotenv() and doesn't have the same
+      # container-filesystem problem -- compose injects it as a real
+      # environment variable before this container's Python even starts.
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      # System B's URL (see this file's own top comment on why there's
+      # no depends_on to go with this) -- mcp_server/framing_tools.py
+      # reads this env var, falling back to http://localhost:8090 if
+      # unset, which is wrong INSIDE this container (no framing-agent on
+      # its own localhost) but harmless: get_framing_quote just degrades
+      # to "framing service unreachable" until this is set correctly,
+      # the same as if framing-agent were simply stopped.
+      FRAMING_AGENT_URL: http://framing-agent:8090
     extra_hosts:
       # Docker Desktop (Windows/Mac) already resolves this; Docker Engine
       # on Linux needs it added explicitly. Harmless either way.
@@ -110,6 +162,11 @@ services:
       CHROMA_SERVER_HOST: chroma-server
       CHROMA_SERVER_PORT: "8000"
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      # Same pre-existing gap fixed here as in mcp-server's own
+      # environment block above (see that block's own long comment) --
+      # this line was simply absent before, so this container's own
+      # reasoning calls were silently always local-Ollama-only too.
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -144,6 +201,51 @@ services:
       - backend
     restart: unless-stopped
 
+  # System B -- see this file's own top comment for why it has no
+  # depends_on to or from any other service here, and
+  # framing_agent/README.md for what this service actually does.
+  # Genuinely independent build context too: docker/framing_agent.
+  # Dockerfile only ever COPYs framing_agent/, never agents/,
+  # mcp_server/, or local_rag/ -- see that Dockerfile's own comment.
+  framing-agent:
+    build:
+      context: .
+      dockerfile: docker/framing_agent.Dockerfile
+    container_name: inmind-framing-agent
+    networks:
+      - inmind-net
+    environment:
+      PORT: "8090"
+      # All three optional -- see framing_agent/.env.example and
+      # framing_agent/server.py's own module docstring for the full
+      # Groq -> local Ollama -> template fallback order. Left entirely
+      # unset, this container still returns full pricing data from
+      # pricing.compute_quote() for every /quote call, just with a
+      # templated (non-LLM) explanation.
+      #
+      # SAME variable, same value, as mcp-server's and backend's own
+      # GROQ_API_KEY above -- one key in your .env covers all three
+      # containers, since it's the exact same free Groq account either
+      # way.
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      FRAMING_AGENT_GROQ_MODEL: ${FRAMING_AGENT_GROQ_MODEL:-}
+      FRAMING_AGENT_OLLAMA_MODEL: ${FRAMING_AGENT_OLLAMA_MODEL:-}
+      # SAME variable, same value, as every other service's own
+      # OLLAMA_HOST above -- this container needs it too now that its
+      # own fallback tier is local Ollama, not Gemini, and reaches your
+      # HOST machine's Ollama exactly the same way mcp-server/backend
+      # already do (see the extra_hosts entry right below).
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    extra_hosts:
+      # Same reasoning as mcp-server's and backend's own identical
+      # entry above -- needed here now too, for the same reason: this
+      # container's local-Ollama fallback tier reaches OLLAMA_HOST
+      # above, which points at the HOST machine, not another container.
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${FRAMING_AGENT_PORT:-8090}:8090"
+    restart: unless-stopped
+
 networks:
   inmind-net:
     driver: bridge
@@ -153,7 +255,9 @@ volumes:
   # NOTE: only four named volumes now -- mcp-server intentionally shares
   # backend-rag-data AND hf-cache with the backend service (see those
   # services' own volumes: comments above) rather than getting its own
-  # copies.
+  # copies. framing-agent (System B) has none at all -- it's fully
+  # stateless, every /quote call computed fresh from its own request
+  # body, nothing persisted between calls or restarts.
   backend-data:
   backend-rag-data:
   hf-cache:

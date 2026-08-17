@@ -209,7 +209,29 @@ ROUTE_FORMAT: Literal["json_schema", "json"] = os.environ.get(
 # minute on slow CPU-only hardware, so this needs real headroom rather
 # than a number tuned for GPU inference. Overridable via env var for
 # anyone who wants it tighter/looser than this default.
-TURN_TIMEOUT_SECONDS = float(os.environ.get("AGENT_API_TURN_TIMEOUT_SECONDS", "600"))
+#
+# RAISED from 600 to 1200 after a confirmed live-run timeout, not a
+# hypothetical one: a turn genuinely hit this ceiling and got cut off
+# with a 503 while the underlying work was still legitimately in
+# progress, not stuck -- a Groq 429 retry wait, THEN a large-tier
+# fallback to local Ollama (llama3.2), THEN a repeat-route override
+# trying a SECOND specialist (also falling back to local), THEN a
+# small-tier fallback to phi3 for the next supervisor call -- four-plus
+# sequential CPU-bound local generations chained into one turn, each
+# individually reasonable but adding up past the old ceiling well before
+# any of them was actually stuck. The specific incident that triggered
+# it (see local_rag/config.py's own comment) was Groq's two model IDs
+# being fully decommissioned, forcing EVERY call in the turn onto the
+# slow path instead of just occasional overflow -- fixing that removes
+# the worst-case FREQUENCY of this chain, but not the chain's own
+# worst-case DURATION when local fallback genuinely is needed (an
+# occasional real rate limit, a network hiccup), which is what this
+# ceiling actually has to budget for. 1200s is roughly double the old
+# ceiling -- generous headroom for that chained-fallback case without
+# going unbounded; a turn that's still not done after 20 minutes really
+# is worth cutting off with a clean error rather than leaving the
+# person waiting indefinitely with no feedback.
+TURN_TIMEOUT_SECONDS = float(os.environ.get("AGENT_API_TURN_TIMEOUT_SECONDS", "1200"))
 
 # Generous, single-developer-testing rate limit for this server's OWN
 # HTTP endpoints -- a DIFFERENT concern from Groq's own free-tier rate
