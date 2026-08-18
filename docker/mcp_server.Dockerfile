@@ -16,13 +16,15 @@
 # the real import chain and verified by actually importing
 # mcp_server.server against only this trimmed set.
 #
-# CURRENT STATE: torch/sentence-transformers/open-clip-torch are also
-# excluded entirely, on request, ahead of a planned switch to online/
-# hosted models -- UNLIKE that verified-unreachable set above, these ARE
-# currently imported by real code (server.py instantiates the embedder
-# and reranker eagerly at module level), so THIS CONTAINER WILL FAIL TO
-# START until that construction is rewired to a non-torch alternative.
-# See local_rag/requirements-docker.txt's header for the full breakdown.
+# CURRENT STATE: local_rag/requirements-docker.txt itself still excludes
+# torch/sentence-transformers/open-clip-torch, ahead of a planned switch
+# to online/hosted models -- but server.py instantiates the embedder and
+# reranker EAGERLY at module level, so without them THIS CONTAINER WOULD
+# FAIL TO START. A dedicated stopgap layer further down in this file
+# reinstalls just those three packages for this image only, until
+# server.py's eager construction is rewired to a non-torch alternative
+# (see that layer's own comment, and local_rag/requirements-docker.txt's
+# header, for the full breakdown).
 #
 # Build from the PROJECT ROOT:
 #   docker build -f docker/mcp_server.Dockerfile -t inmind-mcp-server:latest .
@@ -45,12 +47,59 @@ WORKDIR /app
 COPY mcp_server/requirements.txt mcp_server/requirements.txt
 COPY local_rag/requirements-docker.txt local_rag/requirements-docker.txt
 
-# NOTE: no torch install step here (removed on request) -- see
-# local_rag/requirements-docker.txt's header. UNLIKE backend, this means
-# THIS CONTAINER WILL FAIL TO START until server.py's eager embedder/
-# reranker construction is rewired -- see that same header for why.
 RUN pip install --no-cache-dir -r local_rag/requirements-docker.txt \
     && pip install --no-cache-dir -r mcp_server/requirements.txt
+
+# --- STOPGAP: restore torch/sentence-transformers/open-clip-torch, for
+# THIS image only. -----------------------------------------------------
+# local_rag/requirements-docker.txt deliberately excludes these (see its
+# own header) ahead of a planned switch to online/hosted models -- but
+# server.py still constructs HFEmbedder()/Reranker() EAGERLY at module
+# level (`_embedder = HFEmbedder()` / `_reranker = Reranker()`), so
+# without them this container crashes on every single start, before
+# FastMCP even binds a port. That rewiring (lazy construction + a
+# non-torch fallback) hasn't landed yet, so this layer exists purely to
+# keep the container alive until it does -- delete this whole block once
+# server.py no longer needs it.
+#
+# Deliberately NOT added back to local_rag/requirements-docker.txt itself
+# -- that file stays the shared, trimmed source for both backend AND
+# mcp-server, and backend's own request path never touched these to
+# begin with (personal_rag.py loads HFEmbedder lazily). Keeping this as
+# mcp-server's own extra layer means backend's image stays exactly as
+# lean as intended.
+#
+# Also matches what the corpus was actually embedded with: HFEmbedder's
+# default model (all-MiniLM-L6-v2, 384-dim). Swapping to a different
+# embedder (e.g. the non-torch embeddings/ollama_embedder.py) instead of
+# reinstalling these would put query embeddings in a different vector
+# space than what's already stored in Chroma -- silently wrong retrieval,
+# not just a crash. Not doing that here.
+#
+# CPU-only wheel via PyTorch's own index -- the default PyPI `torch`
+# resolves a much larger CUDA build this box will never use.
+#
+# open-clip-torch DELIBERATELY LEFT OUT, unlike the first version of this
+# layer -- it pulls in torchvision as a hard dependency, installed from
+# plain PyPI rather than the CPU-only index above, which produced a
+# version/ABI mismatch against this torch build (confirmed via container
+# logs: transformers, a sentence-transformers dependency, detects
+# torchvision is present and tries to use it, hitting "RuntimeError:
+# operator torchvision::nms does not exist" and taking the whole server
+# down at import time -- worse than the original problem, since it
+# doesn't even need vision support to happen). Without torchvision
+# installed AT ALL, transformers' own is_torchvision_available() check
+# correctly returns False and skips that code path entirely -- the
+# normal, well-tested case for any text-only sentence-transformers setup.
+# The only consumer of open-clip-torch is mcp_server/image_tools.py's
+# ClipEmbedder, which already lazy-loads and degrades cleanly if it's
+# missing (see that file's own `_embedder = None` comment) -- so
+# find_similar_images becomes unavailable rather than crash-looping the
+# server. Re-add open-clip-torch later only with torch/torchvision
+# versions pinned together deliberately (e.g. both from the same
+# https://download.pytorch.org/whl/cpu release), not as a bare name.
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir sentence-transformers
 
 # Same relative layout as the repo (mcp_server/ and local_rag/ as
 # siblings under the project root) -- _find_pipeline_root()'s candidate

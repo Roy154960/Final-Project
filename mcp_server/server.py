@@ -385,12 +385,58 @@ mcp = FastMCP("local-rag-server")
 # real opportunities for a library to print something unexpected.
 # ----------------------------------------------------------------------
 with _stdout_to_stderr():
-    _embedder = HFEmbedder()
     _store = ChromaStore(collection_name=CHROMA_COLLECTION)
     _corpus = _store.get_all()
-    _retriever = HybridRetriever(embedder=_embedder, store=_store, corpus=_corpus) if _corpus else None
-    _reranker = Reranker()
     _generator = FallbackGenerator(ollama_model=OLLAMA_GENERATION_MODELS[0])  # groq first, "llama3.2" fallback
+
+    # HFEmbedder/Reranker are the only two components here that need
+    # torch -- everything above (ChromaStore, FallbackGenerator) doesn't.
+    # If this image was built WITHOUT torch/sentence-transformers (see
+    # local_rag/requirements-docker.txt's header -- current Docker builds
+    # reinstall them as a stopgap layer in docker/mcp_server.Dockerfile,
+    # but that layer is meant to come back out once this is rewired
+    # properly), HFEmbedder()/Reranker() raise ImportError here. Letting
+    # that propagate used to kill the WHOLE process before FastMCP even
+    # bound a port -- every tool unavailable, including ones that never
+    # touched embeddings at all (corpus_meta, invoice, framing, color,
+    # web). Catching it here means the server still comes up and every
+    # non-retrieval tool still works; only retrieve() (and generate_answer()
+    # when called with no pre-supplied chunks) degrades, with a clear
+    # reason logged once at startup instead of an opaque crash loop.
+    #
+    # Deliberately `except Exception`, not just `except ImportError` --
+    # confirmed necessary the hard way: a torch/torchvision version
+    # mismatch inside this same import chain raised a bare RuntimeError
+    # ("operator torchvision::nms does not exist"), not an ImportError,
+    # and an ImportError-only guard let that crash the whole server right
+    # back through this same code path. This block's whole purpose is
+    # "degrade instead of dying" for an optional component -- any failure
+    # constructing it is reason enough to degrade, not just the specific
+    # exception type this was first written against.
+    try:
+        _embedder = HFEmbedder()
+        _reranker = Reranker()
+    except Exception as e:
+        _log(
+            f"WARNING: embedder/reranker unavailable ({type(e).__name__}: {e}). "
+            "retrieve() will return an empty list until this is fixed -- "
+            "either rebuild the image with a working torch/sentence-transformers "
+            "install, or rewire server.py to a non-torch embedder. Every "
+            "other tool is unaffected."
+        )
+        _embedder = None
+        _reranker = None
+
+    # Deliberately requires BOTH a working embedder AND a non-empty
+    # corpus -- HybridRetriever's dense-vector side has nothing to
+    # encode queries with if _embedder is None, so there's no useful
+    # partial mode (BM25-only) to fall back to here without changing
+    # HybridRetriever itself, which is out of scope for this guard.
+    _retriever = (
+        HybridRetriever(embedder=_embedder, store=_store, corpus=_corpus)
+        if _corpus and _embedder is not None
+        else None
+    )
 
 
 # ----------------------------------------------------------------------
