@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "local-rag": {
-      "command": "C:\\Users\\YOUR_USERNAME\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-      "args": ["C:\\absolute\\path\\to\\Production-RAG-System-main\\mcp_server\\server.py"]
-    }
-  }
-}

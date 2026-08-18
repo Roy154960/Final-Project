@@ -127,7 +127,7 @@ docker build -f docker/frontend.Dockerfile --build-arg VITE_API_BASE_URL=http://
 ### 3. Run chroma-server first (the others depend on it)
 
 ```
-docker run -d --restart unless-stopped --name chroma-server --network inmind-net -p 8000:8000 -v inmind-chroma-data:/chroma/data inmind-chroma-server:latest
+docker run -d --restart unless-stopped --name chroma-server --network inmind-net -p 8002:8000 multi-agentpipelinefinalversion-chroma-server:latest
 ```
 
 `--restart unless-stopped` on every container from here on isn't just
@@ -138,7 +138,7 @@ lost that race.
 Wait for it to come up (a few seconds), then confirm:
 
 ```
-curl http://localhost:8000/api/v2/heartbeat
+curl http://localhost:8002/api/v2/heartbeat
 ```
 
 ### 4. Run mcp-server -- then WAIT for it to report healthy
@@ -148,7 +148,7 @@ curl http://localhost:8000/api/v2/heartbeat
 manually — harmless to include on Desktop too.
 
 ```
-docker run -d --restart unless-stopped --name mcp-server --network inmind-net -p 8765:8765 --add-host host.docker.internal:host-gateway -e MCP_TRANSPORT=http -e MCP_SERVER_HOST=0.0.0.0 -e MCP_SERVER_PORT=8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -e FRAMING_AGENT_URL=http://framing-agent:8090 -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-mcp-server:latest
+docker run -d --restart unless-stopped --name mcp-server --network inmind-net -p 8765:8765 --add-host host.docker.internal:host-gateway -e MCP_TRANSPORT=http -e MCP_SERVER_HOST=0.0.0.0 -e MCP_SERVER_PORT=8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -e FRAMING_AGENT_URL=http://framing-agent:8090 -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface multi-agentpipelinefinalversion-mcp-server:latest
 ```
 
 **Do not move on to step 5 yet.** This image imports the same heavy ML
@@ -190,7 +190,7 @@ Two volumes worth noting here:
 Only once step 4's `docker ps` shows mcp-server as `healthy`:
 
 ```
-docker run -d --restart unless-stopped --name backend --network inmind-net -p 8001:8001 --add-host host.docker.internal:host-gateway -e AGENT_API_HOST=0.0.0.0 -e AGENT_API_PORT=8001 -e AGENT_API_CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080 -e AGENT_API_DB_PATH=/app/data/chat_history.sqlite3 -e MCP_TRANSPORT=http -e MCP_SERVER_URL=http://mcp-server:8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -v inmind-backend-data:/app/data -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-backend:latest
+docker run -d --restart unless-stopped --name backend --network inmind-net -p 8001:8001 --add-host host.docker.internal:host-gateway -e AGENT_API_HOST=0.0.0.0 -e AGENT_API_PORT=8001 -e AGENT_API_CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080 -e AGENT_API_DB_PATH=/app/data/chat_history.sqlite3 -e MCP_TRANSPORT=http -e MCP_SERVER_URL=http://mcp-server:8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -v inmind-backend-data:/app/data -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface multi-agentpipelinefinalversion-backend:latest
 ```
 
 Note `MCP_SERVER_URL=http://mcp-server:8765` — `mcp-server` here is the
@@ -203,7 +203,7 @@ subprocess.
 ### 6. Run frontend
 
 ```
-docker run -d --restart unless-stopped --name frontend --network inmind-net -p 8080:8080 inmind-frontend:latest
+docker run -d --restart unless-stopped --name frontend --network inmind-net -p 8080:8080 multi-agentpipelinefinalversion-frontend:latest
 ```
 
 ### 6b. Build and run framing-agent (System B — optional, independent)
@@ -216,8 +216,7 @@ System-A tool that talks to it) just reports the framing service as
 unreachable, the same as if you'd started it and then stopped it.
 
 ```
-docker build -f docker/framing_agent.Dockerfile -t inmind-framing-agent:latest .
-docker run -d --restart unless-stopped --name framing-agent --network inmind-net -p 8090:8090 --add-host host.docker.internal:host-gateway -e GROQ_API_KEY=your-key-here -e OLLAMA_HOST=http://host.docker.internal:11434 inmind-framing-agent:latest
+docker run -d --restart unless-stopped --name framing-agent --network inmind-net -p 8090:8090 --add-host host.docker.internal:host-gateway -e GROQ_API_KEY=your-key-here -e OLLAMA_HOST=http://host.docker.internal:11434 multi-agentpipelinefinalversion-framing-agent:latest
 ```
 
 `-e GROQ_API_KEY=...` is the same key/variable as mcp-server's and
@@ -303,47 +302,6 @@ docker compose down -v       # also deletes volumes -- clean slate
 ```
 
 ---
-
-## Does building manually first make `docker compose` faster?
-
-Yes, for two different reasons depending on how you run the `compose`
-step afterward.
-
-**`docker compose up --build`** re-runs the build, but Docker's build
-cache lives in the daemon, keyed by each Dockerfile instruction's
-content — not by which command (`docker build` vs `docker compose
-build`) triggered it. Method 1's `docker build` and Method 2's compose
-build point at the exact same Dockerfiles and the exact same build
-context (the project root), so as long as nothing in that context
-changed between the two, compose's build hits cache on every layer and
-mostly just re-tags the result — seconds, not the original 20-40 minutes.
-This is also why both Dockerfiles copy `requirements.txt` and run `pip
-install` *before* copying the rest of the source: a source-only change
-(editing `agents/specialists.py`, say) doesn't invalidate that cached
-`pip install` layer at all, in either method.
-
-**Plain `docker compose up` (no `--build`)** skips building entirely if
-an image already exists under the tag `docker-compose.yml` expects.
-That's exactly what the `image:` line under each service is for here —
-it's set to match Method 1's tags on purpose. So: build manually with
-Method 1's exact commands once, then `docker compose up` (dropping
-`--build`) reuses those images directly, with **no build step at all**,
-not even a cache-hit one.
-
-Two things that break this:
-- **Any change to the build context** (edited requirements.txt, edited
-  source files you then rebuild for) invalidates the affected layer and
-  everything after it in that Dockerfile, same as a normal Docker cache
-  bust — expected, not a bug.
-- **`docker builder prune` / Docker Desktop's "clean up"** clears the
-  build cache (not the same as removing images) — the tagged images
-  from Method 1 would still exist and `docker compose up` without
-  `--build` would still skip building, but a future `--build` run would
-  be back to a cold cache.
-
----
-
-
 
 ## Environment variables reference
 

@@ -59,9 +59,10 @@ import shutil
 import time
 import uuid
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 import pipeline as pipeline_mod
@@ -217,6 +218,20 @@ class IngestResponse(BaseModel):
     n_page_descriptions_indexed: int = 0  # only >0 when multimodal=true AND pages were flagged
 
 
+class BatchIngestFileResult(BaseModel):
+    filename: str
+    ok: bool
+    result: Optional[IngestResponse] = None  # set when ok=True
+    error: Optional[str] = None              # set when ok=False -- always a plain, safe-to-display message
+
+
+class BatchIngestResponse(BaseModel):
+    n_files: int
+    n_succeeded: int
+    n_failed: int
+    files: List[BatchIngestFileResult]
+
+
 class QueryRequest(BaseModel):
     question: str
     top_k: int = 5
@@ -235,7 +250,11 @@ class SourceChunk(BaseModel):
     score: float
     filename: Optional[str] = None
     page: Optional[int] = None
-    image_path: Optional[str] = None  # set for image-branch results when multimodal=true
+    image_path: Optional[str] = None  # see this field's own comment at the query() route below for when this is set
+    source_type: Optional[str] = None  # "image_caption" = a TEXT-store hit that's really an image's dual-indexed
+                                        # caption+nearby-text (see pipeline.build_caption_chunks) -- distinguishes
+                                        # this from a genuine prose chunk without needing to infer it from image_path
+                                        # alone. None for plain text chunks and for retrieval_branch="image" CLIP hits.
 
 
 class QueryResponse(BaseModel):
@@ -401,50 +420,49 @@ _CHUNK_METHODS = {
 }
 
 
-@app.post("/ingest", response_model=IngestResponse)
-def ingest_document(
-    file: UploadFile = File(...),
-    redact_pii: bool = Query(False, description="Scrub emails/phones/SSNs/credit cards/IPs before storage"),
-    scan_injection: bool = Query(False, description="Flag chunks that look like prompt-injection attempts"),
-    parent_child: bool = Query(False, description="Store small child chunks; generate from larger parents later"),
-    chunking: str = Query("auto", description="auto | fixed_size | recursive | sentence_based | semantic | "
-                                                "structure_aware. Ignored if parent_child=true. 'semantic' reuses "
-                                                "this request's embedder to find topic breaks."),
-    multimodal: bool = Query(False, description="Images go through CLIP into their own collection (regardless "
-                                                  "of RAG_EMBEDDER), each gets a VLM caption dual-indexed into "
-                                                  "the TEXT store — see generation/dual_modality_generator.py."),
-    vlm_backend: str = Query("ollama", description="Only used when multimodal=true (captions each image)"),
-    vlm_model: Optional[str] = Query(None, description="Only used when multimodal=true "
-                                                         "(defaults to llava/moondream2 per backend)"),
-    page_vlm: str = Query("auto", description="Strategy 3 (whole-page VLM description, PDFs only). "
-                                                "'auto' (default): a cheap, local, no-model-call heuristic flags "
-                                                "only pages that look chart/diagram-heavy (vector-drawing-dense, "
-                                                "low native text) — see ingestion/ingest_pdf.py. 'always' flags "
-                                                "every page (slow — one VLM call per page). 'never' disables the "
-                                                "heuristic and flagging entirely. The VLM call itself only runs "
-                                                "when multimodal=true is also passed, and only for flagged pages, "
-                                                "reusing the same VLM instance as image captioning."),
-):
-    """
-    Upload any supported document (.txt, .md, .pdf, .png/.jpg/...) and ingest
-    it end-to-end: parse -> chunk -> embed -> store.
-
-    Scanned / image-only PDF pages are handled automatically by
-    ingestion/ingest_pdf.py's OCR fallback (ocr_on_empty_pages=True by
-    default) — no flag needed here, and a page is never silently returned
-    as empty text: if there's no native text layer, OCR runs on that page.
-    """
-    embedder = _state["embedder"]
-    store = _state["store"]
-
+def _validate_ingest_params(chunking: str, page_vlm: str) -> None:
+    """Shared validation for both /ingest and /ingest/batch -- raises the
+    same HTTPException either route already raised before this refactor,
+    just runs ONCE per request now instead of once per file in a batch
+    (the params apply uniformly across every file in a batch, so there's
+    no reason to re-validate them per file)."""
     if chunking != "auto" and chunking != "semantic" and chunking not in _CHUNK_METHODS:
         raise HTTPException(status_code=400,
                              detail=f"Unknown chunking method: {chunking!r} "
                                     f"(valid: auto, semantic, {sorted(_CHUNK_METHODS)})")
-
     if page_vlm not in ("auto", "always", "never"):
         raise HTTPException(status_code=400,
                              detail=f"Unknown page_vlm: {page_vlm!r} (valid: auto, always, never)")
+
+
+def _ingest_one_file(
+    file: UploadFile,
+    *,
+    redact_pii: bool,
+    scan_injection: bool,
+    parent_child: bool,
+    chunking: str,
+    multimodal: bool,
+    vlm_backend: str,
+    vlm_model: Optional[str],
+    page_vlm: str,
+) -> IngestResponse:
+    """
+    The actual parse -> chunk -> embed -> store pipeline for ONE file --
+    every line of this is the original /ingest route's own body,
+    unchanged, just extracted so /ingest/batch (below) can call it once
+    per file in a loop without duplicating ~150 lines of logic a second
+    time. /ingest itself (below) is now a thin wrapper around this same
+    function, so a single-file upload behaves EXACTLY as it always has --
+    same validation, same staging path, same response shape.
+
+    Raises HTTPException on a per-file problem (bad parse, no extractable
+    content) exactly as before -- /ingest lets that propagate straight to
+    the caller (unchanged behavior); /ingest/batch (below) catches it
+    per-file instead, so one bad PDF in a batch doesn't abort the rest.
+    """
+    embedder = _state["embedder"]
+    store = _state["store"]
 
     print(f"[api:ingest] received {file.filename!r} ({file.content_type}), "
           f"multimodal={multimodal}, chunking={chunking!r}, page_vlm={page_vlm!r}")
@@ -604,6 +622,315 @@ def ingest_document(
     )
 
 
+@app.post("/ingest", response_model=IngestResponse)
+def ingest_document(
+    file: UploadFile = File(...),
+    redact_pii: bool = Query(False, description="Scrub emails/phones/SSNs/credit cards/IPs before storage"),
+    scan_injection: bool = Query(False, description="Flag chunks that look like prompt-injection attempts"),
+    parent_child: bool = Query(False, description="Store small child chunks; generate from larger parents later"),
+    chunking: str = Query("auto", description="auto | fixed_size | recursive | sentence_based | semantic | "
+                                                "structure_aware. Ignored if parent_child=true. 'semantic' reuses "
+                                                "this request's embedder to find topic breaks."),
+    multimodal: bool = Query(False, description="Images go through CLIP into their own collection (regardless "
+                                                  "of RAG_EMBEDDER), each gets a VLM caption dual-indexed into "
+                                                  "the TEXT store — see generation/dual_modality_generator.py."),
+    vlm_backend: str = Query("ollama", description="Only used when multimodal=true (captions each image)"),
+    vlm_model: Optional[str] = Query(None, description="Only used when multimodal=true "
+                                                         "(defaults to llava/moondream2 per backend)"),
+    page_vlm: str = Query("auto", description="Strategy 3 (whole-page VLM description, PDFs only). "
+                                                "'auto' (default): a cheap, local, no-model-call heuristic flags "
+                                                "only pages that look chart/diagram-heavy (vector-drawing-dense, "
+                                                "low native text) — see ingestion/ingest_pdf.py. 'always' flags "
+                                                "every page (slow — one VLM call per page). 'never' disables the "
+                                                "heuristic and flagging entirely. The VLM call itself only runs "
+                                                "when multimodal=true is also passed, and only for flagged pages, "
+                                                "reusing the same VLM instance as image captioning."),
+):
+    """
+    Upload any supported document (.txt, .md, .pdf, .png/.jpg/...) and ingest
+    it end-to-end: parse -> chunk -> embed -> store.
+
+    Scanned / image-only PDF pages are handled automatically by
+    ingestion/ingest_pdf.py's OCR fallback (ocr_on_empty_pages=True by
+    default) — no flag needed here, and a page is never silently returned
+    as empty text: if there's no native text layer, OCR runs on that page.
+
+    For MULTIPLE files in one request, see POST /ingest/batch below --
+    this route stays single-file-only so an existing integration built
+    against it keeps working exactly as it always has.
+    """
+    _validate_ingest_params(chunking, page_vlm)
+    return _ingest_one_file(
+        file, redact_pii=redact_pii, scan_injection=scan_injection, parent_child=parent_child,
+        chunking=chunking, multimodal=multimodal, vlm_backend=vlm_backend, vlm_model=vlm_model,
+        page_vlm=page_vlm,
+    )
+
+
+@app.post("/ingest/batch", response_model=BatchIngestResponse)
+def ingest_documents_batch(
+    files: List[UploadFile] = File(..., description="Two or more files -- e.g. several PDFs -- in one "
+                                                       "multipart request, field name 'files' repeated once "
+                                                       "per file."),
+    redact_pii: bool = Query(False, description="Scrub emails/phones/SSNs/credit cards/IPs before storage"),
+    scan_injection: bool = Query(False, description="Flag chunks that look like prompt-injection attempts"),
+    parent_child: bool = Query(False, description="Store small child chunks; generate from larger parents later"),
+    chunking: str = Query("auto", description="auto | fixed_size | recursive | sentence_based | semantic | "
+                                                "structure_aware. Ignored if parent_child=true."),
+    multimodal: bool = Query(False, description="Images go through CLIP into their own collection, each gets "
+                                                  "a VLM caption dual-indexed into the TEXT store."),
+    vlm_backend: str = Query("ollama", description="Only used when multimodal=true"),
+    vlm_model: Optional[str] = Query(None, description="Only used when multimodal=true"),
+    page_vlm: str = Query("auto", description="Strategy 3 (whole-page VLM description, PDFs only) -- "
+                                                "auto | always | never, see /ingest's own description"),
+):
+    """
+    Same pipeline as POST /ingest (parse -> chunk -> embed -> store),
+    run once per file for MULTIPLE files in a single request -- e.g.
+    ingesting a whole folder of PDFs in one call instead of one HTTP
+    round trip per file. All query params above apply UNIFORMLY to
+    every file in the batch (there's no per-file override) -- send
+    separate requests if different files genuinely need different
+    settings.
+
+    ONE BAD FILE NEVER ABORTS THE REST OF THE BATCH: each file is
+    ingested independently, and a parse failure / no-extractable-content
+    error / any other unexpected exception for ONE file is caught and
+    recorded as that file's own `error` entry, while every other file in
+    the same request still gets a normal shot at ingesting successfully.
+    Check each entry's own `ok` field rather than assuming the whole
+    batch either fully succeeded or fully failed -- a 200 response here
+    can still contain individual failures; see `n_failed` for a quick
+    count without walking the whole `files` list.
+
+    Example (curl, three PDFs at once):
+        curl -X POST "http://localhost:8000/ingest/batch" \\
+            -F "files=@doc1.pdf" -F "files=@doc2.pdf" -F "files=@doc3.pdf"
+
+    For a real browse-and-select-multiple-files experience instead of curl
+    or Swagger UI's own file widget (List[UploadFile] renders unreliably
+    there -- see GET /ingest/batch/ui's own docstring), open
+    GET /ingest/batch/ui in a browser instead.
+    """
+    _validate_ingest_params(chunking, page_vlm)
+
+    results: List[BatchIngestFileResult] = []
+    for f in files:
+        try:
+            one = _ingest_one_file(
+                f, redact_pii=redact_pii, scan_injection=scan_injection, parent_child=parent_child,
+                chunking=chunking, multimodal=multimodal, vlm_backend=vlm_backend, vlm_model=vlm_model,
+                page_vlm=page_vlm,
+            )
+            results.append(BatchIngestFileResult(filename=f.filename, ok=True, result=one))
+        except HTTPException as e:
+            print(f"[api:ingest_batch] {f.filename!r} FAILED: {e.detail}")
+            results.append(BatchIngestFileResult(filename=f.filename, ok=False, error=str(e.detail)))
+        except Exception as e:  # noqa: BLE001 -- one file's own unexpected failure must never abort the rest of the batch
+            print(f"[api:ingest_batch] {f.filename!r} FAILED unexpectedly: {type(e).__name__}: {e}")
+            logger.exception("unexpected failure ingesting one file in a batch",
+                              extra={"uploaded_filename": f.filename})
+            results.append(BatchIngestFileResult(
+                filename=f.filename, ok=False,
+                error=f"Unexpected error during ingestion ({type(e).__name__}) -- check server logs.",
+            ))
+
+    n_succeeded = sum(1 for r in results if r.ok)
+    print(f"[api:ingest_batch] done -> {n_succeeded}/{len(files)} file(s) ingested successfully\n")
+
+    return BatchIngestResponse(
+        n_files=len(files),
+        n_succeeded=n_succeeded,
+        n_failed=len(files) - n_succeeded,
+        files=results,
+    )
+
+
+@app.get("/ingest/batch/ui", response_class=HTMLResponse, include_in_schema=False)
+def ingest_batch_ui():
+    """
+    A real "browse and select multiple PDFs" page for POST /ingest/batch
+    above -- open this URL directly in a browser
+    (http://localhost:8000/ingest/batch/ui, adjust host/port to match how
+    you're running this service).
+
+    WHY THIS EXISTS instead of just using Swagger UI's own "Try it out"
+    button on /ingest/batch: `files: List[UploadFile] = File(...)` is the
+    functionally correct, fully-working way to accept multiple files in
+    FastAPI (curl with several -F "files=@..." flags works fine, and so
+    does a real HTML form -- both proven by this project's own /ingest/batch
+    docstring example and by this very page), but Swagger UI's own
+    auto-generated multi-file widget is unreliably broken on top of it --
+    a long-standing, well-documented Swagger UI limitation, not a bug in
+    this project's own code: OpenAPI's "array of binary files" shape has
+    never had clean, consistent multi-file-picker support across Swagger
+    UI versions (see e.g. fastapi/fastapi discussions #8306 and #9497,
+    and swagger-api/swagger-spec issue #254 from the underlying spec
+    limitation itself) -- in various FastAPI/Swagger UI version
+    combinations it's rendered as a single add-one-string-at-a-time
+    control instead of a real "choose files" browse dialog, or dropped
+    the file picker for a plain text box entirely. A plain HTML
+    `<input type="file" multiple>`, by contrast, has reliably supported
+    a real OS-native "select several files at once" dialog in every
+    browser for over a decade -- this page uses exactly that, with a
+    plain `fetch()` POST of the resulting FormData straight to
+    POST /ingest/batch (the same route curl or any other client would
+    hit), so there's no second code path to keep in sync -- this page is
+    a thin client of the real endpoint, not a reimplementation of it.
+
+    include_in_schema=False -- deliberately not listed in
+    /docs or /openapi.json: this is a hand-built page for people, not an
+    API route other code is meant to call.
+    """
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Batch PDF Ingest</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+  h1 { font-size: 1.4rem; }
+  fieldset { border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0; padding: 0.75rem 1rem; }
+  legend { padding: 0 0.4rem; color: #555; font-size: 0.9rem; }
+  label { display: block; margin: 0.5rem 0 0.2rem; font-size: 0.9rem; }
+  input[type=file] { display: block; margin: 0.4rem 0; }
+  input[type=text], select { padding: 0.3rem; font-size: 0.9rem; }
+  button { margin-top: 1rem; padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;
+           background: #2563eb; color: white; border: none; border-radius: 6px; }
+  button:disabled { background: #93b4ec; cursor: default; }
+  #status { margin-top: 1rem; font-size: 0.9rem; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin-top: 1rem; font-size: 0.9rem; }
+  th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+  th { background: #f5f5f5; }
+  .ok { color: #16813d; font-weight: 600; }
+  .fail { color: #b91c1c; font-weight: 600; }
+  details { margin-top: 0.5rem; }
+  .file-list { font-size: 0.85rem; color: #555; margin-top: 0.3rem; }
+</style>
+</head>
+<body>
+<h1>Batch PDF Ingest</h1>
+<p>Pick several PDFs at once (the OS file dialog's own multi-select -- Ctrl/Cmd-click or Shift-click), then submit. Posts straight to <code>POST /ingest/batch</code>.</p>
+
+<form id="batchForm">
+  <input type="file" id="files" name="files" multiple accept="application/pdf,.pdf" required>
+  <div class="file-list" id="fileList"></div>
+
+  <fieldset>
+    <legend>Options</legend>
+    <label><input type="checkbox" id="multimodal"> multimodal (VLM-caption embedded images, dual-index into text store)</label>
+
+    <details>
+      <summary>Advanced</summary>
+      <label for="chunking">chunking</label>
+      <select id="chunking">
+        <option value="auto" selected>auto</option>
+        <option value="fixed_size">fixed_size</option>
+        <option value="recursive">recursive</option>
+        <option value="sentence_based">sentence_based</option>
+        <option value="semantic">semantic</option>
+        <option value="structure_aware">structure_aware</option>
+      </select>
+
+      <label for="page_vlm">page_vlm (Strategy 3, PDFs only)</label>
+      <select id="page_vlm">
+        <option value="auto" selected>auto</option>
+        <option value="always">always</option>
+        <option value="never">never</option>
+      </select>
+
+      <label for="vlm_backend">vlm_backend (only used if multimodal is checked)</label>
+      <select id="vlm_backend">
+        <option value="ollama" selected>ollama</option>
+        <option value="groq">groq</option>
+        <option value="hf">hf</option>
+      </select>
+
+      <label for="vlm_model">vlm_model (blank = backend default)</label>
+      <input type="text" id="vlm_model" placeholder="">
+
+      <label><input type="checkbox" id="redact_pii"> redact_pii</label>
+      <label><input type="checkbox" id="scan_injection"> scan_injection</label>
+      <label><input type="checkbox" id="parent_child"> parent_child</label>
+    </details>
+  </fieldset>
+
+  <button type="submit" id="submitBtn">Ingest</button>
+</form>
+
+<div id="status"></div>
+<div id="results"></div>
+
+<script>
+const filesInput = document.getElementById('files');
+const fileList = document.getElementById('fileList');
+filesInput.addEventListener('change', () => {
+  const names = Array.from(filesInput.files).map(f => f.name);
+  fileList.textContent = names.length ? `${names.length} file(s): ${names.join(', ')}` : '';
+});
+
+document.getElementById('batchForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const files = filesInput.files;
+  if (!files.length) return;
+
+  const submitBtn = document.getElementById('submitBtn');
+  const status = document.getElementById('status');
+  const results = document.getElementById('results');
+  submitBtn.disabled = true;
+  results.innerHTML = '';
+  status.textContent = `Uploading and ingesting ${files.length} file(s)... this can take a while for large PDFs or multimodal=true.`;
+
+  const params = new URLSearchParams({
+    redact_pii: document.getElementById('redact_pii').checked,
+    scan_injection: document.getElementById('scan_injection').checked,
+    parent_child: document.getElementById('parent_child').checked,
+    chunking: document.getElementById('chunking').value,
+    multimodal: document.getElementById('multimodal').checked,
+    vlm_backend: document.getElementById('vlm_backend').value,
+    page_vlm: document.getElementById('page_vlm').value,
+  });
+  const vlmModel = document.getElementById('vlm_model').value.trim();
+  if (vlmModel) params.set('vlm_model', vlmModel);
+
+  const formData = new FormData();
+  for (const f of files) formData.append('files', f);
+
+  try {
+    const resp = await fetch(`/ingest/batch?${params.toString()}`, { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) {
+      status.textContent = `Request failed (HTTP ${resp.status}): ${data.detail || JSON.stringify(data)}`;
+      submitBtn.disabled = false;
+      return;
+    }
+    status.textContent = `Done: ${data.n_succeeded}/${data.n_files} succeeded, ${data.n_failed} failed.`;
+
+    let html = '<table><tr><th>File</th><th>Status</th><th>Details</th></tr>';
+    for (const r of data.files) {
+      if (r.ok) {
+        const res = r.result;
+        html += `<tr><td>${r.filename}</td><td class="ok">OK</td>` +
+          `<td>${res.n_chunks} chunk(s) (${res.n_text_chunks} text, ${res.n_image_chunks} image` +
+          (res.n_captions_indexed ? `, ${res.n_captions_indexed} caption(s) dual-indexed` : '') +
+          `)</td></tr>`;
+      } else {
+        html += `<tr><td>${r.filename}</td><td class="fail">FAILED</td><td>${r.error}</td></tr>`;
+      }
+    }
+    html += '</table>';
+    results.innerHTML = html;
+  } catch (err) {
+    status.textContent = `Request failed: ${err}`;
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>"""
+
+
 @app.post("/query", response_model=QueryResponse)
 def query(req: QueryRequest):
     """Ask a question against whatever is currently indexed; get a grounded,
@@ -694,7 +1021,22 @@ def query(req: QueryRequest):
             score=float(r.get("rerank_score", r.get("score", 0.0))),
             filename=r.get("metadata", {}).get("filename"),
             page=r.get("metadata", {}).get("page"),
-            image_path=r.get("metadata", {}).get("image_path") if r.get("metadata", {}).get("retrieval_branch") == "image" else None,
+            # CONFIRMED bug this fixes, not a hypothetical one: this used to
+            # only reveal image_path when retrieval_branch == "image" (a
+            # multimodal=true CLIP-branch hit) -- but pipeline.
+            # build_caption_chunks() ALSO stores a real image_path in the
+            # metadata of every dual-indexed image-caption chunk it writes
+            # into the TEXT store (see that function's own docstring), and
+            # those chunks are retrievable by a completely ordinary text
+            # query, multimodal=true or not. The old condition silently
+            # nulled out image_path for exactly that case -- the one way
+            # to confirm "a plain text query found this image via its
+            # surrounding page text" -- making that impossible to verify
+            # from this response alone even though the underlying hit was
+            # real. Now shows image_path whenever the chunk's own metadata
+            # actually has one, regardless of which branch retrieved it.
+            image_path=r.get("metadata", {}).get("image_path"),
+            source_type=r.get("metadata", {}).get("source_type"),
         )
         for r in results
     ]

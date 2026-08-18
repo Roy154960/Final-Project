@@ -102,16 +102,39 @@ def build_caption_chunks(image_docs: list[RawDocument], captions: list[str]) -> 
     ingestion/image_captioning.py) and returns Chunk objects ready to embed
     via the TEXT embedder and dual-index into the TEXT store.
 
-    The chunk's EMBEDDED text is the caption plus a small snippet of
-    whatever page text sits closest to the image -- ingest_pdf.py's
+    The chunk's EMBEDDED text is nearby_text (a small snippet of whatever
+    page text sits closest to the image -- ingestion/ingest_pdf.py's own
     _nearby_page_text already stashed that on each image RawDocument's own
-    metadata["nearby_text"] at extraction time (empty/absent for images
+    metadata["nearby_text"] at extraction time, empty/absent for images
     ingested via ingest_image.py's standalone-file path, which has no
-    "page" for anything to be near). A short VLM caption alone ("a bowl of
-    fruit") often lacks the vocabulary a person actually searches with
-    ("still life," "chiaroscuro," "underpainting") that the surrounding
-    prose usually has -- appending it here means this image can be found
-    by either.
+    "page" for anything to be near) FOLLOWED BY the caption. A short VLM
+    caption alone ("a bowl of fruit") often lacks the vocabulary a person
+    actually searches with ("still life," "chiaroscuro," "underpainting")
+    that the surrounding prose usually has -- appending the caption here
+    means this image can be found by either.
+
+    ORDER IS LOAD-BEARING, not stylistic -- CONFIRMED live-run failure,
+    not a hypothetical one: this used to be `f"{cap} {nearby_text}"`
+    (caption first). A real query matched an image's nearby_text
+    EXACTLY, verbatim ("Political Structure: A Power Game"), and the
+    image still didn't appear anywhere in the top 5 results. Root cause:
+    this project's default text embedder
+    (sentence-transformers/all-MiniLM-L6-v2, see embeddings/hf_embedder.py
+    -- no max_seq_length override anywhere, so it uses the model's own
+    default) silently truncates any input past 256 tokens. This
+    project's own VLM captions routinely run several hundred words in a
+    structured, multi-section format (see ingestion/image_captioning.py's
+    own prompt -- "Subject Matter:", "Composition & Layout:", "Style:",
+    "Colors:", ...), comfortably exceeding that limit on their own,
+    BEFORE nearby_text was ever appended. With caption-first ordering,
+    nearby_text -- almost always much shorter, and often the MORE
+    discriminative, exact-phrase-searchable part of the two -- was being
+    silently cut off by the embedder before it was ever seen at all, not
+    just down-weighted by dilution. Putting nearby_text first means any
+    truncation now eats into the tail of the (typically longer, more
+    redundant) caption instead, so the short, precise, and often
+    exact-match-searched part always survives being embedded, no matter
+    how long the caption itself runs.
 
     The DISPLAYED caption -- chunk.metadata["caption"], what
     generate_answer's own citation and format_markdown_image actually
@@ -136,7 +159,7 @@ def build_caption_chunks(image_docs: list[RawDocument], captions: list[str]) -> 
         if not cap:
             continue
         nearby_text = (doc.metadata.get("nearby_text") or "").strip()
-        embed_text = f"{cap} {nearby_text}".strip() if nearby_text else cap
+        embed_text = f"{nearby_text} {cap}".strip() if nearby_text else cap
         chunk = Chunk.new(doc_id=doc.doc_id, text=embed_text, **doc.metadata)
         chunk.metadata["source_type"] = "image_caption"
         chunk.metadata["image_path"] = doc.image_path

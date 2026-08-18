@@ -67,6 +67,22 @@ class DualModalityGenerator:
         elif vlm_backend == "hf":
             from vlm.hf_vlm import HFVLM
             self._vlm = HFVLM(vlm_model or "moondream2")
+        elif vlm_backend == "groq":
+            # CONFIRMED gap this closes, not a new feature: ingestion's own
+            # load_vlm() (ingestion/image_captioning.py) has supported
+            # vlm_backend="groq" -- Groq-first, automatic local-Ollama-
+            # fallback, see vlm/fallback_vlm.py's own module docstring --
+            # since that file's own last update. This constructor simply
+            # never got the same branch, so a real /query request with
+            # vlm_backend="groq" (a completely reasonable choice, and the
+            # ONLY hosted/online VLM option this project has anywhere else)
+            # raised ValueError: Unknown vlm_backend: groq instead of
+            # working the same way it already does at ingestion time.
+            # Mirrors load_vlm()'s own exact branch so the two functions
+            # can't drift apart on which backend names are valid a second
+            # time.
+            from vlm.fallback_vlm import FallbackVLM
+            self._vlm = FallbackVLM(vlm_model) if vlm_model else FallbackVLM()
         else:
             raise ValueError(f"Unknown vlm_backend: {vlm_backend}")
         self.text_generator = text_generator
@@ -94,7 +110,26 @@ class DualModalityGenerator:
         top_score = max((c.get("score", 0.0) for c in text_chunks), default=0.0)
         if top_score < TEXT_RELEVANCE_SCORE_THRESHOLD:
             return None
-        prompt = build_rag_prompt(question, text_chunks)
+        # CONFIRMED live-run failure this closes, not a hypothetical one:
+        # this used to pass ALL of text_chunks to build_rag_prompt once the
+        # TOP score cleared the bar -- including chunks whose OWN score was
+        # nowhere near it. A real query retrieved one genuinely relevant
+        # chunk (rerank score 6.26) alongside four completely unrelated
+        # ones (rerank scores -10 to -11, a different book on a different
+        # topic entirely) — build_rag_prompt shows the model NO score or
+        # relevance signal at all (see its own code), just five equally-
+        # weighted "[Context N - filename, page X]" blocks, so the local
+        # text generator (a small model, no less) had no way to tell which
+        # one actually mattered and abstained with NO_ANSWER_IN_CONTEXT
+        # despite the right answer sitting right there in Context 1.
+        # Filtering to only chunks that ALSO individually clear the
+        # relevance bar — not just checking whether the best one does —
+        # means the model only ever sees content actually worth answering
+        # from, the same way a human wouldn't be handed four irrelevant
+        # excerpts alongside the one that matters and be expected to
+        # ignore them perfectly.
+        relevant_chunks = [c for c in text_chunks if c.get("score", 0.0) >= TEXT_RELEVANCE_SCORE_THRESHOLD]
+        prompt = build_rag_prompt(question, relevant_chunks)
         raw = self._call_text_generator(prompt, BRANCH_SYSTEM_PROMPT).strip()
         if raw == NO_ANSWER_SENTINEL:
             return None
