@@ -78,6 +78,7 @@ from typing import Awaitable, Callable, Optional
 
 from langchain_core.messages import HumanMessage
 
+from agents.eval_pacing import pace
 from agents.guardrails import input_guard_node
 from agents.prompts import SPECIALIST_DESCRIPTIONS
 from agents.specialists import Specialist
@@ -286,6 +287,7 @@ async def run_eval(
             file=sys.stderr,
         )
         results.append(result)
+        await pace(str(row["id"]))
     return results
 
 

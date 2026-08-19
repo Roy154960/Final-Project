@@ -30,13 +30,6 @@ jobs:
           pip install -r agents/requirements-api.txt
           pip install -r mcp_server/requirements.txt
           pip install -r local_rag/requirements-docker.txt
-          # Neither of these two is in any requirements*.txt in the repo
-          # -- confirmed by grep. Both genuinely required for the
-          # README's own documented `pytest agents/ mcp_server/ -k
-          # smoke` command to run at all: without pytest-asyncio (and
-          # --asyncio-mode=auto below), every async def test in the
-          # suite fails immediately with "async def functions are not
-          # natively supported", before ever reaching its own logic.
           pip install pytest pytest-asyncio
 
       - name: Python smoke tests (agents/, mcp_server/)

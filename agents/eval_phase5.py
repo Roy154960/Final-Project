@@ -63,6 +63,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Awaitable, Callable
 
+# Lightweight (stdlib + local_rag/usage_tracker.py's own stdlib-only
+# imports -- confirmed directly) -- doesn't reintroduce the
+# LangGraph/Ollama dependency this module's own run_eval() docstring
+# says it avoids until actually called.
+from agents.eval_pacing import pace
+
 # Names no specialist will ever use -- everything else that shows up as a
 # named message in the final state must be a real specialist by
 # construction of graph.py's node list (input_guard's own message is
@@ -241,6 +247,7 @@ async def run_eval(
             print(f"[eval]   -> CRASHED: {error}", file=sys.stderr)
         elapsed = round(time.monotonic() - start, 1)
         results.append({**row, **info, "elapsed_seconds": elapsed, "error": error})
+        await pace(str(row["id"]))
     return results
 
 

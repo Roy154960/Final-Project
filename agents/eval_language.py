@@ -93,6 +93,7 @@ from typing import Optional
 
 from langchain_core.messages import HumanMessage
 
+from agents.eval_pacing import pace
 from agents.graph import build_graph
 from agents.prompts import SPECIALIST_DESCRIPTIONS
 from agents.specialists import Specialist
@@ -276,6 +277,7 @@ async def run_routing_eval(
         print(f"[eval_language]   -> {marker}: expected={row['expected_route']!r} "
               f"actual={result['actual_route']!r}", file=sys.stderr)
         results.append(result)
+        await pace(row["id"])
     return results
 
 
@@ -532,6 +534,7 @@ async def run_fidelity_eval(questions: Optional[list[dict]] = None) -> list[dict
                 "answer_text": answer_text,
                 "error": error,
             })
+            await pace(f"{row['id']} turn {i + 1}/{len(turns)}")
 
         results.append({"id": row["id"], "note": row.get("note"), "turns": turn_results})
     return results
