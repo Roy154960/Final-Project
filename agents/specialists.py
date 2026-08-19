@@ -1657,7 +1657,11 @@ def _extract_grounded_answer(messages: list) -> Optional[str]:
 
 _DIMENSION_RE = re.compile(
     r"(\d+(?:\.\d+)?)\s*(cm|centimeters?|centimetres?|in|inch|inches|\")?"
-    r"\s*(?:x|×|by)\s*"
+    # "*" accepted alongside "x"/"×"/"by" as a separator -- "30*40cm" means
+    # the same thing "30x40cm" does here; this is plain regex matching
+    # against the user's raw text, run before any LLM sees the message,
+    # so there's no system prompt in this path to steer instead.
+    r"\s*(?:x|×|\*|by)\s*"
     r"(\d+(?:\.\d+)?)\s*(cm|centimeters?|centimetres?|in|inch|inches|\")?",
     re.IGNORECASE,
 )
