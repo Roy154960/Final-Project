@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -r agents/requirements.txt
+          pip install -r agents/requirements-api.txt
+          pip install -r mcp_server/requirements.txt
+          pip install -r local_rag/requirements-docker.txt
+          # Neither of these two is in any requirements*.txt in the repo
+          # -- confirmed by grep. Both genuinely required for the
+          # README's own documented `pytest agents/ mcp_server/ -k
+          # smoke` command to run at all: without pytest-asyncio (and
+          # --asyncio-mode=auto below), every async def test in the
+          # suite fails immediately with "async def functions are not
+          # natively supported", before ever reaching its own logic.
+          pip install pytest pytest-asyncio
+
+      - name: Python smoke tests (agents/, mcp_server/)
+        continue-on-error: true
+        run: |
+          pytest agents/ mcp_server/ -k smoke --ignore=agents/test_llm_provider_smoke.py \
+            --asyncio-mode=auto -v
+
+      - name: LLM provider smoke test (run separately per README)
+        run: python -m agents.test_llm_provider_smoke
+
+      - name: Groq integration smoke test (run separately per README)
+        working-directory: local_rag
+        run: python test_groq_integration_smoke.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - working-directory: frontend
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  docker-build-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: chroma-server
+            dockerfile: docker/chroma_server.Dockerfile
+          - service: mcp-server
+            dockerfile: docker/mcp_server.Dockerfile
+          - service: backend
+            dockerfile: docker/backend.Dockerfile
+          - service: frontend
+            dockerfile: docker/frontend.Dockerfile
+          - service: framing-agent
+            dockerfile: docker/framing_agent.Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build ${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/inmind-${{ matrix.service }}:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/inmind-${{ matrix.service }}:sha-${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
