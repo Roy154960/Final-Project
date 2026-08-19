@@ -1,3 +1,100 @@
+# Method 2 of 2 for running this project in Docker (see docs/DOCKER.md
+# for Method 1, the manual `docker network create` + `docker run` walk-
+# through this is the compose equivalent of).
+#
+# Five services, TWO custom bridge networks now (public-net /
+# private-net), not one -- see the "why did we use one network" /
+# "shouldn't there be 2 networks" conversation this setup came out of.
+# frontend sits on public-net alone; chroma-server, mcp-server, and
+# framing-agent sit on private-net alone; backend is the only service
+# joined to BOTH, deliberately -- it's the sole bridge between the two.
+# A compromised frontend container has no network route to mcp-server,
+# chroma-server, or framing-agent at all; it would have to pivot through
+# backend first, which is the actual point of splitting these two.
+#
+# This only means something combined with frontend's own Dockerfile
+# change (docker/frontend.Dockerfile + docker/nginx.conf): nginx now
+# reverse-proxies /api/* to backend INTERNALLY over public-net, so the
+# browser only ever talks to frontend's one published origin. That's
+# what let backend's own `ports:` mapping be removed below entirely --
+# without that proxy, removing backend's published port would have just
+# broken the app, not secured it (Docker networks control
+# container<->container reachability; they were never what stood
+# between the browser and backend's old published port).
+#
+#   PUBLIC:  [ frontend ] <--- browser, published :8080
+#                 |  (public-net)
+#                 v
+#   BOTH:    [ backend ] <--- also on private-net
+#                 |  (private-net)
+#                 v
+#   PRIVATE: [ mcp-server ] <---- [ chroma-server ]
+#                 |
+#                 v
+#            [ framing-agent ]
+#
+# mcp-server's and framing-agent's `ports:` mappings are removed below
+# too -- nothing outside the private-net needs to reach either directly
+# anymore. chroma-server's `ports:` mapping is DELIBERATELY KEPT,
+# though -- unlike the other two, it has a real, current, host-side use
+# case: the "ingest the corpus into the docker volume" workflow (running
+# local_rag/pipeline.py from your host machine, pointed at
+# CHROMA_SERVER_HOST=localhost / CHROMA_SERVER_PORT) genuinely needs a
+# published port to reach chroma-server from outside Docker entirely.
+# Removing it would silently break that workflow the next time you
+# ingest more documents, not just harden anything. If you don't need
+# that host-side path anymore, dropping this last `ports:` entry too is
+# safe and finishes the lockdown; until then it's a deliberate,
+# documented exception, not an oversight.
+#
+# For debugging a private-net-only service now that curl-from-the-host
+# no longer reaches it directly: `docker compose exec backend curl
+# http://mcp-server:8765/mcp` (or chroma-server:8000, framing-agent:8090)
+# uses backend itself as a vantage point already on that network,
+# instead of a published port.
+#
+#   chroma-server (8000) <---- mcp-server (8765) <---- backend (8001) <---- frontend (8080)
+#         ^_________________________________________________|
+#
+#   framing-agent (8090) <···· plain HTTP, no compose-level dependency ····· mcp-server
+#
+#   - chroma-server: owns the one Chroma SQLite connection; both
+#     mcp-server and backend reach it over HTTP (CHROMA_CLIENT_MODE=http)
+#     instead of each opening their own PersistentClient against a
+#     shared volume -- see docker/chroma_server.Dockerfile's comment for
+#     why that split matters under concurrent writes.
+#   - mcp-server: mcp_server/server.py, MCP_TRANSPORT=http -- the Phase 1
+#     retrieve/generate_answer tools, now reachable over the network
+#     instead of only as a stdio subprocess.
+#   - backend: agents/api.py, talks to mcp-server over HTTP
+#     (MCP_TRANSPORT=http + MCP_SERVER_URL) and to chroma-server over
+#     HTTP for its own direct personal_rag calls.
+#   - frontend: the built React UI, served by nginx, which now also
+#     reverse-proxies /api/* to backend internally over public-net (see
+#     docker/nginx.conf) -- the browser never reaches backend directly
+#     anymore, published port or not.
+#   - framing-agent: System B -- an independent Google ADK + FastAPI
+#     service (framing_agent/), its own container, its own Dockerfile
+#     (docker/framing_agent.Dockerfile), its own requirements.txt never
+#     installed into any System-A container. GROQ_API_KEY below is
+#     optional -- unset, this service tries local Ollama for the
+#     explanation instead, falling back further to a templated
+#     (non-LLM) one if that isn't reachable either; see
+#     framing_agent/server.py's own module docstring for the full
+#     Groq -> Ollama -> template order.
+#
+# Usage:
+#   cp .env.docker.example .env      # adjust OLLAMA_HOST / GROQ_API_KEY / ports / etc.
+#   docker compose up --build
+#
+# Ollama itself is NOT a service here -- it's expected to already be
+# running on your host machine (`ollama serve`), same as your non-Docker
+# workflow. OLLAMA_HOST below points every container at it, including
+# framing-agent, which (like every other service here) tries Groq first
+# and falls back to that same host Ollama -- see local_rag/groq_client.py
+# and agents/llm_provider.py for the identical pattern on System A's own
+# side.
+
 services:
   chroma-server:
     build:
@@ -5,10 +102,12 @@ services:
       dockerfile: docker/chroma_server.Dockerfile
     container_name: inmind-chroma-server
     networks:
-      - inmind-net
+      - private-net
     volumes:
       - chroma-data:/chroma/data
     ports:
+      # Kept deliberately -- see this file's own top comment on why
+      # (the host-side corpus-ingestion workflow needs this one).
       - "${CHROMA_SERVER_PORT:-8000}:8000"
     restart: unless-stopped
 
@@ -18,7 +117,7 @@ services:
       dockerfile: docker/mcp_server.Dockerfile
     container_name: inmind-mcp-server
     networks:
-      - inmind-net
+      - private-net
     environment:
       MCP_TRANSPORT: http
       MCP_SERVER_HOST: 0.0.0.0
@@ -27,15 +126,61 @@ services:
       CHROMA_SERVER_HOST: chroma-server
       CHROMA_SERVER_PORT: "8000"
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      # PRE-EXISTING GAP CLOSED HERE: this container's own
+      # local_rag/config.py calls load_dotenv() (see that file's own
+      # docstring), but a container never has the project root's real
+      # .env file copied in (.dockerignore excludes it, same as any
+      # other Docker image would for a secrets file) -- so without this
+      # line, GROQ_API_KEY was NEVER actually reaching this container
+      # even if it's set in your real .env, and every reasoning call in
+      # this container (agents/llm_provider.py's GroqFallbackChatModel,
+      # generation/fallback_generator.py) was silently always falling
+      # straight to local Ollama, never actually attempting Groq at all
+      # -- confirmed by grep: this line was simply absent before.
+      # ${GROQ_API_KEY:-} reads it from the .env file docker-compose
+      # ITSELF loads (project root .env, via `cp .env.docker.example
+      # .env` per this file's own top comment), which is a different
+      # mechanism from load_dotenv() and doesn't have the same
+      # container-filesystem problem -- compose injects it as a real
+      # environment variable before this container's Python even starts.
       GROQ_API_KEY: ${GROQ_API_KEY:-}
+      # System B's URL (see this file's own top comment on why there's
+      # no depends_on to go with this) -- mcp_server/framing_tools.py
+      # reads this env var, falling back to http://localhost:8090 if
+      # unset, which is wrong INSIDE this container (no framing-agent on
+      # its own localhost) but harmless: get_framing_quote just degrades
+      # to "framing service unreachable" until this is set correctly,
+      # the same as if framing-agent were simply stopped.
       FRAMING_AGENT_URL: http://framing-agent:8090
     extra_hosts:
+      # Docker Desktop (Windows/Mac) already resolves this; Docker Engine
+      # on Linux needs it added explicitly. Harmless either way.
       - "host.docker.internal:host-gateway"
     volumes:
+      # SAME named volume the backend service mounts at the same path --
+      # deliberate, not a copy-paste of that service's line. The
+      # personal_docs specialist's latest_uploaded_image tool runs HERE
+      # (in this container) and reads a raw image file straight off disk
+      # (local_rag/personal_rag.py's PERSONAL_UPLOADS_DIR), but that file
+      # was WRITTEN by the backend container's own upload endpoint
+      # (personal_rag.ingest_upload(), called in-process, never through
+      # MCP -- see that function's own docstring). Two separate volumes
+      # here would mean this container's copy of local_rag/data never
+      # actually has the file the backend just wrote, and the "show me
+      # the image I just sent" feature would silently return no image --
+      # not an error, since _image_to_data_uri() degrades a missing file
+      # to None by design, which makes this exact bug easy to miss
+      # without noticing the feature just stopped working.
       - backend-rag-data:/app/local_rag/data
+      # Shared with backend (below), same path -- both containers' HF
+      # embedder/reranker resolve the SAME underlying model files, so
+      # this also means the ~90MB combined download happens ONCE total,
+      # by whichever container handles a request first, not once per
+      # container.
       - hf-cache:/app/.cache/huggingface
-    ports:
-      - "${MCP_SERVER_PORT:-8765}:8765"
+    # No ports: mapping anymore -- only backend (on private-net too)
+    # needs to reach mcp-server now, over inmind's internal DNS. See
+    # this file's own top comment for the debugging alternative.
     depends_on:
       chroma-server:
         condition: service_healthy
@@ -46,8 +191,12 @@ services:
       context: .
       dockerfile: docker/backend.Dockerfile
     container_name: inmind-backend
+    # The one service on BOTH networks -- see this file's own top
+    # comment. frontend's nginx reaches it over public-net; it reaches
+    # mcp-server/chroma-server over private-net.
     networks:
-      - inmind-net
+      - public-net
+      - private-net
     environment:
       AGENT_API_HOST: 0.0.0.0
       AGENT_API_PORT: "8001"
@@ -59,6 +208,10 @@ services:
       CHROMA_SERVER_HOST: chroma-server
       CHROMA_SERVER_PORT: "8000"
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      # Same pre-existing gap fixed here as in mcp-server's own
+      # environment block above (see that block's own long comment) --
+      # this line was simply absent before, so this container's own
+      # reasoning calls were silently always local-Ollama-only too.
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     extra_hosts:
@@ -67,8 +220,10 @@ services:
       - backend-data:/app/data
       - backend-rag-data:/app/local_rag/data
       - hf-cache:/app/.cache/huggingface
-    ports:
-      - "${BACKEND_PORT:-8001}:8001"
+    # No ports: mapping anymore -- frontend's nginx reaches backend
+    # internally over public-net (docker/nginx.conf); the browser never
+    # talks to backend directly anymore, so a published port here would
+    # only reopen the exact hole this whole change closes.
     depends_on:
       chroma-server:
         condition: service_healthy
@@ -81,42 +236,84 @@ services:
       context: .
       dockerfile: docker/frontend.Dockerfile
       args:
-        VITE_API_BASE_URL: http://localhost:${BACKEND_PORT:-8001}
+        # A RELATIVE path now, not a host:port -- nginx (this
+        # container) proxies /api/* to backend internally (see
+        # docker/nginx.conf). The browser only ever talks to this
+        # container's own published origin.
+        VITE_API_BASE_URL: /api
     container_name: inmind-frontend
     networks:
-      - inmind-net
+      - public-net
     ports:
       - "${FRONTEND_PORT:-8080}:8080"
     depends_on:
-      - backend
+      backend:
+        # Upgraded from the old bare "service_started" default --
+        # nginx's own proxy_pass target needs backend actually ready to
+        # answer, not merely launched, or the first /api/* call after a
+        # fresh `docker compose up` would 502.
+        condition: service_healthy
     restart: unless-stopped
 
+  # System B -- see this file's own top comment for why it has no
+  # depends_on to or from any other service here, and
+  # framing_agent/README.md for what this service actually does.
+  # Genuinely independent build context too: docker/framing_agent.
+  # Dockerfile only ever COPYs framing_agent/, never agents/,
+  # mcp_server/, or local_rag/ -- see that Dockerfile's own comment.
   framing-agent:
     build:
       context: .
       dockerfile: docker/framing_agent.Dockerfile
     container_name: inmind-framing-agent
     networks:
-      - inmind-net
+      - private-net
     environment:
       PORT: "8090"
+      # All three optional -- see framing_agent/.env.example and
+      # framing_agent/server.py's own module docstring for the full
+      # Groq -> local Ollama -> template fallback order. Left entirely
+      # unset, this container still returns full pricing data from
+      # pricing.compute_quote() for every /quote call, just with a
+      # templated (non-LLM) explanation.
+      #
+      # SAME variable, same value, as mcp-server's and backend's own
+      # GROQ_API_KEY above -- one key in your .env covers all three
+      # containers, since it's the exact same free Groq account either
+      # way.
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       FRAMING_AGENT_GROQ_MODEL: ${FRAMING_AGENT_GROQ_MODEL:-}
       FRAMING_AGENT_OLLAMA_MODEL: ${FRAMING_AGENT_OLLAMA_MODEL:-}
-
+      # SAME variable, same value, as every other service's own
+      # OLLAMA_HOST above -- this container needs it too now that its
+      # own fallback tier is local Ollama, not Gemini, and reaches your
+      # HOST machine's Ollama exactly the same way mcp-server/backend
+      # already do (see the extra_hosts entry right below).
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
     extra_hosts:
+      # Same reasoning as mcp-server's and backend's own identical
+      # entry above -- needed here now too, for the same reason: this
+      # container's local-Ollama fallback tier reaches OLLAMA_HOST
+      # above, which points at the HOST machine, not another container.
       - "host.docker.internal:host-gateway"
-    ports:
-      - "${FRAMING_AGENT_PORT:-8090}:8090"
+    # No ports: mapping anymore -- only mcp-server (on private-net too)
+    # needs to reach framing-agent now, never the host directly.
     restart: unless-stopped
 
 networks:
-  inmind-net:
+  public-net:
+    driver: bridge
+  private-net:
     driver: bridge
 
 volumes:
   chroma-data:
+  # NOTE: only four named volumes now -- mcp-server intentionally shares
+  # backend-rag-data AND hf-cache with the backend service (see those
+  # services' own volumes: comments above) rather than getting its own
+  # copies. framing-agent (System B) has none at all -- it's fully
+  # stateless, every /quote call computed fresh from its own request
+  # body, nothing persisted between calls or restarts.
   backend-data:
   backend-rag-data:
   hf-cache:
