@@ -27,6 +27,7 @@ import contextlib
 import functools
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -385,7 +386,50 @@ mcp = FastMCP("local-rag-server")
 # real opportunities for a library to print something unexpected.
 # ----------------------------------------------------------------------
 with _stdout_to_stderr():
-    _store = ChromaStore(collection_name=CHROMA_COLLECTION)
+    # ChromaStore gets its own short retry here, separate from the
+    # embedder/reranker handling below -- confirmed (real container
+    # logs) this is a DIFFERENT failure shape, not the same "package
+    # missing" story. docker-compose.yml's `depends_on: chroma-server:
+    # condition: service_healthy` already waits for chroma-server's OWN
+    # healthcheck before this container is even created -- but that
+    # healthcheck hits chroma's /api/v2/heartbeat route specifically
+    # (docker/chroma_server.Dockerfile), while chromadb.HttpClient()
+    # eagerly calls get_user_identity() at CONSTRUCTION time, which
+    # hits a DIFFERENT route, /auth/identity (confirmed straight from
+    # the chromadb library's own traceback: client.py -> fastapi.py ->
+    # "/auth/identity"). Chroma reporting its heartbeat healthy doesn't
+    # guarantee every route on its API, /auth/identity included, is
+    # already wired up and accepting connections at that exact instant
+    # -- a real, narrow race between "container reports healthy" and
+    # "the specific endpoint this client needs is live", which
+    # depends_on reduces but can't fully close on its own. Five
+    # attempts, 2s apart (~10s total) comfortably absorbs that gap
+    # without masking a genuine, sustained chroma-server outage --
+    # which still fails loudly below rather than hanging forever or
+    # silently degrading, since so much of this server (not just
+    # retrieve(), unlike the embedder/reranker case below) depends on
+    # having a real corpus.
+    _store = None
+    _chroma_connect_error: Optional[Exception] = None
+    for _attempt in range(1, 6):
+        try:
+            _store = ChromaStore(collection_name=CHROMA_COLLECTION)
+            break
+        except Exception as e:  # noqa: BLE001 -- any construction failure is worth one more try here
+            _chroma_connect_error = e
+            _log(f"chroma-server connection attempt {_attempt}/5 failed ({type(e).__name__}); "
+                 f"retrying in 2s..." if _attempt < 5 else
+                 f"chroma-server connection attempt {_attempt}/5 failed ({type(e).__name__}); giving up.")
+            if _attempt < 5:
+                time.sleep(2)
+    if _store is None:
+        raise RuntimeError(
+            "Could not reach chroma-server after 5 attempts over ~10s -- this is past "
+            "the transient startup race the retry above exists for; chroma-server "
+            "itself is genuinely unreachable (wrong CHROMA_SERVER_HOST/PORT, network "
+            "issue, or chroma-server actually down despite its own healthcheck)."
+        ) from _chroma_connect_error
+
     _corpus = _store.get_all()
     _generator = FallbackGenerator(ollama_model=OLLAMA_GENERATION_MODELS[0])  # groq first, "llama3.2" fallback
 
