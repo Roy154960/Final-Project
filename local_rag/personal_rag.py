@@ -133,6 +133,23 @@ def _get_embedder() -> HFEmbedder:
     return _embedder
 
 
+def diagnostic_status() -> dict:
+    """
+    For agents/api.py's `GET /diagnostics` -- attempts (or reuses the
+    cached result of) `_get_embedder()` and reports pass/fail with the
+    real exception text on failure, instead of letting a caller discover
+    this only when a real upload hits the same construction call and
+    gets a 503 (`ImportError('Run: pip install sentence-transformers')`
+    -- the exact CONFIRMED live failure this exists to surface earlier
+    and more legibly than a request-time 503 buried in server logs).
+    """
+    try:
+        _get_embedder()
+    except Exception as e:  # noqa: BLE001 -- report any construction failure, not just ImportError
+        return {"ok": False, "detail": f"{type(e).__name__}: {e}"}
+    return {"ok": True, "detail": "HFEmbedder loaded"}
+
+
 def _fresh_store() -> ChromaStore:
     """
     A brand-new ChromaStore (fresh chromadb PersistentClient, freshly

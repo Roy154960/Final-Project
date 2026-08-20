@@ -38,9 +38,11 @@
 # local_rag/requirements.txt itself is UNTOUCHED and stays the source of
 # truth for the non-Docker workflow (benchmark scripts, the offline
 # pipeline CLI, evaluation harness, quantization/serving experiments) --
-# this file exists purely because docker/backend.Dockerfile and docker/
-# mcp_server.Dockerfile were installing that entire file, including
-# packages neither container's actual code path ever imports.
+# this file exists purely because docker/shared.Dockerfile's `base` stage
+# (built once, shared by both the `backend` and `mcp-server` final
+# stages -- previously two separate Dockerfiles that independently
+# installed this same file) would otherwise install that entire file,
+# including packages neither container's actual code path ever imports.
 #
 # Every package below is confirmed reachable by a real trace of what
 # agents/api.py (backend) and mcp_server/server.py (mcp-server) actually

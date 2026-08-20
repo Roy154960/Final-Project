@@ -9,6 +9,7 @@ falls back to a local Ollama model automatically if unset/unreachable).
 
 from pathlib import Path
 import os
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -227,6 +228,38 @@ CHROMA_COLLECTION = "rag_chunks"
 CHROMA_CLIENT_MODE = os.environ.get("CHROMA_CLIENT_MODE", "embedded").strip().lower()
 CHROMA_SERVER_HOST = os.environ.get("CHROMA_SERVER_HOST", "localhost")
 CHROMA_SERVER_PORT = int(os.environ.get("CHROMA_SERVER_PORT", "8000"))
+
+# LOUD, unconditional, every single time this module is imported by
+# ANYTHING (mcp_server/server.py, agents/api.py, pipeline.py's CLI, the
+# eval scripts, ...) -- not just a row in docs/DOCKER.md's env-var
+# reference table. CONFIRMED problem this closes: because
+# CHROMA_CLIENT_MODE silently defaults to "embedded" whenever it isn't
+# explicitly exported, the exact same `python -m local_rag.pipeline
+# ingest --multimodal` command, run from two slightly different shells
+# (one with CHROMA_CLIENT_MODE=http exported to target a running
+# chroma-server container, one without), writes into two completely
+# disconnected databases -- a local SQLite-backed store under
+# CHROMA_PERSIST_DIR versus a separate chroma-server's own volume -- with
+# no error, no warning, either way. This is the ONE place every entry
+# point into this codebase passes through, so it's the one place this
+# can be announced unconditionally rather than re-derived after the fact
+# from a support conversation.
+#
+# `file=sys.stderr`, deliberately, never a bare print() to stdout --
+# mcp_server/server.py's own module docstring documents in detail why a
+# single stray stdout write from ANYWHERE in this import chain corrupts
+# its stdio JSON-RPC transport; stderr carries no such risk in any of
+# this project's entry points, stdio MCP included.
+print(
+    f"[config] Chroma target: CHROMA_CLIENT_MODE={CHROMA_CLIENT_MODE!r} -> "
+    + (
+        f"http://{CHROMA_SERVER_HOST}:{CHROMA_SERVER_PORT}"
+        if CHROMA_CLIENT_MODE == "http"
+        else "local embedded PersistentClient (CHROMA_PERSIST_DIR below) -- set "
+        "CHROMA_CLIENT_MODE=http to target a running chroma-server instead"
+    ),
+    file=sys.stderr,
+)
 
 # ---------------------------------------------------------------------------
 # OCR (Tesseract)

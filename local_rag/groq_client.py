@@ -97,6 +97,112 @@ GROQ_VISION_REQUEST_TIMEOUT_SECONDS = float(os.environ.get("GROQ_VISION_REQUEST_
 # own Groq account's free-tier rate-limit windows run differently.
 _MAX_RETRY_AFTER_SLEEP_SECONDS = float(os.environ.get("GROQ_MAX_RETRY_AFTER_SLEEP_SECONDS", "15.0"))
 
+# Below this, a 429's `retry-after` reads as an ordinary per-minute burst
+# limit -- worth the one-retry-and-wait-15s treatment above, since Groq
+# genuinely might have headroom again in a few seconds. AT OR ABOVE this,
+# it reads as a real budget exhaustion (a daily/longer-window cap, not a
+# burst), and CONFIRMED live-run behavior showed the one-retry path
+# doesn't help there at all: every subsequent call for the same model
+# still hits Groq fresh, gets a SECOND 429 with an even larger
+# retry-after (900s, then 1500s, then 1700s+ across one real session --
+# see this project's own docker log excerpts), and still pays the full
+# 15.0s capped sleep before falling back to Ollama, on EVERY single call,
+# for as long as the account stays exhausted. On a supervisor visit that
+# can happen up to `iteration_cap` times in one turn, that's minutes of
+# pure wasted waiting for a Groq response this account has no chance of
+# getting for the next 10-30 minutes.
+#
+# _rate_limit_cooldown_until (below) is the fix: once a 429's OWN
+# uncapped retry-after crosses this threshold, skip Groq ENTIRELY for
+# that model -- no network call, no 15s wait -- until the cooldown
+# expires, going straight to GroqAPIError so the caller's existing Ollama
+# fallback takes over immediately. This does not change behavior for an
+# ordinary short rate-limit blip (below threshold), which still gets the
+# original one-retry-with-the-real-wait-time treatment.
+_COOLDOWN_THRESHOLD_SECONDS = float(os.environ.get("GROQ_COOLDOWN_THRESHOLD_SECONDS", "60.0"))
+
+# Ceiling on how long a single cooldown is ever allowed to last, even if
+# Groq's own retry-after says longer (observed up to ~1800s in one real
+# session) -- bounds worst-case staleness if the account's actual
+# available-again time turns out to be earlier than Groq predicted (e.g.
+# a mid-window quota reset), and keeps one very large retry-after from
+# disabling Groq for the rest of a long-running server process.
+_MAX_COOLDOWN_SECONDS = float(os.environ.get("GROQ_MAX_COOLDOWN_SECONDS", "1800.0"))
+
+# model -> monotonic() timestamp the cooldown for that model expires at.
+# Per-model (not global) since rate limits are per-model on Groq's side
+# (GROQ_SMALL_MODEL and GROQ_LARGE_MODEL can be independently exhausted
+# at different times -- e.g. the supervisor hammering the small model
+# far more than specialists hit the large one). Process-local, in-memory,
+# deliberately not persisted anywhere -- a process restart clearing it is
+# fine; the next call will just rediscover the real state on its own
+# first 429 if the account is still exhausted.
+_rate_limit_cooldown_until: dict[str, float] = {}
+
+
+def _cooldown_remaining(model: str) -> float:
+    """Seconds left in `model`'s cooldown, or 0.0 if it's not in one."""
+    return max(0.0, _rate_limit_cooldown_until.get(model, 0.0) - time.monotonic())
+
+
+def diagnostic_status(models: list[str]) -> dict:
+    """
+    Cheap, NETWORK-FREE status snapshot for a diagnostics endpoint --
+    deliberately never fires a real request against Groq (that would
+    itself burn a slice of the free-tier budget every single time
+    someone checks whether the system is healthy, which defeats the
+    point). Reports only what this process already knows: whether
+    GROQ_API_KEY is configured at all, and whether each of `models` is
+    currently in the per-model cooldown `_maybe_start_cooldown` (see its
+    own docstring) may have started from a REAL earlier 429.
+
+    Returns:
+        {"api_key_configured": bool,
+         "models": {model: {"in_cooldown": bool, "cooldown_remaining_s": float}, ...}}
+    """
+    return {
+        "api_key_configured": bool(GROQ_API_KEY),
+        "models": {
+            model: {
+                "in_cooldown": _cooldown_remaining(model) > 0,
+                "cooldown_remaining_s": round(_cooldown_remaining(model), 1),
+            }
+            for model in models
+        },
+    }
+
+
+def _maybe_start_cooldown(model: str, retry_after_header: Optional[str]) -> None:
+    """
+    Given a 429's raw `retry-after` header, start (or extend) `model`'s
+    cooldown if the UNCAPPED value crosses `_COOLDOWN_THRESHOLD_SECONDS`
+    -- deliberately reads the header directly rather than reusing
+    `_parse_retry_after`'s already-capped return value, since the whole
+    point here is reacting to how large the real number is, not the
+    15.0s-capped sleep duration a single retry would ever actually wait.
+    Never lowers an existing cooldown (`max` against what's already
+    there) -- a later 429 in the same exhaustion window naturally reports
+    a similar-or-larger wait, and even if it reported a smaller one, the
+    earlier estimate is closer to Groq's real reset time.
+    """
+    if not retry_after_header:
+        return
+    try:
+        raw_seconds = float(retry_after_header)
+    except ValueError:
+        return
+    if raw_seconds < _COOLDOWN_THRESHOLD_SECONDS:
+        return
+    cooldown_seconds = min(raw_seconds, _MAX_COOLDOWN_SECONDS)
+    new_until = time.monotonic() + cooldown_seconds
+    if new_until > _rate_limit_cooldown_until.get(model, 0.0):
+        _rate_limit_cooldown_until[model] = new_until
+        _log(
+            f"{model} looks genuinely exhausted (retry-after={raw_seconds:.0f}s) -- "
+            f"skipping Groq entirely for this model for the next {cooldown_seconds:.0f}s "
+            "instead of retrying (and paying the capped wait) on every call"
+        )
+
 
 def _log(msg: str) -> None:
     print(f"[groq_client] {msg}", file=sys.stderr)
@@ -280,6 +386,19 @@ def groq_chat_completion(
     never stalls the event loop other concurrent turns are running on.
     """
     api_key = _require_api_key()
+
+    cooldown_remaining = _cooldown_remaining(model)
+    if cooldown_remaining > 0:
+        # Skip the network call entirely -- see _maybe_start_cooldown's
+        # own docstring for why. Recorded via record_groq_failure (not
+        # record_groq_rate_limit_headers, since there are no real
+        # response headers for a call that never went out) so this still
+        # shows up in the same cost/failure log every other Groq failure
+        # does, distinguishable by its own reason string.
+        reason = f"in cooldown for {cooldown_remaining:.0f}s more (see groq_client.py's own cooldown)"
+        usage_tracker.record_groq_failure(model, reason)
+        raise GroqAPIError(f"Groq skipped for {model}: {reason}")
+
     payload: dict = {
         "model": model,
         "messages": messages,
@@ -398,6 +517,7 @@ def groq_chat_completion(
 
     if resp.status_code == 429:
         retry_after = resp.headers.get("retry-after")
+        _maybe_start_cooldown(model, retry_after)
         reason = f"429 rate-limited (retry-after={retry_after}s)"
         usage_tracker.record_groq_failure(model, reason)
         raise GroqAPIError(f"Groq rate limit hit for {model}: {reason}")
