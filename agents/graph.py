@@ -102,6 +102,7 @@ from agents.state import AgentState
 from agents.supervisor import (
     DEFAULT_FALLBACK_ROUTE,
     DEFAULT_ITERATION_CAP,
+    DEFAULT_MAX_SPECIALISTS_PER_TURN,
     DEFAULT_ROUTE_FORMAT,
     build_supervisor,
 )
@@ -130,6 +131,7 @@ def _resolve_forced_route(state: AgentState, specialist_names: frozenset) -> Opt
 
 async def build_graph(
     iteration_cap: int = DEFAULT_ITERATION_CAP,
+    max_specialists_per_turn: int = DEFAULT_MAX_SPECIALISTS_PER_TURN,
     fallback_route: str = DEFAULT_FALLBACK_ROUTE,
     route_format: Literal["json_schema", "json"] = DEFAULT_ROUTE_FORMAT,
     checkpointer: Optional[BaseCheckpointSaver] = None,
@@ -166,6 +168,7 @@ async def build_graph(
     supervisor_node = build_supervisor(
         specialists,
         iteration_cap=iteration_cap,
+        max_specialists_per_turn=max_specialists_per_turn,
         fallback_route=fallback_route,
         route_format=route_format,
     )
@@ -293,6 +296,7 @@ async def build_graph(
 async def ask(
     question: str,
     iteration_cap: int = DEFAULT_ITERATION_CAP,
+    max_specialists_per_turn: int = DEFAULT_MAX_SPECIALISTS_PER_TURN,
     fallback_route: str = DEFAULT_FALLBACK_ROUTE,
     route_format: Literal["json_schema", "json"] = DEFAULT_ROUTE_FORMAT,
     forced_route: Optional[str] = None,
@@ -318,7 +322,10 @@ async def ask(
     logic in supervisor.py ever gets a chance to fire.
     """
     graph = await build_graph(
-        iteration_cap=iteration_cap, fallback_route=fallback_route, route_format=route_format
+        iteration_cap=iteration_cap,
+        max_specialists_per_turn=max_specialists_per_turn,
+        fallback_route=fallback_route,
+        route_format=route_format,
     )
     initial_state: AgentState = {
         "messages": [HumanMessage(content=question)],

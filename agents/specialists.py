@@ -55,6 +55,7 @@ same BM25 snapshot and the same live Chroma store within a conversation).
 """
 
 import json
+import ntpath
 import os
 import re
 import statistics
@@ -161,7 +162,11 @@ _REASONING_MODEL = OLLAMA_GENERATION_MODELS[0]
 # working unchanged; _LARGE_REASONING_MODEL is just a readability alias
 # for call sites that want to name both tiers side by side.
 _LARGE_REASONING_MODEL = _REASONING_MODEL
-_SMALL_REASONING_MODEL = OLLAMA_GENERATION_MODELS[2]  # "phi3" -- fast, small, decent quality; the easy-request tier
+_SMALL_REASONING_MODEL = OLLAMA_GENERATION_MODELS[1]  # "mistral" -- see agents/llm_provider.py's
+# _LOCAL_SMALL_MODEL comment: stronger than phi3 for its size, and
+# (unlike phi3) supports Ollama tool-calling -- see this module's own
+# retrieval_qa_agent_large comment a few hundred lines down for the
+# confirmed crash that gap caused.
 
 # Short, nameable signals that push a request into the LARGE tier --
 # deliberately NOT a learned classifier and NOT a second LLM call (see
@@ -1886,18 +1891,30 @@ async def build_specialists() -> dict[str, Specialist]:
         tools=[retrieve_tool, generate_tool],
         prompt=RETRIEVAL_QA_SYSTEM_PROMPT,
     )
-    # CONFIRMED live-run crash this closes: `create_react_agent` binds
-    # its tools at build time (`tools=[retrieve_tool, generate_tool]`),
+    # CONFIRMED live-run crash this closed, historically: `create_react_agent`
+    # binds its tools at build time (`tools=[retrieve_tool, generate_tool]`),
     # which means the underlying Ollama chat request always carries a
-    # `tools` payload -- and _SMALL_REASONING_MODEL (phi3) does not
-    # support that Ollama API parameter at all. A "simple"-classified
-    # question (classify_request_difficulty's own heuristic -- short,
-    # no complex-keyword, single "?") routed to retrieval_qa reliably
-    # 503'd end to end with `ResponseError('registry.ollama.ai/library/
-    # phi3:latest does not support tools')`, since phi3 is the ONLY
-    # model currently configured for the small tier
-    # (_SMALL_REASONING_MODEL, specialists.py) and there's no
-    # tool-capable alternative in that tier to fall back to.
+    # `tools` payload -- and phi3, the small tier's model AT THE TIME,
+    # does not support that Ollama API parameter at all. A
+    # "simple"-classified question (classify_request_difficulty's own
+    # heuristic -- short, no complex-keyword, single "?") routed to
+    # retrieval_qa reliably 503'd end to end with
+    # `ResponseError('registry.ollama.ai/library/phi3:latest does not
+    # support tools')`, since phi3 was the ONLY model then configured
+    # for the small tier and there was no tool-capable alternative in
+    # that tier to fall back to.
+    #
+    # _SMALL_REASONING_MODEL is now "mistral" (see its own definition
+    # above), which DOES support Ollama tool-calling -- so this
+    # particular crash shouldn't reproduce if a small-tier variant were
+    # reintroduced. That hasn't been independently re-verified live
+    # here, though, and retrieval_qa is deliberately still kept
+    # large-only below rather than this comment being taken as license
+    # to silently re-add a small-tier variant -- doing that is a real
+    # design decision (does a "simple" retrieval question actually need
+    # the large tier's quality, now that the small tier CAN technically
+    # run it?), not just a mechanical unblock, so it's left to be made
+    # on purpose rather than as a side effect of a model swap.
     #
     # This is categorically different from every OTHER difficulty-tiered
     # call site in this project (`_llm_for()` above, and every specialist
@@ -1905,14 +1922,8 @@ async def build_specialists() -> dict[str, Specialist]:
     # at all -- they're ordinary chat completions, sometimes constrained
     # to a JSON output shape via Ollama's `format=<schema>` parameter
     # (see supervisor.py's own DEFAULT_ROUTE_FORMAT docstring), which is
-    # a different Ollama API parameter phi3 handles fine. Tool-calling
-    # specifically is what phi3 can't do -- so retrieval_qa's react
-    # agent, which genuinely cannot function without it, has no small
-    # tier to offer at all; the cost/latency savings the small tier
-    # exists for (see this module's "Model routing by difficulty"
-    # section) simply aren't available here without configuring a
-    # different, tool-capable small model in OLLAMA_GENERATION_MODELS
-    # (local_rag/config.py) to replace phi3 in that role.
+    # a different Ollama API parameter phi3 always handled fine anyway.
+    # Tool-calling specifically was what phi3 couldn't do.
     #
     # A `retrieval_qa_agent_small` bound to `llm_small` used to exist
     # here, picked via a `_agent_for()` helper mirroring `_llm_for()`
@@ -2246,7 +2257,13 @@ async def build_specialists() -> dict[str, Specialist]:
         path = item.get("image_path")
         if not path:
             return f"*(image unavailable — no path returned)*\n*{caption}*"
-        image_url = f"/images/{os.path.basename(path)}"
+        # ntpath.basename (not os.path.basename) deliberately -- it splits
+        # on BOTH '/' and '\\', so it correctly extracts just the filename
+        # even from a Windows-style path recorded by an ingestion run on a
+        # different OS than this server. Plain os.path.basename is
+        # posixpath here (this runs on Linux) and only recognizes '/', so
+        # it would return a backslash-separated path unchanged.
+        image_url = f"/images/{ntpath.basename(path)}"
         return f"![{caption}]({image_url})\n*{caption}*"
 
     def _format_image_result_embedded(item: dict) -> str:

@@ -75,14 +75,19 @@ jobs:
         include:
           - service: chroma-server
             dockerfile: docker/chroma_server.Dockerfile
+            target: ""
           - service: mcp-server
-            dockerfile: docker/mcp_server.Dockerfile
+            dockerfile: docker/shared.Dockerfile
+            target: mcp-server
           - service: backend
-            dockerfile: docker/backend.Dockerfile
+            dockerfile: docker/shared.Dockerfile
+            target: backend
           - service: frontend
             dockerfile: docker/frontend.Dockerfile
+            target: ""
           - service: framing-agent
             dockerfile: docker/framing_agent.Dockerfile
+            target: ""
     steps:
       - uses: actions/checkout@v4
 
@@ -100,6 +105,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
           tags: |

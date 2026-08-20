@@ -256,7 +256,27 @@ def build_contextualize_node() -> Specialist:
     multi-hop question does in specialists.py.
     """
     llm_large = get_chat_model("large", node="contextualize")
-    llm_small = get_chat_model("small", node="contextualize")
+    # use_groq=False: this node's rewrite task doesn't need Groq's edge
+    # the way routing quality does, and it's the SAME GROQ_SMALL_MODEL
+    # supervisor.py's routing decision also uses -- sharing Groq's one
+    # 8,000 TPM budget for that model with a task that doesn't need it
+    # starves the supervisor of headroom for a job that's more failure-
+    # sensitive (a bad route sends the whole turn down the wrong
+    # specialist). Skipping Groq for this instance only -- not llm_large
+    # above -- leaves contextualize's own rare escalation path, and every
+    # other GROQ_SMALL_MODEL caller, unchanged.
+    #
+    # use_together=True: previously (use_groq=False alone) this fell
+    # straight to local Ollama (phi3/mistral -- see llm_provider.py's own
+    # _LOCAL_SMALL_MODEL comment). It now tries Together AI first
+    # instead, with local Ollama still the last-resort fallback if
+    # Together itself is unavailable -- Together has its own, separate
+    # rate-limit budget from Groq's, so this still fully removes
+    # contextualize from any contention with supervisor.py's Groq calls,
+    # while trading away less quality than the local model alone would.
+    # See get_chat_model's own docstring for the exact fallback order
+    # this produces (Together -> Ollama, Groq skipped entirely here).
+    llm_small = get_chat_model("small", node="contextualize", use_groq=False, use_together=True)
 
     def _llm_for(text: str):
         return llm_large if classify_request_difficulty(text) == "complex" else llm_small

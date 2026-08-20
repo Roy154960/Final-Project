@@ -159,7 +159,13 @@ if str(_MCP_SERVER_DIR) not in sys.path:
 with _stdout_to_stderr():
     from fastmcp import FastMCP  # noqa: E402
 
-    from config import CHROMA_COLLECTION, OLLAMA_GENERATION_MODELS  # noqa: E402
+    from config import (  # noqa: E402
+        CHROMA_CLIENT_MODE,
+        CHROMA_COLLECTION,
+        CHROMA_SERVER_HOST,
+        CHROMA_SERVER_PORT,
+        OLLAMA_GENERATION_MODELS,
+    )
     from embeddings.hf_embedder import HFEmbedder  # noqa: E402
     from vectorstore.chroma_store import ChromaStore  # noqa: E402
     from retrieval.hybrid_retriever import HybridRetriever  # noqa: E402
@@ -431,15 +437,26 @@ with _stdout_to_stderr():
         ) from _chroma_connect_error
 
     _corpus = _store.get_all()
+
+    # config.py's own import-time print already announced the resolved
+    # CHROMA_CLIENT_MODE/target for this process (see that module's own
+    # comment) -- this one confirms the CONNECTION actually succeeded
+    # against that target and names the collection + chunk count, which
+    # config.py can't know on its own (it doesn't construct the client
+    # itself). Both together answer "which database, and does it
+    # actually have anything in it" from this process's own startup log
+    # alone, no live debugging session required.
+    _log(f"chroma connection confirmed -- collection={CHROMA_COLLECTION!r}, {len(_corpus)} chunk(s)")
+
     _generator = FallbackGenerator(ollama_model=OLLAMA_GENERATION_MODELS[0])  # groq first, "llama3.2" fallback
 
     # HFEmbedder/Reranker are the only two components here that need
     # torch -- everything above (ChromaStore, FallbackGenerator) doesn't.
     # If this image was built WITHOUT torch/sentence-transformers (see
     # local_rag/requirements-docker.txt's header -- current Docker builds
-    # reinstall them as a stopgap layer in docker/mcp_server.Dockerfile,
-    # but that layer is meant to come back out once this is rewired
-    # properly), HFEmbedder()/Reranker() raise ImportError here. Letting
+    # reinstall them as a shared layer in docker/shared.Dockerfile's
+    # `base` stage, but that layer is meant to come back out once this is
+    # rewired properly), HFEmbedder()/Reranker() raise ImportError here. Letting
     # that propagate used to kill the WHOLE process before FastMCP even
     # bound a port -- every tool unavailable, including ones that never
     # touched embeddings at all (corpus_meta, invoice, framing, color,
@@ -1163,19 +1180,36 @@ def allowed_link_domains() -> dict:
 @mcp.resource("policy://tool-status")
 def tool_status() -> dict:
     """
-    Which of the optional new-tool modules (image_tools, invoice_tools,
-    web_tools, color_tools) actually loaded at server startup, and which
-    are running in the degraded "unavailable" mode described in
-    _import_optional_tool_module's docstring above. The core pipeline
-    tools (retrieve, generate_answer) aren't listed here since they
-    aren't optional -- if either of THEM failed to import, this whole
-    server would already have failed to start, not be answerable via a
-    resource read.
+    Server-wide health snapshot, in two layers:
+
+    - The original, shallow layer (kept unchanged for backward
+      compatibility -- see below): which optional new-tool modules
+      (image_tools, invoice_tools, web_tools, color_tools, personal_rag)
+      actually IMPORTED at server startup, same as before this resource
+      was deepened.
+    - `pipeline_components`, new: whether the actual heavyweight objects
+      those modules depend on (the CLIP embedder, the text embedder/
+      reranker, the Chroma stores) genuinely CONSTRUCTED and have real
+      data, not just whether their containing module imported.
+
+    CONFIRMED gap the second layer closes: `image_tools` importing
+    successfully tells you NOTHING about whether `retrieve_images`
+    actually works -- `image_tools.py` itself only tries `import
+    open_clip`/`torch` lazily, inside `ClipEmbedder.__init__`, the first
+    time a tool call needs it (see that module's own `_ensure_loaded`
+    docstring). A server missing `open-clip-torch` entirely still
+    reports `"image_tools": "available"` under the original shallow
+    check alone -- exactly the gap that turned a real, live deployment
+    bug into a several-turn debugging session before this existed.
+    `pipeline_components.image_search` calls `image_tools.diagnostic_status()`
+    (a real, if cheap, construction attempt) to catch this at the root
+    instead.
 
     Exposed for the same transparency reason as policy://allowed-link-
     domains: a client (or a curious developer wondering why
-    search_art_supplies keeps coming back empty) can check this directly
-    rather than guessing from tool output alone.
+    search_art_supplies -- or retrieve_images -- keeps coming back
+    empty) can check this directly rather than guessing from tool output
+    alone.
     """
     # framing_tools' own status is two independent questions, unlike
     # the other four: did the CLIENT module import (same "available"/
@@ -1191,6 +1225,23 @@ def tool_status() -> dict:
         health = framing_tools.framing_agent_health()
         framing_agent_status = "available" if health else "client loaded, but System B is unreachable"
 
+    # Text-side retrieval stack: module-scope globals built once at
+    # server startup (see the "Pipeline components" block above this
+    # file's @mcp.tool()s) -- no lazy re-attempt needed, they're already
+    # either real objects or None by the time any request reaches here.
+    text_retrieval = {
+        "ok": _retriever is not None,
+        "embedder": "ok" if _embedder is not None else "unavailable (see startup logs -- likely missing torch/sentence-transformers)",
+        "reranker": "ok" if _reranker is not None else "unavailable (see startup logs)",
+        "chroma_chunks_indexed": len(_corpus) if _corpus else 0,
+    }
+
+    image_search = (
+        image_tools.diagnostic_status()
+        if image_tools is not None
+        else {"ok": False, "detail": "image_tools module failed to import"}
+    )
+
     return {
         "image_tools": "available" if image_tools is not None else "unavailable (failed to import)",
         "invoice_tools": "available" if invoice_tools is not None else "unavailable (failed to import)",
@@ -1198,6 +1249,16 @@ def tool_status() -> dict:
         "color_tools": "available" if color_tools is not None else "unavailable (failed to import)",
         "personal_rag": "available" if personal_rag is not None else "unavailable (failed to import)",
         "framing_tools (System B)": framing_agent_status,
+        "pipeline_components": {
+            "chroma_client_mode": CHROMA_CLIENT_MODE,
+            "chroma_target": (
+                f"http://{CHROMA_SERVER_HOST}:{CHROMA_SERVER_PORT}"
+                if CHROMA_CLIENT_MODE == "http"
+                else "local embedded PersistentClient"
+            ),
+            "text_retrieval": text_retrieval,
+            "image_search": image_search,
+        },
     }
 
 

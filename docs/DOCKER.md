@@ -42,13 +42,18 @@ running on your host machine (`ollama serve`), same as your non-Docker
 workflow — nothing here changes how Ollama itself runs.
 
 **Heads up on build time/image size:** both `backend` and `mcp-server`
-install the full `local_rag/requirements.txt` — the same file your
-non-Docker workflow uses, including `torch`, `vllm`, and `bitsandbytes`
-(for the GPU serving/quantization benchmark scripts, not anything the
-running API path calls). Expect multi-GB images and a slow first build.
-I didn't trim this file for Docker specifically since that's a separate
-change from "dockerize this" — say the word if you want a leaner
-runtime-only requirements file for the images.
+now build from `docker/shared.Dockerfile` (see its own header comment),
+which installs the TRIMMED `local_rag/requirements-docker.txt` — not the
+full `local_rag/requirements.txt` your non-Docker workflow uses — plus a
+CPU-only `torch` + `sentence-transformers` + `open-clip-torch` layer both
+containers share. `vllm`/`bitsandbytes`/the GPU serving/quantization
+benchmark scripts are NOT installed in either image; they were never
+reachable from either container's actual running code path (see
+`requirements-docker.txt`'s own header for the full audit). Still expect
+a real, non-trivial image size from the CPU torch build itself — see
+that file's own size notes for the current estimate — and a slow FIRST
+build; subsequent builds reuse Docker's layer cache for anything that
+hasn't changed.
 
 ---
 
@@ -119,10 +124,19 @@ docker network create inmind-net
 
 ```
 docker build -f docker/chroma_server.Dockerfile -t inmind-chroma-server:latest .
-docker build -f docker/mcp_server.Dockerfile -t inmind-mcp-server:latest .
-docker build -f docker/backend.Dockerfile -t inmind-backend:latest .
+docker build -f docker/shared.Dockerfile --target mcp-server -t inmind-mcp-server:latest .
+docker build -f docker/shared.Dockerfile --target backend -t inmind-backend:latest .
 docker build -f docker/frontend.Dockerfile --build-arg VITE_API_BASE_URL=http://localhost:8001 -t inmind-frontend:latest .
 ```
+
+`mcp-server` and `backend` now build from the SAME file, `docker/shared.Dockerfile`
+-- `--target` picks which of its two final stages you get. Both share
+one `base` stage (system packages + the ML dependency layer both
+containers need); Docker's build cache means the second of these two
+`docker build` calls reuses that shared layer instead of rebuilding it,
+so running both back-to-back is faster than the two previously-separate
+files ever were. See `docker/shared.Dockerfile`'s own header comment for
+why this replaced two independently-maintained files in the first place.
 
 ### 3. Run chroma-server first (the others depend on it)
 

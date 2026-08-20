@@ -197,6 +197,49 @@ from agents.state import AgentState
 # it only matters on the rarer turn that's actually struggling.
 DEFAULT_ITERATION_CAP = 9
 
+# Separate, MUCH lower cap on how many DISTINCT specialists a single turn
+# is allowed to visit before the supervisor gives up and reaffirms the
+# FIRST specialist's answer (via `_finalize_with_first_attempt`, the same
+# mechanism the iteration-cap-reached path below already uses) -- added
+# after a CONFIRMED live-run pattern where a Groq-rate-limited turn fell
+# back to the local small model (phi3) for routing, which then repeated
+# the exact same route (painting_lookup, then separately retrieval_qa) on
+# every visit regardless of the changing transcript (see
+# DEFAULT_ROUTE_FORMAT's docstring for why this is a known, structural
+# limitation of that model under json_schema-constrained decoding, not a
+# prompt-wording problem). Safety net 3 (the repeat-route guard) did
+# exactly what it's supposed to in that situation -- walked every OTHER
+# untried specialist in order -- but with eight specialists now built,
+# "every other untried specialist" means the turn visits corpus_meta,
+# personal_docs, product_search, invoice, framing_quote, and color_palette
+# too, each one appended to the transcript (and, for product_search/
+# invoice, each one running its own live web search / building its own
+# PII-redacted comparison paragraph) before DEFAULT_ITERATION_CAP even
+# comes into play -- purely wasted work, since the FIRST specialist
+# (painting_lookup or retrieval_qa) had almost certainly already answered
+# correctly.
+#
+# DEFAULT_ITERATION_CAP stays at 9 and keeps its own documented job (an
+# outer bound on total supervisor LLM-call budget, sized so the
+# repeat-route guard's fallback walk can still reach every specialist in
+# the rarer case where that walk is genuinely needed). This cap is a
+# tighter, INDEPENDENT bound specifically on how many different
+# specialists get a turn -- checked once per visit, right after
+# `tried_names_so_far` is known and before either the LLM is called or
+# safety nets 0/0a fire, so a turn that's about to try its 4th distinct
+# specialist (default) stops there instead of walking to its 8th. Kept
+# deliberately small: 1 initial pick + 2 re-routes is already enough
+# budget for every genuine multi-specialist case this project's own test
+# suite exercises (see DEFAULT_SKIP_REROUTE_IF_ANSWERED's docstring for
+# the two scenarios -- a hedging retrieval_qa answer getting one real
+# re-route, and corpus_meta correctly punting to retrieval_qa -- both of
+# which finish in 2 distinct specialists, comfortably under this cap).
+# Overridable per-build (see build_supervisor's own `max_specialists_per_turn`
+# parameter) and, in agents/api.py, via the AGENT_API_MAX_SPECIALISTS_PER_TURN
+# env var, the same "build-time toggle, not hardcoded" pattern this file
+# already applies to route_format/skip_reroute_if_answered.
+DEFAULT_MAX_SPECIALISTS_PER_TURN = 3
+
 # Never defaults to FINISH: a forced FINISH before any specialist has run
 # would silently return a non-answer. retrieval_qa is the safest fallback
 # specifically because it's grounded (it must retrieve before it can
@@ -600,6 +643,30 @@ def _partial_answer_note(iteration_cap: int, attempts: list[tuple[str, str]]) ->
     )
 
 
+def _max_specialists_note(max_specialists_per_turn: int, attempts: list[tuple[str, str]]) -> str:
+    """
+    The graceful, non-raising note produced when
+    `max_specialists_per_turn` (see that constant's own docstring) is hit
+    -- i.e. this turn has already tried that many DISTINCT specialists,
+    regardless of how much of `iteration_cap` is left. Combined with the
+    first specialist's full original answer by `_finalize_with_first_attempt`
+    into the single message the transcript's eval table and any
+    downstream consumer will see as the actual answer -- same shape as
+    `_partial_answer_note`, just gated on distinct-specialists-tried
+    instead of total supervisor visits.
+    """
+    first_name = attempts[0][0]
+    tried = ", ".join(name for name, _ in attempts)
+    return (
+        f"[Reached the {max_specialists_per_turn}-specialist limit for this turn "
+        f"after trying: {tried}. Reaffirming {first_name}'s answer (the first "
+        "specialist to answer this turn) as final, below -- see "
+        "DEFAULT_MAX_SPECIALISTS_PER_TURN's docstring in supervisor.py for why "
+        "trying more specialists past this point is more likely to be a "
+        "repeat-route-guard walk than a genuinely better answer.]"
+    )
+
+
 def _next_untried_route(ordered_names: list[str], tried_names: set[str]) -> Optional[str]:
     """
     First specialist name in `ordered_names` (the order `specialists` was
@@ -657,6 +724,7 @@ def _looks_like_refusal(content: str) -> bool:
 def build_supervisor(
     specialists: dict[str, Specialist],
     iteration_cap: int = DEFAULT_ITERATION_CAP,
+    max_specialists_per_turn: int = DEFAULT_MAX_SPECIALISTS_PER_TURN,
     fallback_route: str = DEFAULT_FALLBACK_ROUTE,
     route_format: Literal["json_schema", "json"] = DEFAULT_ROUTE_FORMAT,
     skip_reroute_if_answered: bool = DEFAULT_SKIP_REROUTE_IF_ANSWERED,
@@ -792,6 +860,44 @@ def build_supervisor(
             }
 
         question, attempts = _current_turn_context(state)
+        tried_names_so_far = {name for name, _ in attempts}
+
+        # --- Distinct-specialist cap (always on, pre-LLM, checked before
+        # every other safety net and before any LLM call for this visit):
+        # see DEFAULT_MAX_SPECIALISTS_PER_TURN's own docstring for the
+        # confirmed live-run pattern (a rate-limited Groq call falling
+        # back to phi3, which then repeats the same route on every visit)
+        # this exists to cut off early. Same "no LLM call once a cap is
+        # already exceeded" shape the iteration-cap check above already
+        # uses -- the only difference is what's being counted (distinct
+        # specialists tried this turn, not total supervisor visits).
+        #
+        # Deliberately does NOT fire once tried_names_so_far already
+        # covers every known specialist (the `< len(ordered_specialist_names)`
+        # half of the condition) -- that exact case is already handled,
+        # byte-for-byte the same as before this cap existed, by safety net
+        # 3's own "every specialist tried" fallback further down
+        # (`_all_tried_note`). This cap's whole job is stopping the walk
+        # EARLY, while specialists remain untried that the turn would
+        # otherwise go on to visit for no real benefit -- not to duplicate
+        # a case that's already correctly handled on its own.
+        if (
+            attempts
+            and len(tried_names_so_far) >= max_specialists_per_turn
+            and len(tried_names_so_far) < len(ordered_specialist_names)
+        ):
+            note = _max_specialists_note(max_specialists_per_turn, attempts)
+            final_message = _finalize_with_first_attempt(note, _first_attempt_message(state))
+            print(
+                f"[supervisor] max specialists per turn ({max_specialists_per_turn}) "
+                f"reached after trying {sorted(tried_names_so_far)} -- forcing FINISH",
+                file=sys.stderr,
+            )
+            return {
+                "route": "FINISH",
+                "iteration_count": iteration_count,
+                "messages": [final_message],
+            }
 
         # --- Safety net 0 (always on, pre-LLM): deterministic
         # product_search/invoice disambiguation -- see this module's own
@@ -802,7 +908,6 @@ def build_supervisor(
         # so it can never fight safety net 3 (the repeat-route guard)
         # below by re-forcing a route that's already been tried and
         # (per that guard's whole point) shouldn't be tried again.
-        tried_names_so_far = {name for name, _ in attempts}
         if "invoice" in known_routes and "invoice" not in tried_names_so_far:
             latest_batch = _latest_product_search_batch(state["messages"])
             if _looks_like_invoice_followup(str(question), latest_batch):

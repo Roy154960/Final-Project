@@ -141,6 +141,22 @@ async def fetch_corpus_documents(client: MultiServerMCPClient) -> dict:
     return json.loads(blobs[0].as_string())
 
 
+async def fetch_tool_status(client: MultiServerMCPClient) -> dict:
+    """
+    Fetch and parse the policy://tool-status resource -- server.py's own
+    real, construction-level health snapshot (which optional tool
+    modules imported, AND whether the heavyweight components underneath
+    them -- CLIP, the text embedder/reranker, Chroma -- actually
+    initialized; see that resource's own docstring for exactly why the
+    second half matters). Used by agents/api.py's `GET /diagnostics` to
+    fold the mcp-server's own view of its health into one combined
+    report, the same "one client per one-off need" pattern
+    fetch_corpus_documents above already uses.
+    """
+    blobs = await client.get_resources("local-rag", uris="policy://tool-status")
+    return json.loads(blobs[0].as_string())
+
+
 def unwrap_tool_result(raw: Any) -> Any:
     """
     A LangChain tool call made through langchain-mcp-adapters comes back

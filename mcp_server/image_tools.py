@@ -29,6 +29,8 @@ server process, not once per tool invocation.
 
 import base64
 import mimetypes
+import ntpath
+import os
 import sys
 from pathlib import Path
 from typing import Optional
@@ -49,6 +51,63 @@ _embedder = None  # ClipEmbedder, lazy-loaded (torch + open_clip are optional de
 _image_store = None  # ChromaStore over CHROMA_IMAGE_COLLECTION
 _vlm = None  # OllamaVLM, lazy-loaded only if a live caption fallback is ever needed
 _load_attempted = False
+
+_image_basename_index: Optional[dict] = None  # lazy, cached -- see _resolve_image_path
+
+
+def _build_image_basename_index() -> dict:
+    """
+    Maps a bare filename (e.g. "page195_img1.png") to its real, full path
+    under RAW_DOCS_DIR as seen by THIS process. Built lazily, once, and
+    cached for the life of the server -- a corpus of thousands of images
+    makes a fresh os.walk() per lookup wasteful.
+
+    Exists because ingest-time image_path metadata stored in Chroma is
+    whatever `pipeline.py --source ...` wrote at ingest time, on
+    whichever machine ran ingestion -- and ingestion does NOT have to run
+    on this machine/OS (see docs/DOCKER.md's local-ingest-against-a-live-
+    chroma-server workflow). A Windows ingest run stores paths like
+    "C:\\Users\\...\\page1.png"; this server runs on Linux inside the
+    container. Neither pathlib.Path nor os.path recognizes the OTHER OS's
+    separator, so the stored path is unusable here as-is even though the
+    actual file DID land on this machine, via the same
+    ./local_rag/data:/app/local_rag/data bind mount ingestion wrote
+    through. This index recovers the real, locally-valid path by
+    filename alone, with no re-ingest needed.
+    """
+    from config import RAW_DOCS_DIR
+
+    index: dict = {}
+    if RAW_DOCS_DIR.exists():
+        for root, _dirs, files in os.walk(RAW_DOCS_DIR):
+            for fname in files:
+                index.setdefault(fname, str(Path(root) / fname))
+    return index
+
+
+def _resolve_image_path(image_path: str) -> str:
+    """
+    Returns a path THIS process can actually read for `image_path`. Tries
+    it as-is first (the common case: ingestion and serving ran on the
+    same OS/machine). If that doesn't exist here, falls back to a
+    basename-only lookup in the index above -- see
+    _build_image_basename_index's own docstring for why that's needed.
+    Returns the original, unresolved string when no match is found
+    either way, so callers' existing "not found" handling still applies
+    unchanged rather than this silently swallowing a genuinely missing
+    file.
+    """
+    if not image_path or Path(image_path).exists():
+        return image_path
+    global _image_basename_index
+    if _image_basename_index is None:
+        _image_basename_index = _build_image_basename_index()
+    # ntpath.basename splits on BOTH '/' and '\\'; posixpath's (plain
+    # os.path's, on Linux) basename only recognizes '/', so it would
+    # return a Windows-style path unchanged instead of extracting the
+    # filename.
+    name = ntpath.basename(image_path)
+    return _image_basename_index.get(name, image_path)
 
 
 def _log(msg: str) -> None:
@@ -198,7 +257,7 @@ def retrieve_images_with_captions(query: str, k: int = 3) -> list[dict]:
     results = []
     for hit in hits:
         metadata = hit.get("metadata", {}) or {}
-        image_path = metadata.get("image_path", "")
+        image_path = _resolve_image_path(metadata.get("image_path", ""))
         caption = (metadata.get("caption") or "").strip()
 
         if not caption and image_path and Path(image_path).exists():
@@ -290,7 +349,7 @@ def retrieve_similar_images_with_captions(image_path: str, k: int = 3, exclude_p
     results = []
     for hit in hits:
         metadata = hit.get("metadata", {}) or {}
-        hit_path = metadata.get("image_path", "")
+        hit_path = _resolve_image_path(metadata.get("image_path", ""))
         if exclude_path and hit_path and Path(hit_path) == Path(exclude_path):
             continue
         caption = (metadata.get("caption") or "").strip()

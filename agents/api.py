@@ -1800,6 +1800,63 @@ async def health() -> dict:
     }
 
 
+_IMAGE_BASENAME_INDEX: Optional[dict] = None  # lazy, cached -- see get_image() below
+
+
+def _build_image_basename_index() -> dict:
+    """
+    Maps a bare filename to its real full path under RAW_DOCS_DIR, for
+    GET /images/{filename} below. Deliberately duplicated from (not
+    imported from) mcp_server/image_tools.py's own version of this same
+    lookup -- see agents/specialists.py's own comment on
+    _format_image_result for why: agents/ talks to the pipeline
+    exclusively through the MCP server, never by importing mcp_server/'s
+    internals directly.
+
+    Built lazily and cached for the life of this process; a corpus of
+    thousands of images makes a fresh os.walk() per request wasteful.
+    Looking up by filename (rather than joining the request's filename
+    straight onto RAW_DOCS_DIR) also means this route can only ever
+    serve a file that's actually somewhere under RAW_DOCS_DIR -- a
+    crafted filename like "../../etc/passwd" simply won't be a key in
+    this dict, so there's no path-traversal surface to worry about here.
+    """
+    index: dict = {}
+    if RAW_DOCS_DIR.exists():
+        for root, _dirs, files in os.walk(RAW_DOCS_DIR):
+            for fname in files:
+                index.setdefault(fname, os.path.join(root, fname))
+    return index
+
+
+@app.get("/images/{filename}")
+async def get_image(filename: str) -> FileResponse:
+    """
+    Serves a single extracted-corpus-image file by its bare filename --
+    the endpoint agents/specialists.py's `_format_image_result` and
+    frontend/src/components/MarkdownText.tsx's RemoteImage both already
+    assume exists (see their own comments), but which was never actually
+    registered anywhere in this file. Without this route, every
+    `![caption](/images/whatever.png)` the image_qa/painting_lookup
+    specialists emit 404s in the browser -- the caption text still
+    renders as plain markdown, but the image itself never does, which is
+    exactly the "only captions, no images" symptom this route fixes.
+
+    Looks the filename up in a basename index over RAW_DOCS_DIR (see
+    _build_image_basename_index) rather than serving
+    RAW_DOCS_DIR/filename directly, since extracted images live nested
+    under per-PDF "<stem>_images/" subfolders, not flat in RAW_DOCS_DIR
+    itself.
+    """
+    global _IMAGE_BASENAME_INDEX
+    if _IMAGE_BASENAME_INDEX is None:
+        _IMAGE_BASENAME_INDEX = _build_image_basename_index()
+    path = _IMAGE_BASENAME_INDEX.get(filename)
+    if not path or not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail=f"Image not found: {filename}")
+    return FileResponse(path)
+
+
 @app.get("/")
 async def chat_ui() -> FileResponse:
     """Serve the built-in single-file browser chat UI (agents/static/chat.html)."""
