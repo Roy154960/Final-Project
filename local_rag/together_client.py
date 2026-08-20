@@ -5,20 +5,26 @@ client, not a new SDK dependency" choice groq_client.py already makes --
 see llm_provider.py's own top docstring) so GroqFallbackChatModel can add
 a second hosted provider without changing how it already talks to Groq.
 
-I have NOT seen groq_client.py's actual source (it wasn't uploaded), so
-the two exception classes and the `together_chat_completion` signature
-below are written to match how llm_provider.py imports and calls
-`groq_chat_completion` / `GroqAPIError` / `GroqUnavailableError` -- not
-copied from groq_client.py directly. Worth diffing this file against the
-real groq_client.py once you can share it, in case its retry/timeout/
-logging behavior does something this doesn't yet mirror.
+Diffed against the real groq_client.py (see its own module docstring):
+this file deliberately does NOT replicate its 429-retry-with-sleep,
+per-model cooldown, or usage_tracker rate-limit-header recording --
+those exist because Groq's free tier needs babying its account-level
+limits across a whole session. Together sits behind Groq in the
+fallback chain specifically to relieve pressure on that same small
+budget, so there's no matching "protect Together's own limits" need
+yet; a raw 429/5xx here just falls straight through to the next link
+in the chain (local Ollama) via TogetherUnavailableError, the same way
+a Groq failure always could. Worth adding if Together itself starts
+getting hit hard enough to want its own cooldown tracking.
 
-Scope: wired in only for the two small-tier call sites that share Groq's
-8,000 TPM ceiling for GROQ_SMALL_MODEL -- supervisor.py's routing
-decision and contextualize.py's follow-up rewrite (see llm_provider.py's
-`use_together` docstring). Not wired into the large tier anywhere:
-Groq's large-tier budget isn't the bottleneck this client exists to
-relieve, and the person asked for this scoped to small-tier only.
+Scope: wired in for EVERY small-tier call site in agents/ -- not just
+supervisor.py's routing decision and contextualize.py's follow-up
+rewrite, but specialists.py's own small-tier calls too (see
+llm_provider.py's get_chat_model(): the Together branch is gated on
+`tier == "small"` alone, not on which node is calling). Not wired into
+the large tier anywhere: Groq's large-tier budget isn't the bottleneck
+this client exists to relieve, and the person asked for this scoped to
+small-tier only.
 
 Together's REST API is OpenAI-compatible (https://docs.together.ai/docs/quickstart,
 https://docs.together.ai/docs/openai-compatibility) -- same request/
@@ -30,26 +36,17 @@ _lc_message_to_openai_dict / _openai_message_to_ai_message helpers it
 already had for Groq, unchanged.
 """
 
-import os
 from typing import Any, Optional
 
 import requests
+
+from config import TOGETHER_API_KEY  # noqa: E402 -- mirrors groq_client.py's own `from config import GROQ_API_KEY`
 
 # https://docs.together.ai/docs/openai-compatibility -- Together's own
 # OpenAI-compatible base URL. api.together.ai/v1 also works per their
 # newer docs; .xyz is the longer-standing one and still current as of
 # this writing.
 TOGETHER_API_URL = "https://api.together.xyz/v1/chat/completions"
-
-# Read directly from the environment here rather than importing from
-# config.py -- unlike GROQ_SMALL_MODEL/GROQ_LARGE_MODEL (which
-# llm_provider.py imports from config.py), I haven't seen config.py's
-# actual contents, so I don't know whether it already has a place for
-# provider API keys or expects this module to read os.environ directly
-# the way groq_client.py might. If config.py already centralizes
-# GROQ_API_KEY, move this to match that pattern instead of leaving it
-# here.
-TOGETHER_API_KEY = os.environ.get("TOGETHER_API_KEY")
 
 # Mirrors whatever timeout groq_chat_completion presumably already uses
 # for its own `requests.post` call -- kept as a plain module constant so
@@ -110,9 +107,14 @@ def together_chat_completion(
         # branch (below) catches both the same way Groq's does, so this
         # distinction is about correct logging/diagnosis, not behavior.
         raise TogetherAPIError(
-            "TOGETHER_API_KEY is not set in the environment -- add it "
-            "wherever this project's GROQ_API_KEY is already configured "
-            "before use_together=True can do anything."
+            "TOGETHER_API_KEY is not set -- this call falls through to "
+            "the next link in the chain (local Ollama) instead. Fix "
+            "(optional -- everything still works without it, just "
+            "degrades straight to local on every Groq rate limit):\n"
+            "  1. Get a key at https://api.together.ai/settings/api-keys\n"
+            "  2. Put it in your .env file at the project root:\n"
+            "       TOGETHER_API_KEY=your_together_api_key_here\n"
+            "  3. Restart the server so config.py's load_dotenv() picks it up."
         )
 
     payload: dict = {

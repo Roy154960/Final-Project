@@ -195,6 +195,49 @@ GROQ_SMALL_MODEL = "openai/gpt-oss-20b"
 GROQ_VISION_MODEL = "qwen/qwen3.6-27b"
 
 # ---------------------------------------------------------------------------
+# Together AI (hosted, PAID -- unlike Groq's free tier above) -- the
+# SECOND hosted provider in agents/llm_provider.py's fallback chain,
+# small tier ONLY: Groq -> Together -> local Ollama (phi3). Exists
+# specifically because supervisor.py, contextualize.py, and
+# specialists.py all draw small-tier reasoning calls from the SAME
+# 8,000 TPM Groq ceiling for GROQ_SMALL_MODEL, and a single turn can
+# fire several of those calls within a few seconds of each other --
+# Together gives the small tier a second real (hosted, still fast)
+# shot before degrading all the way down to local phi3, instead of
+# every Groq 429 falling straight to the weakest model in the chain.
+#
+# Unlike GROQ_API_KEY, this is NOT a free-tier key -- Together AI
+# bills per token (see https://www.together.ai/pricing; new accounts
+# get some free signup credit, but ongoing usage is paid, cheap as it
+# is for this model). Leaving TOGETHER_API_KEY unset is completely
+# safe: agents/llm_provider.py treats a missing key exactly like a
+# Groq/Together failure and falls straight through to local Ollama, so
+# nothing breaks if you never sign up for this at all -- it's an
+# opt-in second hosted hop, not a new hard requirement.
+#
+# Get a key at https://api.together.ai/settings/api-keys (sign up at
+# https://www.together.ai first if you don't have an account), put it
+# in your .env file at the project root:
+#     TOGETHER_API_KEY=your_together_api_key_here
+# and restart whichever server process picks it up (agents/api.py)
+# so this file's own load_dotenv() call sees it -- same pattern as
+# GROQ_API_KEY above.
+TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
+
+# Same model id as GROQ_SMALL_MODEL above ("openai/gpt-oss-20b") --
+# Together AI hosts this exact open-weight model too (see
+# https://www.together.ai/models/gpt-oss-20b), so falling over to
+# Together for the small tier keeps the SAME model answering, just via
+# a different host with its own independent rate-limit bucket -- not a
+# quality downgrade the way falling to local phi3 is. Deliberately not
+# reusing GROQ_SMALL_MODEL's variable directly (even though the string
+# is identical today): Together and Groq version/rename hosted models
+# independently, so if one of them ever needs a different id, this
+# stays a one-line change here instead of an accidental coupling
+# between two unrelated providers' model catalogs.
+TOGETHER_SMALL_MODEL = "openai/gpt-oss-20b"
+
+# ---------------------------------------------------------------------------
 # CLIP (true multimodal embeddings — image and text share one vector space)
 # Using open_clip, fully local, no API key.
 # ---------------------------------------------------------------------------
