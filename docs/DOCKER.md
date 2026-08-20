@@ -7,8 +7,15 @@ Two ways to run the full stack in containers, same images either way:
 - **Method 2 — docker compose**: `docker-compose.yml` at the project
   root does the same thing in one command.
 
-Both wire up the same four System-A containers on the same kind of
-custom bridge network:
+Both wire up the same four System-A containers, reachable from each
+other by container name. Method 1 puts all of them on one shared
+custom bridge network; `docker-compose.yml` splits the same containers
+across two bridge networks instead (`public-net` for anything the
+browser or another host process needs to reach, `private-net` for the
+data-plane services that should only ever be reached from other
+containers) — `backend` sits on both since it's the bridge between
+them. Functionally equivalent either way; compose is just stricter
+about which service can be reached from where.
 
 ```
 chroma-server (8000) <---- mcp-server (8765) <---- backend (8001) <---- frontend (8080)
@@ -84,10 +91,11 @@ Without persisting that download, it would repeat on every container
 **recreation** — not just an image rebuild, but every plain `docker
 compose down && up` or `docker rm` + `docker run`, since a fresh
 container starts from the image's layers with nothing written at
-runtime carried over. Both Dockerfiles fix the cache to
-`/app/.cache/huggingface` (`HF_HOME`) specifically so `docker-
-compose.yml` (and the manual method's `-v` flags) can mount a persistent
-volume there — `hf-cache`, shared between `backend` and `mcp-server`
+runtime carried over. `docker/shared.Dockerfile`'s `base` stage fixes
+the cache to `/app/.cache/huggingface` (`HF_HOME`) for both the
+`backend` and `mcp-server` target stages built from it, specifically so
+`docker-compose.yml` (and the manual method's `-v` flags) can mount a
+persistent volume there — `hf-cache`, shared between `backend` and `mcp-server`
 since they both need the same embedder, so the download happens once
 total, not once per container, the first time either one handles a
 request after a fresh volume.
@@ -141,7 +149,7 @@ why this replaced two independently-maintained files in the first place.
 ### 3. Run chroma-server first (the others depend on it)
 
 ```
-docker run -d --restart unless-stopped --name chroma-server --network inmind-net -p 8002:8000 multi-agentpipelinefinalversion-chroma-server:latest
+docker run -d --restart unless-stopped --name chroma-server --network inmind-net -p 8002:8000 -v inmind-chroma-data:/chroma/data inmind-chroma-server:latest
 ```
 
 `--restart unless-stopped` on every container from here on isn't just
@@ -162,7 +170,7 @@ curl http://localhost:8002/api/v2/heartbeat
 manually — harmless to include on Desktop too.
 
 ```
-docker run -d --restart unless-stopped --name mcp-server --network inmind-net -p 8765:8765 --add-host host.docker.internal:host-gateway -e MCP_TRANSPORT=http -e MCP_SERVER_HOST=0.0.0.0 -e MCP_SERVER_PORT=8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -e FRAMING_AGENT_URL=http://framing-agent:8090 -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface multi-agentpipelinefinalversion-mcp-server:latest
+docker run -d --restart unless-stopped --name mcp-server --network inmind-net -p 8765:8765 --add-host host.docker.internal:host-gateway -e MCP_TRANSPORT=http -e MCP_SERVER_HOST=0.0.0.0 -e MCP_SERVER_PORT=8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -e FRAMING_AGENT_URL=http://framing-agent:8090 -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-mcp-server:latest
 ```
 
 **Do not move on to step 5 yet.** This image imports the same heavy ML
@@ -204,7 +212,7 @@ Two volumes worth noting here:
 Only once step 4's `docker ps` shows mcp-server as `healthy`:
 
 ```
-docker run -d --restart unless-stopped --name backend --network inmind-net -p 8001:8001 --add-host host.docker.internal:host-gateway -e AGENT_API_HOST=0.0.0.0 -e AGENT_API_PORT=8001 -e AGENT_API_CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080 -e AGENT_API_DB_PATH=/app/data/chat_history.sqlite3 -e MCP_TRANSPORT=http -e MCP_SERVER_URL=http://mcp-server:8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -v inmind-backend-data:/app/data -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface multi-agentpipelinefinalversion-backend:latest
+docker run -d --restart unless-stopped --name backend --network inmind-net -p 8001:8001 --add-host host.docker.internal:host-gateway -e AGENT_API_HOST=0.0.0.0 -e AGENT_API_PORT=8001 -e AGENT_API_CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080 -e AGENT_API_DB_PATH=/app/data/chat_history.sqlite3 -e MCP_TRANSPORT=http -e MCP_SERVER_URL=http://mcp-server:8765 -e CHROMA_CLIENT_MODE=http -e CHROMA_SERVER_HOST=chroma-server -e CHROMA_SERVER_PORT=8000 -e OLLAMA_HOST=http://host.docker.internal:11434 -e GROQ_API_KEY=your-key-here -e TOGETHER_API_KEY=your-key-here -e GEMINI_API_KEY=your-key-here -v inmind-backend-data:/app/data -v inmind-backend-rag-data:/app/local_rag/data -v inmind-hf-cache:/app/.cache/huggingface inmind-backend:latest
 ```
 
 Note `MCP_SERVER_URL=http://mcp-server:8765` — `mcp-server` here is the
@@ -217,7 +225,7 @@ subprocess.
 ### 6. Run frontend
 
 ```
-docker run -d --restart unless-stopped --name frontend --network inmind-net -p 8080:8080 multi-agentpipelinefinalversion-frontend:latest
+docker run -d --restart unless-stopped --name frontend --network inmind-net -p 8080:8080 inmind-frontend:latest
 ```
 
 ### 6b. Build and run framing-agent (System B — optional, independent)
@@ -230,7 +238,8 @@ System-A tool that talks to it) just reports the framing service as
 unreachable, the same as if you'd started it and then stopped it.
 
 ```
-docker run -d --restart unless-stopped --name framing-agent --network inmind-net -p 8090:8090 --add-host host.docker.internal:host-gateway -e GROQ_API_KEY=your-key-here -e OLLAMA_HOST=http://host.docker.internal:11434 multi-agentpipelinefinalversion-framing-agent:latest
+docker build -f docker/framing_agent.Dockerfile -t inmind-framing-agent:latest .
+docker run -d --restart unless-stopped --name framing-agent --network inmind-net -p 8090:8090 --add-host host.docker.internal:host-gateway -e GROQ_API_KEY=your-key-here -e OLLAMA_HOST=http://host.docker.internal:11434 inmind-framing-agent:latest
 ```
 
 `-e GROQ_API_KEY=...` is the same key/variable as mcp-server's and
@@ -281,32 +290,47 @@ there's nothing to remove for it beyond the container itself.
 ## Method 2 — docker compose
 
 ```
-cp .env.docker.example .env
+cp env.docker.example .env
 ```
 
 Edit `.env` if `OLLAMA_HOST` needs to point somewhere other than
 `http://host.docker.internal:11434`, or if any of the default ports
-(8000/8001/8080/8765) collide with something already running on your
-machine.
+(8002/8001/8080/8765, or 8090 for the optional framing-agent) collide
+with something already running on your machine.
 
 ```
 docker compose up --build
 ```
 
-Same four System-A services, same network shape, same volumes — just
-declared in `docker-compose.yml` instead of typed out by hand — plus
-the fifth, `framing-agent` (System B), also declared there but with no
+Same four System-A services, same volumes — declared in
+`docker-compose.yml` instead of typed out by hand — plus the fifth,
+`framing-agent` (System B), also declared there but with no
 `depends_on` linking it to the other four, matching Method 1's step 6b
 above. `depends_on` with `condition: service_healthy` means compose
 waits for chroma-server (and mcp-server, for backend) to pass its
 healthcheck before starting the next service, so you don't hit a race
 on first startup — framing-agent starts independently, in parallel,
-since nothing else here is allowed to wait on it or vice versa.
+since nothing else here is allowed to wait on it or vice versa. Two
+differences from Method 1 worth knowing about: compose splits the
+containers across the `public-net`/`private-net` pair described above
+instead of one shared network, and it mounts `local_rag/data` from a
+host directory (`./local_rag/data`) rather than the named
+`inmind-backend-rag-data` volume Method 1 uses — same data either way,
+just browsable directly from the project root under compose.
 
 **If you already built the images with Method 1**, each service's
-`image:` here (`inmind-backend:latest`, etc.) is the exact same tag
-Method 1's `docker build` commands use — see "Does building manually
-first make compose faster?" below.
+`image:` here (`inmind-chroma-server:latest`, etc.) is the exact same
+tag Method 1's `docker build` commands use.
+
+**Does building manually first make compose faster?** Only if you
+start compose with plain `docker compose up` (no `--build`) — then
+compose sees a matching `image:` tag already present locally and skips
+building that service entirely. The `--build` flag in the command
+above always rebuilds every service regardless of what's already
+built, which is the safer default (you never run stale code) but
+throws away that shortcut. If you've just built everything with Method
+1 and want compose to reuse it as-is, run `docker compose up` instead
+of `docker compose up --build` the first time.
 
 Tear down:
 
@@ -330,7 +354,8 @@ docker compose down -v       # also deletes volumes -- clean slate
 | `AGENT_API_HOST` / `AGENT_API_PORT` | `agents/api.py` | `127.0.0.1` / `8001` | Already existed before Docker; `0.0.0.0` is required inside a container |
 | `AGENT_API_CORS_ORIGINS` | `agents/api.py` | `http://localhost:5173,...` | Must include wherever the frontend is actually reachable in the browser |
 | `AGENT_API_DB_PATH` | `agents/api.py` | next to `agents/api.py` | Pointed at a mounted volume in Docker so chat history survives a restart |
-| `GROQ_API_KEY` | `local_rag/groq_client.py`, `framing_agent/server.py` | unset | Same key, all three of mcp-server/backend/framing-agent. Was previously **not wired into any container at all** even when set in your real `.env` (see mcp-server's own `environment:` block comment in `docker-compose.yml` for why) — fixed. Unset, everything falls back to local Ollama automatically |
+| `GROQ_API_KEY` | `local_rag/groq_client.py`, `framing_agent/server.py` | unset | Same key, all three of mcp-server/backend/framing-agent. Unset, everything falls back to local Ollama automatically |
+| `TOGETHER_API_KEY` | backend application code (not part of this `docker/` bundle — check `local_rag/` for the exact call site) | unset | Wired into the `backend` container's environment by `docker-compose.yml`; optional, same unset-falls-back pattern as the other provider keys |
 | `GEMINI_API_KEY` | `local_rag/config.py` | unset | Optional, for personal-upload single-image captioning's online VLM backend. A *different* Google product/key from `GROQ_API_KEY` — unrelated to framing-agent, which now uses Groq/Ollama, not Gemini |
 | `FRAMING_AGENT_URL` | `mcp_server/framing_tools.py` | `http://localhost:8090` | System B's own base URL; docker-compose.yml sets this to `http://framing-agent:8090` for mcp-server, the only System-A file that reads it |
 | `FRAMING_AGENT_GROQ_MODEL` | `framing_agent/agent.py` | `llama-3.3-70b-versatile` | Only read if `GROQ_API_KEY` is set — System B's own Groq model, same default as `local_rag/config.py`'s `GROQ_LARGE_MODEL` |
@@ -359,8 +384,11 @@ project root) unless the env var is explicitly set.
   in `.env` (compose method); the containers' own internal ports never
   need to change.
 - **First `docker build` is very slow / image is huge** — expected, see
-  the note above about `local_rag/requirements.txt`'s full dependency
-  set (`torch`, `vllm`, `bitsandbytes`).
+  the note above: even the trimmed `local_rag/requirements-docker.txt`
+  path still pulls a real CPU-only `torch` + `sentence-transformers` +
+  `open-clip-torch` layer, which is where the time and size go. Later
+  builds reuse Docker's layer cache for anything that hasn't changed,
+  so only the first one is slow.
 - **Manual method: `backend` exits right after starting, logs show
   `httpx.ConnectError: All connection attempts failed` from
   `agents/mcp_client.py`'s `load_tools_by_name`** — a real startup race,

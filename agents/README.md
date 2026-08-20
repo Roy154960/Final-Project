@@ -1,3 +1,522 @@
+# agents/ — a multi-agent, MCP-grounded RAG system for a local art/painting corpus
+
+This folder is the agent layer of a larger local-RAG project. It takes a
+single-agent retrieval pipeline (built in an earlier phase, not included in
+this folder — see **"Where this folder fits"** below) and wraps it in a
+supervised, multi-specialist LangGraph agent with input/output guardrails,
+a FastAPI chat backend, and a second MCP server that exposes the whole
+thing as one tool.
+
+This README replaces the old phase-by-phase development journal that used
+to live here. That journal is preserved in full further down
+(**"Appendix: development history"**) because it contains real, cited
+before/after fixes from live runs that are still useful evidence of how
+the routing and guardrail logic reached its current shape — but it is no
+longer the right place to look if you just want to know what this system
+does or how to run it.
+
+---
+
+## 1. What it does, and who it's for
+
+**What it does:** answers natural-language questions about a fixed corpus
+of art/painting documents (technique guides, artist references, etc.),
+plus a handful of adjacent tasks that a plain retrieval-QA bot can't do on
+its own:
+
+- cite-backed Q&A over the corpus (`retrieval_qa`)
+- multi-hop questions that need two different sub-topics combined (`multi_hop`)
+- meta-questions about the corpus itself — "what documents do you have?" (`corpus_meta`)
+- looking up a specific named painting, combining the corpus with a live web/Wikipedia lookup (`painting_lookup`)
+- showing corpus images, or finding corpus images similar to one you upload (`image_qa`)
+- answering questions about a file *you* uploaded into the conversation (`personal_docs`)
+- searching the live web for real, purchasable art supplies (`product_search`)
+- building an itemized invoice for supplies found earlier in the same chat (`invoice`)
+- generating a color palette from a color name, hex code, or mood (`color_palette`)
+- getting a framing/shipping cost estimate for a finished artwork (`framing_quote`)
+
+A **supervisor** node routes each turn to the right specialist (or several,
+in sequence, if the first attempt says it couldn't help), and two
+**guardrail** nodes bracket the whole loop: one scans incoming messages for
+prompt-injection patterns before the supervisor ever sees them, the other
+scans every outgoing message for PII and disallowed links before the user
+sees them.
+
+**Who it's for:** this is a project built to demonstrate a specific set of
+architectural disciplines — MCP as the *only* path from agent code to the
+retrieval pipeline, validated (not just prompted) routing, structural
+guardrails that don't depend on an LLM behaving, and honest before/after
+documentation of real failures found in live runs. It's written for
+someone extending or grading that project, or for a developer who wants a
+worked example of a small, local-model-friendly multi-agent LangGraph
+system with real guardrails. It is **not** a drop-in product — see
+section 3.
+
+---
+
+## 2. Architecture
+
+### 2.1 Process/consumer view
+
+```
+                 ┌─────────────────────────┐
+                 │  Claude Code / Cursor /  │
+                 │  OpenCode (dev tools)    │
+                 └────────────┬─────────────┘
+                              │ stdio, MCP
+                              ▼
+   ┌────────────────────────────────────────────────┐
+   │           mcp_server/server.py   (Phase 1)       │
+   │  raw tools: retrieve, generate_answer,           │
+   │  retrieve_images, search_painting_online,        │
+   │  search_art_supplies, generate_invoice,          │
+   │  generate_color_palette, get_framing_quote, ...  │
+   │  — talks to retrieval/, embeddings/, generation/  │
+   └───────────────┬──────────────────────┬──────────┘
+                    │ stdio (default)      │ HTTP (Docker/compose)
+                    ▼                      ▼
+   ┌───────────────────────────────────────────────────────────┐
+   │                    agents/  (this folder)                  │
+   │                                                             │
+   │   agents/graph.py  — compiled LangGraph StateGraph           │
+   │   agents/api.py    — FastAPI chat backend (this repo's       │
+   │                       primary way to actually use the system)│
+   │   agents/agent_mcp_server.py — a SECOND MCP server that       │
+   │        exposes the whole graph as one tool, ask_multi_agent_rag│
+   └───────────┬───────────────────────────────┬─────────────────┘
+               │ stdio, MCP                    │ HTTP
+               ▼                                ▼
+   ┌───────────────────────┐        ┌───────────────────────────┐
+   │ Claude Code / Cursor / │        │ browser at localhost:8001  │
+   │ OpenCode, pointed at   │        │ (agents/static/chat.html,  │
+   │ agent_mcp_server.py    │        │  served by api.py itself)  │
+   │ instead of server.py   │        └───────────────────────────┘
+   └───────────────────────┘
+```
+
+Two MCP servers exist on purpose and are never merged (see §5 for why):
+`mcp_server/server.py` exposes *raw* retrieval/generation primitives with
+no routing and no guardrails; `agents/agent_mcp_server.py` exposes one
+tool that runs a question through the *entire* guarded, routed pipeline.
+
+### 2.2 Graph view (what actually runs per turn)
+
+```mermaid
+flowchart TD
+    START([START]) --> IG[input_guard]
+    IG -- "flagged (prompt-injection pattern)" --> REFUSE[refuse] --> END1([END])
+    IG -- clean --> CTX[contextualize]
+    CTX --> SUP[supervisor]
+
+    SUP -- route = retrieval_qa --> RQA[retrieval_qa]
+    SUP -- route = personal_docs --> PD[personal_docs]
+    SUP -- route = corpus_meta --> CM[corpus_meta]
+    SUP -- route = multi_hop --> MH[multi_hop]
+    SUP -- route = image_qa --> IQ[image_qa]
+    SUP -- route = painting_lookup --> PL[painting_lookup]
+    SUP -- route = product_search --> PS[product_search]
+    SUP -- route = invoice --> INV[invoice]
+    SUP -- route = color_palette --> CP[color_palette]
+    SUP -- route = framing_quote --> FQ[framing_quote]
+
+    RQA --> SUP
+    PD --> SUP
+    CM --> SUP
+    MH --> SUP
+    IQ --> SUP
+    PL --> SUP
+    PS --> SUP
+    INV --> SUP
+    CP --> SUP
+    FQ --> SUP
+
+    SUP -- route = FINISH --> OG[output_guard]
+    OG --> END2([END])
+```
+
+Every specialist edges back to `supervisor`, never to `END` and never to
+another specialist directly. The supervisor is the only node that can end
+a turn and the only node with a cycle back into it — that's what makes the
+iteration cap (`DEFAULT_ITERATION_CAP` in `supervisor.py`) a meaningful,
+enforceable number: it counts visits to *this one node*. `input_guard`,
+`refuse`, `contextualize`, and `output_guard` each run at most once per
+turn, unconditionally, by construction of the edges above — none of them
+count against the cap.
+
+### 2.3 The ten specialists
+
+| Specialist | Tools it's bound to | LLM calls | What it's for |
+|---|---|---|---|
+| `retrieval_qa` | `retrieve`, `generate_answer` | agentic loop (`create_react_agent`) | Cite-backed Q&A over the corpus |
+| `personal_docs` | `retrieve` (scoped to this thread's uploads) | one (generate) | Answers about a file *you* uploaded this conversation |
+| `corpus_meta` | none — static document list baked in at build time | one | "What documents are in your corpus?" |
+| `multi_hop` | `retrieve`, `generate_answer` (fixed shape) | three (decompose, then synthesize) | Questions needing two sub-topics combined |
+| `image_qa` | `retrieve_images` | **zero** | Shows corpus images, or finds similar ones to an upload |
+| `painting_lookup` | `retrieve`, `search_painting_online` (fixed shape) | one (synthesize) | Named-painting lookup, corpus + web |
+| `product_search` | `search_art_supplies` | one (comparison text only) | Real, purchasable art-supply search |
+| `invoice` | `generate_invoice` | **zero** | Itemized invoice from earlier `product_search` results in this chat |
+| `color_palette` | `generate_color_palette` | **zero** | Palette from a color, hex code, or mood |
+| `framing_quote` | `get_framing_quote` | one (or asks for missing details) | Framing + shipping cost estimate |
+
+Three specialists (`image_qa`, `invoice`, `color_palette`) make **zero**
+LLM calls at all — every number or caption they show comes straight out of
+a tool's own structured return value, so they cannot hallucinate a price,
+a caption, or a hex code even in principle. `corpus_meta` makes one call
+but is given no tools at all, so it cannot fabricate anything about
+document *content* — only the corpus's own document list, fetched once and
+baked into its system prompt. See §5 for why this "structural guardrail,
+not a prompt instruction" pattern is used throughout instead of just
+telling the model not to make things up.
+
+---
+
+## 3. Where this folder fits (read this before trying to run anything)
+
+**This zip/folder is `agents/` only** — one subdirectory of a larger
+project. On its own it is not runnable: several modules in this folder
+import from sibling packages that live one level up, in the project root,
+and are **not** part of this folder:
+
+```
+project_root/                      <- these siblings are NOT in this zip
+├── config.py                      <- model names, API keys config, RAW_DOCS_DIR
+├── personal_rag.py                <- the "temp" per-thread upload collection
+├── usage_tracker.py                <- Groq rate-limit usage tracking
+├── groq_client.py                  <- thin requests-based Groq HTTP client
+├── together_client.py              <- thin requests-based Together AI HTTP client
+├── local_rag/
+│   ├── safety/
+│   │   ├── prompt_injection.py     <- regex patterns agents/guardrails.py reuses
+│   │   ├── pii_redaction.py        <- regex PII redaction agents/guardrails.py reuses
+│   │   └── domain_allowlist.py     <- link-stripping allowlist
+│   └── usage_tracker.py
+├── retrieval/ embeddings/ generation/ ...  <- the underlying RAG pipeline
+├── mcp_server/
+│   └── server.py                   <- Phase 1: the ONLY thing agents/ is allowed
+│                                       to talk to for retrieval/generation
+└── agents/                         <- this folder
+```
+
+**If you have the full project**, drop this `agents/` folder in as a
+sibling of `mcp_server/`, `local_rag/`, `config.py`, etc., exactly where it
+already expects to be (`mcp_client.py` derives `mcp_server/server.py`'s
+path from its own file location, i.e. `Path(__file__).parent.parent /
+"mcp_server" / "server.py"` — the two folders must be direct children of
+the same project root).
+
+**If you only have this folder**, you cannot run the system end to end.
+You *can* still read every file, run the `python -m agents.test_*_smoke`
+suites that fake out the missing pieces (see §4.5), and use this README to
+understand the design. Getting it fully running requires the rest of the
+project. This is stated plainly here — see also **Known limitations**
+(§6) — rather than glossed over, because a setup guide that pretends this
+folder is self-contained would fail on the very first `import`.
+
+---
+
+## 4. Setup instructions
+
+These assume you have (or are recreating) the full project layout from §3.
+Every command below is run **from `project_root/`**, not from inside
+`agents/`.
+
+### 4.1 Prerequisites
+
+- Python 3.12 (the example configs use `py -3.12` / a pinned interpreter path)
+- [Ollama](https://ollama.com) running locally, with the models named in
+  `config.py`'s `OLLAMA_GENERATION_MODELS` pulled (`ollama pull <model>`)
+  — this is the always-available local fallback for every LLM call site
+- The base RAG pipeline (`mcp_server/`, `retrieval/`, `local_rag/`, etc.)
+  already set up and a corpus already ingested — the earlier phase this
+  project builds on
+- (Optional, recommended) a free **Groq** API key — the system's primary,
+  fast LLM backend; everything still works with only Ollama, just slower
+- (Optional) a **Together AI** API key — an extra hosted fallback layer
+  used only for small/routing-tier calls; entirely optional, nothing
+  breaks if unset
+
+### 4.2 Install
+
+```bash
+# from project_root/
+pip install -r agents/requirements.txt
+pip install -r agents/requirements-api.txt   # only needed for the FastAPI chat server
+```
+
+`agents/requirements.txt` is explicitly **additive** to `mcp_server/`'s
+own requirements and the project's own top-level `requirements.txt` —
+install all of them, not just this one.
+
+### 4.3 Configure environment variables
+
+Create a `.env` (or export these directly) at `project_root/`:
+
+| Variable | Required? | Purpose |
+|---|---|---|
+| `GROQ_API_KEY` | optional but recommended | Primary hosted LLM backend (`llm_provider.py`) |
+| `TOGETHER_API_KEY` | optional | Extra hosted fallback for small/routing-tier calls only |
+| `MCP_TRANSPORT` | optional (default `stdio`) | `stdio` (spawn `mcp_server/server.py` as a subprocess) or `http`/`streamable-http` (connect to an already-running server) |
+| `MCP_SERVER_URL` | only if `MCP_TRANSPORT=http` | e.g. `http://127.0.0.1:8765` or a Docker Compose service name |
+| `AGENT_API_DB_PATH` | optional (default `agents/chat_history.sqlite3`) | LangGraph SQLite checkpoint file, `api.py` only |
+| `AGENT_API_ITERATION_CAP` | optional (default `supervisor.py`'s `DEFAULT_ITERATION_CAP`, currently `9`) | Per-turn supervisor visit cap |
+| `AGENT_API_ROUTE_FORMAT` | optional (default `json_schema`) | `json_schema` or `json` — see the routing note in §5 |
+| `AGENT_API_HOST` / `AGENT_API_PORT` | optional (default `127.0.0.1` / `8001`) | Only used by `python -m agents.api` |
+| `AGENT_API_TURN_TIMEOUT_SECONDS` | optional (default `1200`) | Per-turn server-side timeout |
+| `AGENT_API_RATE_LIMIT` | optional (default `120/minute`) | Server-side rate limit |
+
+With no keys set at all, every LLM call site degrades straight to local
+Ollama — the system still runs, just without the Groq/Together speed-up.
+
+### 4.4 Run it — three ways
+
+**A. One-off question from the command line** (no persistent history,
+rebuilds the graph fresh each call):
+
+```bash
+python -m agents.graph "What is glazing in oil painting?"
+```
+
+Optional second arg selects the routing-decoding mode
+(`json_schema` default, or `json`); optional third arg forces one
+specific specialist, bypassing the supervisor:
+
+```bash
+python -m agents.graph "What does this brush look like?" json_schema image_qa
+```
+
+**B. The chat API + built-in browser UI** (persistent, multi-turn,
+survives restarts — the intended way to actually use this system):
+
+```bash
+python -m agents.api
+# or: uvicorn agents.api:app --reload --port 8001
+```
+
+Then open `http://localhost:8001/` in a browser. Conversation history is
+stored in a local SQLite file (`AGENT_API_DB_PATH`). Endpoints include
+`POST /chat`, `POST /chat/{id}/retry`, `POST /chat/{id}/edit`,
+`GET /chat/{id}/history`, `GET /chats`, `GET /tools`,
+`POST /chat/{id}/upload` (feeds `personal_docs`), `POST /chat/{id}/branch`,
+`DELETE /chat/{id}`, `GET /v1/usage`, and `GET /health`.
+
+**C. As an MCP tool inside Claude Code / Cursor / OpenCode:**
+
+```json
+{
+  "mcpServers": {
+    "multi-agent-rag": {
+      "command": "/absolute/path/to/python",
+      "args": ["/absolute/path/to/project_root/agents/agent_mcp_server.py"]
+    }
+  }
+}
+```
+
+(`agents/mcp_config.example.json` and `agents/opencode.example.json` are
+ready-to-edit copies of this, including the raw `mcp_server/server.py`
+registered alongside it under a second name, `local-rag`, if you want to
+compare guarded/routed answers against raw retrieval from the same
+client.) This exposes one tool, `ask_multi_agent_rag`, that runs a
+question through the entire guarded, routed pipeline and returns
+`{answer, blocked, specialists_visited, iteration_count}`.
+
+### 4.5 Verify it worked
+
+```bash
+python -m agents.test_graph_smoke          # compiles + runs the real StateGraph, faked LLM/specialists
+python -m agents.test_supervisor_smoke      # routing validation logic
+python -m agents.test_guardrails_smoke      # input/output guard behavior
+python -m agents.test_api_smoke             # FastAPI app over HTTP, faked backend
+```
+
+These four run **without** Ollama, Groq, or a real corpus — they fake the
+model and the MCP client. If they pass but `python -m agents.graph "..."`
+fails, the problem is in your environment (Ollama not running, corpus not
+ingested, `mcp_server/server.py` not found, missing API keys), not in this
+code.
+
+---
+
+## 5. Technical decisions and justifications
+
+**MCP as the only path from agent code to retrieval.** No specialist
+imports `retrieval/`, `generation/`, `embeddings/`, etc. directly — every
+one talks to `mcp_server/server.py` exclusively via
+`langchain-mcp-adapters`. This is what makes it possible to say
+Claude Code/Cursor/OpenCode and this agent graph are provably hitting the
+same retrieval code path, not two implementations that can silently
+drift apart.
+
+**Two MCP servers, kept separate rather than merged.**
+`mcp_server/server.py` exposes raw primitives (no routing, no guardrails);
+`agent_mcp_server.py` exposes one guarded, routed tool. Folding the second
+into the first would mean one server spawning a subprocess of itself to
+answer its own tool call, and would blur what the raw server's screenshots
+are meant to prove (raw retrieval, not the guarded agent).
+
+**Three genuinely different specialist shapes, not seven-to-ten copies of
+the same agent.** `retrieval_qa` is a real `create_react_agent` because
+deciding whether one `retrieve()` call was enough is exactly the kind of
+judgment call that shouldn't be hardcoded. `multi_hop` and
+`painting_lookup` are explicit, fixed-shape Python instead, because their
+iteration count needs to be knowable in advance once the supervisor is
+counting visits against a shared cap — an agentic loop inside a specialist
+would make that count unpredictable in exactly the place it most needs to
+be fixed. `image_qa`, `invoice`, and `color_palette` use **zero** LLM
+calls, because every value they display is already structured data
+returned by a tool — there is nothing for a model to paraphrase or
+hallucinate if it's never asked to.
+
+**Validated routing — three independent checks, not one prompt
+instruction.** The supervisor's LLM is constrained to a Pydantic
+`RouteDecision` with a `Literal[...]` route field. (1) Schema validation
+rejects a hallucinated name outright. (2) A separate membership check
+against the *actual* specialists dict the graph was built with catches the
+case where the Literal has drifted out of sync with what's really
+registered. (3) A repeat-route guard rejects even a schema-valid, known
+route if that specialist has already answered this turn — added after a
+confirmed live run showed a local model validly, repeatedly choosing the
+same specialist despite an explicit prompt instruction not to. Each check
+exists because an earlier live run found the previous checks
+insufficient — see the appendix for the specific failures.
+
+**Structural guardrails over prompt-only guardrails, applied
+consistently.** `corpus_meta`'s zero-tool design, `retrieval_qa`'s direct
+extraction of the tool's own cited output instead of trusting the model's
+final paraphrase, and the two Phase 4 guard nodes (`input_guard`,
+`output_guard`) — none of these call an LLM. They reuse the base
+pipeline's own `local_rag/safety/` regex modules and plain Python, on the
+theory that a check a model can silently ignore isn't a check.
+
+**Groq → Together → local Ollama, chosen per call, inside one
+`BaseChatModel`.** `llm_provider.py`'s `GroqFallbackChatModel` tries Groq
+first for every reasoning call site, adds one more hosted hop (Together)
+for small/routing-tier calls specifically (because supervisor + specialist
+routing calls share one low Groq token-per-minute ceiling and can exhaust
+it within seconds of each other in a single turn), and falls back to local
+Ollama on failure either way. Doing the fallback *inside* one chat-model
+class — rather than picking a backend once at startup — makes degradation
+genuinely per-call: Groq going down mid-conversation degrades that one
+turn without any caller needing to know which backend actually answered.
+
+**stdio by default, HTTP as an explicit opt-in.** `mcp_client.py` spawns
+`mcp_server/server.py` as a local subprocess by default (works with zero
+extra configuration for a single-machine dev setup) and switches to
+connecting over HTTP to an already-running server only when
+`MCP_TRANSPORT=http` is set explicitly — the shape a split-container
+Docker Compose deployment needs, where the backend never needs
+`mcp_server/`'s own source on disk at all.
+
+**A real LangGraph checkpointer (SQLite) for the chat API, not
+`ask()`'s rebuild-everything-per-call.** `agents/graph.py`'s `ask()`
+builds a brand-new graph (new MCP client, new spawned subprocess, empty
+message history) on every call — fine for the CLI and eval scripts, where
+each question is independent, but wrong for a chatbot: every turn would
+pay subprocess-startup latency and start with amnesia, silently breaking
+`invoice` (which specifically reads prior `product_search` messages back
+out of conversation state). `agents/api.py` instead compiles **one** graph
+once, with `AsyncSqliteSaver`, and threads calls through it by
+`thread_id`.
+
+**Iteration cap sized mechanically from the route count, not
+guessed.** `DEFAULT_ITERATION_CAP` (currently `9`, for ten specialists) is
+derived from the repeat-route guard's own worst case: walking every
+untried specialist once before force-`FINISH`ing, plus one buffer call to
+land on `FINISH` normally. It is a mechanical consequence of how many
+routes exist, not an independently-tuned constant — raising it when a
+specialist is added is a formula, not a guess.
+
+---
+
+## 6. Known limitations
+
+Being direct about these rather than hiding them:
+
+- **This folder is not self-contained.** As stated in §3, several modules
+  import from sibling packages (`config.py`, `personal_rag.py`,
+  `usage_tracker.py`, `groq_client.py`, `together_client.py`,
+  `local_rag/safety/`) that are not part of this zip. A README that hid
+  this would let someone burn time on a confusing `ModuleNotFoundError`
+  instead of understanding the real prerequisite up front.
+
+- **This README itself had drifted from the code before this rewrite,
+  and may drift again.** The previous version of this file documented
+  only 7 of the 10 specialists that actually exist in `specialists.py`
+  today (`personal_docs`, `color_palette`, and `framing_quote` were added
+  without a corresponding README update), and `API_README.md` documents
+  only 4 of `api.py`'s 12 actual endpoints (`retry`, `edit`,
+  `list_chats`, `list_tools`, `upload`, `branch`, `usage`, and
+  `get_image` are all real, working endpoints with no write-up). This
+  rewrite reflects the code as read directly from source rather than
+  trusting the old docs, but the same drift can recur if new code is
+  added without updating this file.
+
+- **Guardrails are regex-based, not semantic.** `scan_for_injection`'s
+  patterns and `redact_pii`'s structured-PII matching are the same fixed
+  pattern lists the base pipeline already documents as catching "the
+  common, unsophisticated patterns" — explicitly not a complete defense.
+  A rephrased or obfuscated injection attempt can slip past `input_guard`;
+  unstructured PII written in free prose (a name or address, not an
+  email/phone/SSN/card-shaped string) will not be caught by
+  `output_guard`.
+
+- **Local small-model routing is genuinely unreliable, which is why three
+  separate safety nets exist around it rather than one.** Live runs
+  showed a local model repeatedly choosing the same route regardless of a
+  changing transcript, and (separately) a Groq-rate-limited turn falling
+  back to a local small model that repeated the same route on every
+  visit. The repeat-route guard and the separate, much lower
+  distinct-specialist cap both exist specifically to bound the damage
+  from this rather than assuming it won't happen.
+
+- **`corpus_meta`'s document list is a one-time snapshot**, taken when
+  `build_specialists()` runs. It goes stale if you re-ingest the corpus
+  without restarting the graph process — the same staleness tradeoff the
+  base retrieval pipeline's BM25 index already has.
+
+- **`product_search`'s "beginner vs. professional" tier classification is
+  a keyword heuristic with a price-relative-to-median tiebreak**, not a
+  real product-attribute lookup. A free/keyless search snippet can't
+  reliably promise more than that.
+
+- **The chat API's persistence is a single local SQLite file** — fine for
+  one person's local use, not multi-process-safe, and there is no
+  authentication in front of it.
+
+- **No streaming.** `POST /chat` blocks until the supervisor loop reaches
+  `FINISH` or the iteration cap forces a partial answer.
+
+- **`agent_mcp_server.py` rebuilds the whole graph (and re-spawns
+  `mcp_server/server.py`, re-warming its embedder) on every single tool
+  call** — no caching, no persistent connection reuse. Real latency per
+  call, in exchange for zero new state-management code beyond what
+  `agents.graph` already has test coverage for. A module-level compiled
+  graph built once at server startup is the natural next step if that
+  latency matters.
+
+- **`create_react_agent` (used for `retrieval_qa`) is deprecated** as of
+  LangGraph 1.0 in favor of `langchain.agents.create_agent`, though it
+  still works through at least LangGraph 1.2.x.
+
+- **Most specialists only ever read the latest message as their
+  question**, not the full conversation. `invoice` is a deliberate
+  exception (it scans the whole thread for prior `product_search`
+  results); giving every specialist real cross-turn context (resolving
+  "that painting I asked about earlier") would require changing how each
+  one builds its question — not done here.
+
+---
+
+## Appendix: development history
+
+The remainder of this document is the original, phase-by-phase README,
+preserved below as a record of the confirmed live-run failures and fixes
+that shaped the routing/guardrail logic described in §5. It predates the
+four extra specialists documented above and is not kept up to date —
+treat it as historical evidence, not as current setup instructions.
+
+---
+
 # agents — Phase 2 & Phase 3
 
 Three specialists, each a LangGraph node, each talking to the retrieval
