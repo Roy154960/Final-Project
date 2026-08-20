@@ -2,6 +2,8 @@
 numpy
 tqdm
 pydantic>=2.0
+python-dotenv           # config.py's `from dotenv import load_dotenv` -- transitively
+                         # imported by nearly everything, genuinely load-bearing
 
 # requests -- already a transitive dependency of several packages below
 # (unstructured, sentence-transformers, etc.), listed explicitly here
