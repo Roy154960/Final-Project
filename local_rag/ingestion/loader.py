@@ -14,7 +14,7 @@ docstring is explicit that skipping it silently loses table structure.
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from ingestion.schema import RawDocument
 from ingestion.ingest_text import ingest_text_file
@@ -42,20 +42,44 @@ def _extract_pdf_tables_safely(path: str) -> list[RawDocument]:
         return []
 
 
-def ingest_path(path: str, describe_pages: PageVlmMode = "auto", force_ocr: bool = False) -> list[RawDocument]:
+def ingest_path(path: str, describe_pages: PageVlmMode = "auto", force_ocr: bool = False,
+                 image_out_dir: Optional[str] = None) -> list[RawDocument]:
+    """
+    image_out_dir: when given, redirects where this file's IMAGES end up
+    -- extracted embedded images for a PDF (namespaced under
+    f"{stem}_images/", same convention ingest_pdf() already used by
+    default), or a copied duplicate for a standalone image file --
+    instead of wherever `path` itself happens to live. Does NOT copy
+    `path` itself (the source PDF/text file) anywhere; only images,
+    since those are the only artifact a query-time image lookup needs
+    to find again on disk (source text is already fully embedded into
+    the vector store at ingest time, no file needed for that later).
+
+    Exists because `path` can point anywhere on disk (see pipeline.py's
+    --source), including outside the directory Docker Compose actually
+    bind-mounts into the running containers (local_rag/data) -- images
+    written next to a `path` that lives elsewhere are invisible to
+    mcp-server/backend at query time no matter how correct their stored
+    image_path is. Passing image_out_dir=RAW_DOCS_DIR (see pipeline.py's
+    own cmd_ingest) fixes that at ingest time instead of requiring a
+    manual copy afterward.
+    """
     p = Path(path)
     if p.suffix.lower() == ".pdf":
-        docs = ingest_pdf(str(p), describe_pages=describe_pages, force_ocr=force_ocr)
+        pdf_image_dir = str(Path(image_out_dir) / f"{p.stem}_images") if image_out_dir else None
+        docs = ingest_pdf(str(p), describe_pages=describe_pages, force_ocr=force_ocr,
+                           image_out_dir=pdf_image_dir)
         docs.extend(_extract_pdf_tables_safely(str(p)))
         return docs
     if p.suffix.lower() in TEXT_EXTS:
         return [ingest_text_file(str(p))]
     if p.suffix.lower() in IMAGE_EXTS:
-        return [ingest_image_file(str(p))]
+        return [ingest_image_file(str(p), copy_to_dir=image_out_dir)]
     raise ValueError(f"Unsupported file type: {p.suffix}")
 
 
-def ingest_directory(dir_path: str, describe_pages: PageVlmMode = "auto", force_ocr: bool = False) -> list[RawDocument]:
+def ingest_directory(dir_path: str, describe_pages: PageVlmMode = "auto", force_ocr: bool = False,
+                      image_out_dir: Optional[str] = None) -> list[RawDocument]:
     """Despite the name, also accepts a path to a single file (delegates to
     ingest_path) — so `--source path/to/one.pdf` works the same way
     `--source data/raw/` does, everywhere this function is used.
@@ -71,13 +95,15 @@ def ingest_directory(dir_path: str, describe_pages: PageVlmMode = "auto", force_
     """
     p = Path(dir_path)
     if p.is_file():
-        return ingest_path(str(p), describe_pages=describe_pages, force_ocr=force_ocr)
+        return ingest_path(str(p), describe_pages=describe_pages, force_ocr=force_ocr,
+                            image_out_dir=image_out_dir)
     docs: list[RawDocument] = []
     all_exts = TEXT_EXTS + IMAGE_EXTS + (".pdf",)
     for file in p.rglob("*"):
         if file.is_file() and file.suffix.lower() in all_exts:
             try:
-                docs.extend(ingest_path(str(file), describe_pages=describe_pages, force_ocr=force_ocr))
+                docs.extend(ingest_path(str(file), describe_pages=describe_pages, force_ocr=force_ocr,
+                                         image_out_dir=image_out_dir))
             except Exception as e:
                 print(f"[warn] failed to ingest {file}: {e}")
     return docs

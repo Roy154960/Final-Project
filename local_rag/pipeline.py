@@ -49,7 +49,7 @@ from vectorstore.base import BaseVectorStore
 from ingestion.schema import RawDocument, Chunk
 from utils.logging_config import get_logger
 from utils.tracing import trace_span
-from config import DATA_DIR
+from config import DATA_DIR, RAW_DOCS_DIR
 
 logger = get_logger("local_rag.pipeline")
 
@@ -418,8 +418,31 @@ def cmd_ingest(args):
                             extra={"path": str(f), "n_removed": len(stale_chunk_ids)})
 
         raw_docs = []
+        raw_docs_dir_resolved = RAW_DOCS_DIR.resolve()
         for f in files_to_process:
-            raw_docs.extend(ingest_path(str(f), describe_pages=args.page_vlm, force_ocr=args.force_ocr))
+            f_path = Path(f).resolve()
+            try:
+                f_path.relative_to(raw_docs_dir_resolved)
+                # Already somewhere under local_rag/data/raw -- the
+                # directory Docker Compose actually bind-mounts into
+                # mcp-server/backend -- so the existing default (images
+                # land next to the source file) already lands inside
+                # that bind mount too. Leave it alone; this is the
+                # normal in-tree corpus workflow.
+                image_out_dir = None
+            except ValueError:
+                # --source pointed somewhere outside local_rag/data --
+                # e.g. a document staged on a different drive/folder for
+                # a local (non-Docker) ingest run against a live
+                # chroma-server (see docs/DOCKER.md). Extracted images
+                # would otherwise land next to the source file, outside
+                # any directory the containers can see. Redirect them
+                # under RAW_DOCS_DIR instead so they're servable via GET
+                # /images/{filename} once the containers query them --
+                # see ingestion/loader.py's own ingest_path() docstring.
+                image_out_dir = str(RAW_DOCS_DIR)
+            raw_docs.extend(ingest_path(str(f), describe_pages=args.page_vlm, force_ocr=args.force_ocr,
+                                         image_out_dir=image_out_dir))
 
     logger.info("ingested raw documents", extra={"count": len(raw_docs)})
 
