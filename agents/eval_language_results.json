@@ -8,7 +8,7 @@
       "query": "How do I mix a good glaze for oil painting?",
       "actual_route": "retrieval_qa",
       "correct": true,
-      "elapsed_seconds": 1.78,
+      "elapsed_seconds": 5.09,
       "error": null
     },
     {
@@ -19,7 +19,7 @@
       "query": "Comment m\u00e9langer un bon glacis pour la peinture \u00e0 l'huile ?",
       "actual_route": "retrieval_qa",
       "correct": true,
-      "elapsed_seconds": 0.94,
+      "elapsed_seconds": 4.61,
       "error": null
     },
     {
@@ -28,9 +28,9 @@
       "category": "retrieval_qa",
       "expected_route": "retrieval_qa",
       "query": "\u0643\u064a\u0641 \u0623\u062d\u0636\u0651\u0631 \u0637\u0644\u0627\u0621 \u0632\u062c\u0627\u062c\u064a \u062c\u064a\u062f \u0644\u0644\u0631\u0633\u0645 \u0628\u0627\u0644\u0632\u064a\u062a\u061f",
-      "actual_route": "product_search",
-      "correct": false,
-      "elapsed_seconds": 180.25,
+      "actual_route": "retrieval_qa",
+      "correct": true,
+      "elapsed_seconds": 3.7,
       "error": null
     },
     {
@@ -41,7 +41,7 @@
       "query": "\u00bfC\u00f3mo mezclo un buen glaseado para pintura al \u00f3leo?",
       "actual_route": "retrieval_qa",
       "correct": true,
-      "elapsed_seconds": 1.69,
+      "elapsed_seconds": 3.66,
       "error": null
     },
     {
@@ -52,7 +52,7 @@
       "query": "What documents are in your corpus?",
       "actual_route": "corpus_meta",
       "correct": true,
-      "elapsed_seconds": 1.55,
+      "elapsed_seconds": 3.59,
       "error": null
     },
     {
@@ -63,7 +63,7 @@
       "query": "Quels documents contient votre corpus ?",
       "actual_route": "corpus_meta",
       "correct": true,
-      "elapsed_seconds": 4.42,
+      "elapsed_seconds": 3.16,
       "error": null
     },
     {
@@ -74,7 +74,7 @@
       "query": "\u0645\u0627 \u0647\u064a \u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a \u0627\u0644\u0645\u0648\u062c\u0648\u062f\u0629 \u0641\u064a \u0645\u062c\u0645\u0648\u0639\u062a\u0643\u0645\u061f",
       "actual_route": "corpus_meta",
       "correct": true,
-      "elapsed_seconds": 17.56,
+      "elapsed_seconds": 3.77,
       "error": null
     },
     {
@@ -85,7 +85,7 @@
       "query": "How does Cennini's advice on tempera compare to Vasari's on fresco?",
       "actual_route": "multi_hop",
       "correct": true,
-      "elapsed_seconds": 1.41,
+      "elapsed_seconds": 7.7,
       "error": null
     },
     {
@@ -96,7 +96,7 @@
       "query": "Comment les conseils de Cennini sur la d\u00e9trempe se comparent-ils \u00e0 ceux de Vasari sur la fresque ?",
       "actual_route": "multi_hop",
       "correct": true,
-      "elapsed_seconds": 1.14,
+      "elapsed_seconds": 3.36,
       "error": null
     },
     {
@@ -107,7 +107,7 @@
       "query": "Show me a picture of an underpainting technique",
       "actual_route": "image_qa",
       "correct": true,
-      "elapsed_seconds": 11.69,
+      "elapsed_seconds": 3.75,
       "error": null
     },
     {
@@ -118,7 +118,7 @@
       "query": "\u0623\u0631\u0646\u064a \u0635\u0648\u0631\u0629 \u0644\u062a\u0642\u0646\u064a\u0629 \u0627\u0644\u0631\u0633\u0645 \u0627\u0644\u062a\u062d\u0636\u064a\u0631\u064a",
       "actual_route": "image_qa",
       "correct": true,
-      "elapsed_seconds": 29.39,
+      "elapsed_seconds": 2.67,
       "error": null
     },
     {
@@ -129,7 +129,7 @@
       "query": "Tell me about the Mona Lisa",
       "actual_route": "painting_lookup",
       "correct": true,
-      "elapsed_seconds": 2.14,
+      "elapsed_seconds": 5.5,
       "error": null
     },
     {
@@ -140,7 +140,7 @@
       "query": "Parle-moi de la Joconde",
       "actual_route": "painting_lookup",
       "correct": true,
-      "elapsed_seconds": 30.5,
+      "elapsed_seconds": 3.28,
       "error": null
     },
     {
@@ -151,7 +151,7 @@
       "query": "\u0623\u062e\u0628\u0631\u0646\u064a \u0639\u0646 \u0644\u0648\u062d\u0629 \u0627\u0644\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627",
       "actual_route": "painting_lookup",
       "correct": true,
-      "elapsed_seconds": 1.73,
+      "elapsed_seconds": 4.19,
       "error": null
     },
     {
@@ -162,7 +162,7 @@
       "query": "What's a good brush for glazing techniques?",
       "actual_route": "product_search",
       "correct": true,
-      "elapsed_seconds": 30.94,
+      "elapsed_seconds": 2.91,
       "error": null
     },
     {
@@ -171,9 +171,9 @@
       "category": "product_search",
       "expected_route": "product_search",
       "query": "Quel est un bon pinceau pour les techniques de glacis ?",
-      "actual_route": "retrieval_qa",
-      "correct": false,
-      "elapsed_seconds": 1.09,
+      "actual_route": "product_search",
+      "correct": true,
+      "elapsed_seconds": 3.7,
       "error": null
     },
     {
@@ -184,7 +184,7 @@
       "query": "How much would the brushes you found cost in total?",
       "actual_route": "invoice",
       "correct": true,
-      "elapsed_seconds": 31.49,
+      "elapsed_seconds": 4.12,
       "error": null
     },
     {
@@ -195,7 +195,7 @@
       "query": "Give me a complementary color scheme based on cerulean blue",
       "actual_route": "color_palette",
       "correct": true,
-      "elapsed_seconds": 1.95,
+      "elapsed_seconds": 3.19,
       "error": null
     },
     {
@@ -206,7 +206,7 @@
       "query": "Donne-moi un sch\u00e9ma de couleurs compl\u00e9mentaires \u00e0 partir du bleu c\u00e9rul\u00e9",
       "actual_route": "color_palette",
       "correct": true,
-      "elapsed_seconds": 19.36,
+      "elapsed_seconds": 3.5,
       "error": null
     },
     {
@@ -217,7 +217,7 @@
       "query": "What does the PDF I just uploaded say about this?",
       "actual_route": "personal_docs",
       "correct": true,
-      "elapsed_seconds": 0.92,
+      "elapsed_seconds": 3.47,
       "error": null
     },
     {
@@ -226,9 +226,9 @@
       "category": "personal_docs",
       "expected_route": "personal_docs",
       "query": "\u0645\u0627\u0630\u0627 \u064a\u0642\u0648\u0644 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0630\u064a \u0631\u0641\u0639\u062a\u0647 \u0644\u0644\u062a\u0648 \u0639\u0646 \u0647\u0630\u0627 \u0627\u0644\u0645\u0648\u0636\u0648\u0639\u061f",
-      "actual_route": "retrieval_qa",
-      "correct": false,
-      "elapsed_seconds": 18.59,
+      "actual_route": "personal_docs",
+      "correct": true,
+      "elapsed_seconds": 5.0,
       "error": null
     },
     {
@@ -239,7 +239,7 @@
       "query": "What is glacis, comme technique de peinture \u00e0 l'huile ?",
       "actual_route": "retrieval_qa",
       "correct": true,
-      "elapsed_seconds": 7.72,
+      "elapsed_seconds": 3.94,
       "error": null
     },
     {
@@ -248,9 +248,9 @@
       "category": "painting_lookup",
       "expected_route": "painting_lookup",
       "query": "Tell me about \u0644\u0648\u062d\u0629 \u0627\u0644\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627",
-      "actual_route": "retrieval_qa",
-      "correct": false,
-      "elapsed_seconds": 32.83,
+      "actual_route": "painting_lookup",
+      "correct": true,
+      "elapsed_seconds": 3.24,
       "error": null
     },
     {
@@ -261,7 +261,7 @@
       "query": "Je cherche un bon pinceau \u0644\u0644\u062a\u0642\u0646\u064a\u0627\u062a \u0627\u0644\u0632\u062c\u0627\u062c\u064a\u0629",
       "actual_route": "product_search",
       "correct": true,
-      "elapsed_seconds": 1.14,
+      "elapsed_seconds": 4.02,
       "error": null
     },
     {
@@ -272,7 +272,7 @@
       "query": "\u0623\u0639\u0637\u0646\u064a complementary color scheme \u0644\u0644\u0644\u0648\u0646 \u0627\u0644\u0623\u0632\u0631\u0642 \u0627\u0644\u0633\u0645\u0627\u0648\u064a",
       "actual_route": "color_palette",
       "correct": true,
-      "elapsed_seconds": 18.92,
+      "elapsed_seconds": 3.75,
       "error": null
     },
     {
@@ -284,9 +284,227 @@
       "bonus": true,
       "actual_route": "retrieval_qa",
       "correct": true,
-      "elapsed_seconds": 8.67,
+      "elapsed_seconds": 3.47,
       "error": null
     }
   ],
-  "fidelity": null
+  "fidelity": [
+    {
+      "id": "F1",
+      "note": null,
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "What is sfumato?",
+          "expected_route": "retrieval_qa",
+          "actual_route": null,
+          "routing_correct": null,
+          "expected_lang": "en",
+          "scored": true,
+          "detected_language": null,
+          "outcome": null,
+          "answer_text": null,
+          "error": "ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "note": null,
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "Qu'est-ce que le sfumato ?",
+          "expected_route": "retrieval_qa",
+          "actual_route": null,
+          "routing_correct": null,
+          "expected_lang": "fr",
+          "scored": true,
+          "detected_language": null,
+          "outcome": null,
+          "answer_text": null,
+          "error": "ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id"
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "note": null,
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "\u0645\u0627 \u0647\u0648 \u0627\u0644\u0633\u0641\u0648\u0645\u0627\u062a\u0648\u061f",
+          "expected_route": "retrieval_qa",
+          "actual_route": null,
+          "routing_correct": null,
+          "expected_lang": "ar",
+          "scored": true,
+          "detected_language": null,
+          "outcome": null,
+          "answer_text": null,
+          "error": "ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id"
+        }
+      ]
+    },
+    {
+      "id": "F4",
+      "note": null,
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "\u00bfQu\u00e9 es el sfumato?",
+          "expected_route": "retrieval_qa",
+          "actual_route": null,
+          "routing_correct": null,
+          "expected_lang": "es",
+          "scored": true,
+          "detected_language": null,
+          "outcome": null,
+          "answer_text": null,
+          "error": "ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id"
+        }
+      ]
+    },
+    {
+      "id": "F5",
+      "note": "Single message mixing English and Arabic in one line. Neither RETRIEVAL_QA_SYSTEM_PROMPT nor any other specialist prompt has an explicit rule for a question that mixes languages ITSELF -- their existing 'same language' rule is about the question vs. contextualize's own appended parenthetical, a different case (see prompts.py). Diagnostic only, on purpose: recorded, never scored pass/fail, because there is no written contract yet to score it against. If this keeps coming back e.g. English-only across several runs, that's a real candidate for a new explicit rule in RETRIEVAL_QA_SYSTEM_PROMPT -- not evidence of a bug today.",
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "What is glazing, \u0648 \u0634\u0648 \u0647\u064a\u0651 \u062a\u0642\u0646\u064a\u0629 \u0627\u0644\u0633\u0641\u0648\u0645\u0627\u062a\u0648 \u0643\u0645\u0627\u0646\u061f",
+          "expected_route": "retrieval_qa",
+          "actual_route": null,
+          "routing_correct": null,
+          "expected_lang": null,
+          "scored": false,
+          "detected_language": null,
+          "outcome": null,
+          "answer_text": null,
+          "error": "ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id"
+        }
+      ]
+    },
+    {
+      "id": "F6",
+      "note": null,
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "Tell me about Starry Night",
+          "expected_route": "painting_lookup",
+          "actual_route": null,
+          "routing_correct": null,
+          "expected_lang": "en",
+          "scored": true,
+          "detected_language": null,
+          "outcome": null,
+          "answer_text": null,
+          "error": "ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id"
+        }
+      ]
+    },
+    {
+      "id": "F7",
+      "note": null,
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "\u0623\u062e\u0628\u0631\u0646\u064a \u0639\u0646 \u0644\u0648\u062d\u0629 \u0627\u0644\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627",
+          "expected_route": "painting_lookup",
+          "actual_route": null,
+          "routing_correct": null,
+          "expected_lang": "ar",
+          "scored": true,
+          "detected_language": null,
+          "outcome": null,
+          "answer_text": null,
+          "error": "ValueError: Checkpointer requires one or more of the following 'configurable' keys: thread_id, checkpoint_ns, checkpoint_id"
+        }
+      ]
+    },
+    {
+      "id": "F8",
+      "note": "Multi-turn, mirrors CONTEXTUALIZE_SYSTEM_PROMPT's own worked example almost exactly (English topic, then an Arabic pronoun-attached follow-up -- '\u0631\u0633\u0645\u0647\u0627' = 'painted' + attached 'it'). Turn 1 is topic setup only, not scored. Turn 2 is the real test: does contextualize rewrite '\u0645\u0646 \u0631\u0633\u0645\u0647\u0627\u061f' into '\u0645\u0646 \u0631\u0633\u0645 \u0627\u0644\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627' using the Mona Lisa from turn 1, and does painting_lookup then answer turn 2 in Arabic, not English.",
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "Tell me about the Mona Lisa",
+          "expected_route": "painting_lookup",
+          "actual_route": "painting_lookup",
+          "routing_correct": true,
+          "expected_lang": null,
+          "scored": false,
+          "detected_language": {
+            "primary_script": "latin",
+            "arabic_ratio": 0.0,
+            "latin_ratio": 1.0,
+            "latin_lang_guess": "en"
+          },
+          "outcome": null,
+          "answer_text": "The Mona\u202fLisa is a half\u2011length portrait painted by the Italian master Leonardo\u202fda\u202fVinci.  It is regarded as an archetypal masterpiece of the Italian Renaissance and is often described as \u201cthe best\u2011known, the most\u2011visited, the most\u2011written\u2011about, the most\u2011sung\u2011about, and the most parodied work of art in the world.\u201d  The painting is celebrated for its novel qualities: the subject\u2019s enigmatic expression, the monumentality of the composition, the subtle modelling of forms, and the atmospheric illusionism that gives the background a hazy, almost dreamlike quality.\n\nWhile the local corpus of painting\u2011technique treatises does not contain a direct discussion of the Mona\u202fLisa, it does reference Leonardo\u202fda\u202fVinci in a commemorative bust, underscoring his importance as a polymath in art, science, and philosophy.  The internet summary confirms that the Mona\u202fLisa is a half\u2011length portrait and highlights its significance within the Renaissance canon, but the corpus offers no further technical details about the painting\u2019s medium, pigments, or studio practice.\n\n**Sources:**\n- [Wikipedia: Mona Lisa](https://en.wikipedia.org/wiki/Mona_Lisa)\n- [Mona Lisa | Painting, Painter, History, Meaning, & Facts | Britannica](https://www.britannica.com/topic/Mona-Lisa-painting)\n- [Mona Lisa, c.1503 - c.1519 - Leonardo da Vinci - WikiArt.org](https://www.wikiart.org/en/leonardo-da-vinci/mona-lisa)",
+          "error": null
+        },
+        {
+          "turn_index": 1,
+          "turn_text": "\u0645\u0646 \u0631\u0633\u0645\u0647\u0627\u061f",
+          "expected_route": "painting_lookup",
+          "actual_route": "painting_lookup",
+          "routing_correct": true,
+          "expected_lang": "ar",
+          "scored": true,
+          "detected_language": {
+            "primary_script": "mixed",
+            "arabic_ratio": 0.693,
+            "latin_ratio": 0.307,
+            "latin_lang_guess": "es"
+          },
+          "outcome": "mismatch",
+          "answer_text": "\u0627\u0644\u0631\u0633\u0645\u0629 \u0627\u0644\u062a\u064a \u062a\u064f\u0639\u0631\u0641 \u0628\u0627\u0633\u0645 \u00ab\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627\u00bb \u0631\u0633\u0645\u0647\u0627 \u0627\u0644\u0641\u0646\u0627\u0646 \u0627\u0644\u0625\u064a\u0637\u0627\u0644\u064a \u0644\u064a\u0648\u0646\u0627\u0631\u062f\u0648 \u062f\u0627\u0641\u0646\u0634\u064a. \u062a\u064f\u0639\u062f \u0647\u0630\u0647 \u0627\u0644\u0644\u0648\u062d\u0629 \u062a\u0645\u062b\u064a\u0644\u0627\u064b \u0646\u0635\u0641 \u0637\u0648\u0644\u064a\u0627\u064b \u0644\u0644\u0645\u0631\u0623\u0629\u060c \u0648\u062a\u064f\u0639\u062a\u0628\u0631 \u0645\u062b\u0627\u0644\u0627\u064b \u0628\u0627\u0631\u0632\u0627\u064b \u0639\u0644\u0649 \u0641\u0646 \u0639\u0635\u0631 \u0627\u0644\u0646\u0647\u0636\u0629 \u0627\u0644\u0625\u064a\u0637\u0627\u0644\u064a\u0629.  \n\n\u062a\u064f\u0635\u0646\u0641 \u00ab\u0645\u0648\u0646\u0627\u0644\u064a\u0632\u0627\u00bb \u0643\u0623\u062d\u062f \u0623\u0639\u0638\u0645 \u0627\u0644\u0623\u0639\u0645\u0627\u0644 \u0627\u0644\u0641\u0646\u064a\u0629 \u0641\u064a \u0627\u0644\u062a\u0627\u0631\u064a\u062e\u060c \u0625\u0630 \u0648\u0635\u0641\u0647\u0627 \u0643\u062b\u064a\u0631\u0648\u0646 \u0628\u0623\u0646\u0647\u0627 \u201c\u0627\u0644\u0623\u0643\u062b\u0631 \u0634\u0647\u0631\u0629\u060c \u0627\u0644\u0623\u0643\u062b\u0631 \u0632\u064a\u0627\u0631\u0629\u060c \u0627\u0644\u0623\u0643\u062b\u0631 \u0643\u062a\u0627\u0628\u0629 \u0639\u0646\u0647\u0627\u060c \u0627\u0644\u0623\u0643\u062b\u0631 \u063a\u0646\u0627\u0621\u064b \u0639\u0646\u0647\u0627\u060c \u0648\u0623\u0643\u062b\u0631\u0647\u0627 \u0633\u062e\u0631\u064a\u0629 \u0641\u064a \u0627\u0644\u0639\u0627\u0644\u0645\u201d. \u062a\u062a\u0645\u064a\u0632 \u0627\u0644\u0644\u0648\u062d\u0629 \u0628\u062a\u0639\u0628\u064a\u0631\u0647\u0627 \u0627\u0644\u063a\u0627\u0645\u0636\u060c \u0648\u0645\u0642\u0627\u0633\u0647\u0627 \u0627\u0644\u0634\u0627\u0647\u0642\u060c \u0648\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0646\u0645\u0630\u062c\u0629 \u0627\u0644\u062f\u0642\u064a\u0642\u0629 \u0644\u0644\u0623\u0634\u0643\u0627\u0644\u060c \u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0627\u0644\u0625\u0636\u0627\u0621\u0629 \u0648\u0627\u0644\u0638\u0644\u0627\u0644 \u0627\u0644\u062a\u064a \u062a\u064f\u062e\u0644\u0642 \u0648\u0647\u0645\u064b\u0627 \u062c\u0648\u0651\u064a\u064b\u0627 \u0641\u0631\u064a\u062f\u064b\u0627.\n\n**Sources:**\n- [Wikipedia: Mona Lisa](https://en.wikipedia.org/wiki/Mona_Lisa)\n- [Mona Lisa (Prado) - Wikipedia](https://en.wikipedia.org/wiki/Mona_Lisa_(Prado))\n- [Leonardo da Vinci - Wikipedia](https://en.wikipedia.org/wiki/Leonardo_da_Vinci)",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "F9",
+      "note": "Multi-turn, French then English. product_search has NO documented same-language contract in its own prompt (unlike retrieval_qa/painting_lookup), so language is recorded for information only here. What IS scored: routing staying product_search on both turns despite the language switch mid-thread -- see each turn's own routing_correct field.",
+      "turns": [
+        {
+          "turn_index": 0,
+          "turn_text": "Quel est un bon pinceau pour les techniques de glacis ?",
+          "expected_route": "product_search",
+          "actual_route": "product_search",
+          "routing_correct": true,
+          "expected_lang": null,
+          "scored": false,
+          "detected_language": {
+            "primary_script": "latin",
+            "arabic_ratio": 0.0,
+            "latin_ratio": 1.0,
+            "latin_lang_guess": "fr"
+          },
+          "outcome": null,
+          "answer_text": "**Beginner\u2011friendly options:**  \nThe search results for beginner\u2011friendly titles provide no price information, and none of the snippets mention specific quality indicators such as best\u2011seller status or ratings. The titles focus on instructional content rather than product endorsements, so no clear signal of a recommended brush for glazing is available.  \n\n**Professional\u2011grade options:**  \nSimilarly, the professional\u2011grade search results lack price details and do not reference any brush quality or brand reputation. The snippets describe general professional tools and resources, but no specific mention of a glazing brush or its performance is present.\n\n**Beginner-Friendly Picks:**\nb1. **Le guide complet du mat\u00e9riel pour le dessin et la peinture ... - Amazon** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/guide-complet-mat\u00e9riel-dessin-peinture/dp/B09CRTSPK4)\nb2. **Blancs en lumi\u00e8re: Voir et peindre le blanc comme couleur ... - Amazon** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Blancs-lumi\u00e8re-peindre-relative-expliqu\u00e9s/dp/[REDACTED_PHONE])\nb3. **Le grand guide du dessin - amazon.com** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/grand-guide-du-dessin/dp/[REDACTED_PHONE])\nb4. **BEAUX ARTS MAGAZINE N\u00b0 107 du 01-12-1992 DU PINCEAU A LA VIDEO - Amazon** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/BEAUX-MAGAZINE-01-12-1992-PINCEAU-VIDEO/dp/B0047TNR8C)\nb5. **Jacques P\u00e9pin New Complete Techniques - amazon.com** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Jacques-P\u00e9pin-New-Complete-Techniques/dp/[REDACTED_PHONE])\n\n**Professional-Grade Picks:**\ng1. **Basic Clinical Laboratory Techniques: Estridge, Barbara ... - Amazon** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Clinical-Laboratory-Techniques-Barbara-Estridge/dp/[REDACTED_PHONE])\ng2. **Cuisinart Kitchen Pro Food Slicer, Meat Slicer with Slice ... - Amazon** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Cuisinart-FS-75-Kitchen-Food-Slicer/dp/B01IW22Z6E)\ng3. **Richelieu | Professional Doweling Kit - Biscuit Joiner - Amazon** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/wolfcraft-3751405-Dowel-Pro-Doweling/dp/B0000DD1P6)\ng4. **Real Techniques - amazon.com** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/stores/RealTechniques/page/8F6BF1F1-53B6-495F-8677-9163B374F893)\n\n<!--PRODUCT_DATA:[{\"id\": \"b1\", \"name\": \"Le guide complet du mat\\u00e9riel pour le dessin et la peinture ... - Amazon\", \"price\": null, \"url\": \"https://www.amazon.com/guide-complet-mat\\u00e9riel-dessin-peinture/dp/B09CRTSPK4\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b2\", \"name\": \"Blancs en lumi\\u00e8re: Voir et peindre le blanc comme couleur ... - Amazon\", \"price\": null, \"url\": \"https://www.amazon.com/Blancs-lumi\\u00e8re-peindre-relative-expliqu\\u00e9s/dp/[REDACTED_PHONE]\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b3\", \"name\": \"Le grand guide du dessin - amazon.com\", \"price\": null, \"url\": \"https://www.amazon.com/grand-guide-du-dessin/dp/[REDACTED_PHONE]\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b4\", \"name\": \"BEAUX ARTS MAGAZINE N\\u00b0 107 du 01-12-1992 DU PINCEAU A LA VIDEO - Amazon\", \"price\": null, \"url\": \"https://www.amazon.com/BEAUX-MAGAZINE-01-12-1992-PINCEAU-VIDEO/dp/B0047TNR8C\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b5\", \"name\": \"Jacques P\\u00e9pin New Complete Techniques - amazon.com\", \"price\": null, \"url\": \"https://www.amazon.com/Jacques-P\\u00e9pin-New-Complete-Techniques/dp/[REDACTED_PHONE]\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"g1\", \"name\": \"Basic Clinical Laboratory Techniques: Estridge, Barbara ... - Amazon\", \"price\": null, \"url\": \"https://www.amazon.com/Clinical-Laboratory-Techniques-Barbara-Estridge/dp/[REDACTED_PHONE]\", \"source\": \"amazon\", \"tier\": \"professional\"}, {\"id\": \"g2\", \"name\": \"Cuisinart Kitchen Pro Food Slicer, Meat Slicer with Slice ... - Amazon\", \"price\": null, \"url\": \"https://www.amazon.com/Cuisinart-FS-75-Kitchen-Food-Slicer/dp/B01IW22Z6E\", \"source\": \"amazon\", \"tier\": \"professional\"}, {\"id\": \"g3\", \"name\": \"Richelieu | Professional Doweling Kit - Biscuit Joiner - Amazon\", \"price\": null, \"url\": \"https://www.amazon.com/wolfcraft-3751405-Dowel-Pro-Doweling/dp/B0000DD1P6\", \"source\": \"amazon\", \"tier\": \"professional\"}, {\"id\": \"g4\", \"name\": \"Real Techniques - amazon.com\", \"price\": null, \"url\": \"https://www.amazon.com/stores/RealTechniques/page/8F6BF1F1-53B6-495F-8677-9163B374F893\", \"source\": \"amazon\", \"tier\": \"professional\"}]-->",
+          "error": null
+        },
+        {
+          "turn_index": 1,
+          "turn_text": "which size is best?",
+          "expected_route": "product_search",
+          "actual_route": "product_search",
+          "routing_correct": true,
+          "expected_lang": null,
+          "scored": false,
+          "detected_language": {
+            "primary_script": "latin",
+            "arabic_ratio": 0.0,
+            "latin_ratio": 1.0,
+            "latin_lang_guess": "en"
+          },
+          "outcome": null,
+          "answer_text": "**Beginner\u2011friendly options:**  \nThe beginner\u2011friendly brushes come in a range of small sizes. One set offers a 43\u2011degree angled flat brush, while another pack includes sizes 0,\u202f2,\u202f4, and yet another set lists sizes 2,\u202f4,\u202f6,\u202f8. Prices aren\u2019t listed in the snippets, but the variety suggests a focus on affordable, entry\u2011level tools.\n\n**Professional\u2011grade options:**  \nProfessional\u2011grade brushes span a broader size spectrum. One product lists sizes 6 through 22, another mentions a size\u202f1 round brush, and a third set indicates multiple sizes without specifics. No price or rating details appear in the snippets, so the best choice depends on the particular application rather than cost.\n\n**Beginner-Friendly Picks:**\nb1. **Amazon.com: The Army Painter Wargamer Small Drybrush, BR700 - Dry Brush for Miniature Painting - 43 Degree Angled Hobby Painting Flat Brush - Toray Bristle Paint Brush for Small Models : Arts, Crafts & Sewing** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Army-Painter-Wargamer-Small-Drybrush/dp/B0027SCXZS)\nb2. **Amazon Best Sellers: Best Household Bristle Paint Brushes** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://us.amazon.com/Best-Sellers-Household-Bristle-Paint-Brushes/zgbs/hi/282486)\nb3. **Amazon.com: AIT Art Round Paint Brushes, Pack of 3, Small Sizes 0, 2, 4, Acrylic Handles with Beveled End, Handmade in USA for Trusted Performance** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/AIT-Brushes-Acrylic-Handmade-Performance/dp/B083JMC7HS)\nb4. **Amazon.com: ZEM Brush White Hog Bristle Stiff Fan Brush Set Size 2,4,6,8** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/ZEM-BRUSH-White-Bristle-Stiff/dp/B00M7GX6PG)\nb5. **Amazon Best Sellers: Best Hair Brushes** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://us.amazon.com/Best-Sellers-Beauty-Personal-Care-Hair-Brushes/zgbs/beauty/11058121)\n\n**Professional-Grade Picks:**\ng1. **Amazon.com : Pana Purple Wood Kolinsky Acrylic Nail Brush (Size: 6, 8, 10, 12, 14, 16, 18, 20, & 22) Kolinsky Hair (Size 8) : Beauty & Personal Care** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Profession-Purple-Kolinsky-Acrylic-Brush/dp/B00P1PWDY0)\ng2. **Amazon.com: Best Round Brush For Fine Hair** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/best-round-brush-fine-hair/s?k=best+round+brush+for+fine+hair)\ng3. **Amazon.com: Winsor & Newton Artists' Acrylic Brush, Size 1, Round,Black** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Winsor-Newton-Artists-Acrylic-Brush/dp/B004XMEVZQ)\ng4. **Amazon.com: Different Size Paint Brushes** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/Different-Size-Paint-Brushes/s?k=Different+Size+Paint+Brushes)\ng5. **Amazon.com: Customer Questions & Answers** \u2014 price not listed \u2014 via amazon \u2014 [View listing](https://www.amazon.com/ask/questions/Tx1NBTBZ8ZYCDMG/)\n\n<!--PRODUCT_DATA:[{\"id\": \"b1\", \"name\": \"Amazon.com: The Army Painter Wargamer Small Drybrush, BR700 - Dry Brush for Miniature Painting - 43 Degree Angled Hobby Painting Flat Brush - Toray Bristle Paint Brush for Small Models : Arts, Crafts & Sewing\", \"price\": null, \"url\": \"https://www.amazon.com/Army-Painter-Wargamer-Small-Drybrush/dp/B0027SCXZS\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b2\", \"name\": \"Amazon Best Sellers: Best Household Bristle Paint Brushes\", \"price\": null, \"url\": \"https://us.amazon.com/Best-Sellers-Household-Bristle-Paint-Brushes/zgbs/hi/282486\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b3\", \"name\": \"Amazon.com: AIT Art Round Paint Brushes, Pack of 3, Small Sizes 0, 2, 4, Acrylic Handles with Beveled End, Handmade in USA for Trusted Performance\", \"price\": null, \"url\": \"https://www.amazon.com/AIT-Brushes-Acrylic-Handmade-Performance/dp/B083JMC7HS\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b4\", \"name\": \"Amazon.com: ZEM Brush White Hog Bristle Stiff Fan Brush Set Size 2,4,6,8\", \"price\": null, \"url\": \"https://www.amazon.com/ZEM-BRUSH-White-Bristle-Stiff/dp/B00M7GX6PG\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"b5\", \"name\": \"Amazon Best Sellers: Best Hair Brushes\", \"price\": null, \"url\": \"https://us.amazon.com/Best-Sellers-Beauty-Personal-Care-Hair-Brushes/zgbs/beauty/11058121\", \"source\": \"amazon\", \"tier\": \"beginner\"}, {\"id\": \"g1\", \"name\": \"Amazon.com : Pana Purple Wood Kolinsky Acrylic Nail Brush (Size: 6, 8, 10, 12, 14, 16, 18, 20, & 22) Kolinsky Hair (Size 8) : Beauty & Personal Care\", \"price\": null, \"url\": \"https://www.amazon.com/Profession-Purple-Kolinsky-Acrylic-Brush/dp/B00P1PWDY0\", \"source\": \"amazon\", \"tier\": \"professional\"}, {\"id\": \"g2\", \"name\": \"Amazon.com: Best Round Brush For Fine Hair\", \"price\": null, \"url\": \"https://www.amazon.com/best-round-brush-fine-hair/s?k=best+round+brush+for+fine+hair\", \"source\": \"amazon\", \"tier\": \"professional\"}, {\"id\": \"g3\", \"name\": \"Amazon.com: Winsor & Newton Artists' Acrylic Brush, Size 1, Round,Black\", \"price\": null, \"url\": \"https://www.amazon.com/Winsor-Newton-Artists-Acrylic-Brush/dp/B004XMEVZQ\", \"source\": \"amazon\", \"tier\": \"professional\"}, {\"id\": \"g4\", \"name\": \"Amazon.com: Different Size Paint Brushes\", \"price\": null, \"url\": \"https://www.amazon.com/Different-Size-Paint-Brushes/s?k=Different+Size+Paint+Brushes\", \"source\": \"amazon\", \"tier\": \"professional\"}, {\"id\": \"g5\", \"name\": \"Amazon.com: Customer Questions & Answers\", \"price\": null, \"url\": \"https://www.amazon.com/ask/questions/Tx1NBTBZ8ZYCDMG/\", \"source\": \"amazon\", \"tier\": \"professional\"}]-->",
+          "error": null
+        }
+      ]
+    }
+  ]
 }
