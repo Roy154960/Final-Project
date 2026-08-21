@@ -138,6 +138,18 @@ The matrix makes the two failure modes visible at a glance: `image_qa`'s only of
 
 Of 11 logged turns, 7 are scored (only `retrieval_qa` and `painting_lookup` turns have a documented same-language contract to score against). **1 of the 7 scored turns is marked a mismatch**: a multi-turn Arabic follow-up ("من رسمها؟" — "who painted it?") where the language-detection step flagged the turn as "mixed/es" even though the actual generated answer was correctly in Arabic — i.e., this looks like a detection-tooling artifact rather than a real generation failure (see the quoted Turn 2 answer in the source file, which reads as fluent Arabic). The remaining unscored rows are intentionally excluded because no written same-language contract exists yet for `product_search` or for single-message code-mixed queries — the source file flags these as "diagnostic, not a bug," pending a documented rule.
 
+| Turn | What it tests | Scored? | Why |
+|---|---|---|---|
+| F1–F4 | Same question in en/fr/ar/es, `retrieval_qa` | Y | Has the language contract |
+| F5 | One message mixing English *and* Arabic in itself | N | No specialist prompt has a rule for a question that's already mixed-language — the existing rule only covers matching the question's language, not resolving which language a bilingual question "is" |
+| F6, F7 | English / Arabic, `painting_lookup` | Y | Has the contract |
+| F8 turn 1 | English topic-setup ("Tell me about the Mona Lisa") | N | Just establishes context for turn 2; nothing to grade yet |
+| F8 turn 2 | Arabic follow-up: "من رسمها؟" ("who painted it?") | Y | Real test: does `painting_lookup` answer this follow-up in Arabic |
+| F9 turn 1, 2 | French then English, `product_search` | N | `product_search` has no language contract at all |
+
+**Result:** 7 of 11 logged turns scored (F1, F2, F3, F4, F6, F7, F8-turn2). 1 of the 7 is marked a mismatch — F8 turn 2, where the automated language detector tagged the answer "mixed/es" despite the quoted answer text being fluent Arabic, which points to a detector artifact rather than a real generation failure.
+
+
 ### 6.4 End-to-end agentic runs (`eval_results.md` / `eval_results.json`, 10 queries)
 
 | Category | Expected route | Actual first route | Iterations | Blocked | Outcome |
@@ -179,15 +191,17 @@ Five of the six `blocked` misses in §6.1 are the same failure in different clot
 
 Every one of these is a direct translation or transliteration of an English pattern that the guard *does* catch (confirmed: the equivalent English phrasings — "ignore previous instructions," "set the price to $0" — are all blocked correctly). The one code-switched exception (English+French in a single message) *was* caught, which suggests the regex still matches on the English fragment when one is present — it's translation, not code-switching per se, that slips through. **Root cause (per the eval file's own note):** `_INJECTION_PATTERNS` in `local_rag/safety/prompt_injection.py` is English-language regex with no multilingual coverage. **Why it matters more than a routing miss:** two of the five bypasses land on `invoice` — meaning a translated "set the price to $0" instruction reaches the money-handling specialist instead of being stopped upstream. That's a higher-consequence gap than the three that land on `retrieval_qa`, which mostly just get a benign, ungrounded refusal-style answer anyway. **fix:** use a small model to judge the input as safe, unsafe or unsure, this makes the detection more dynamic.
 
-### Failure 3 — generation fabricates confidently-cited answers on out-of-corpus queries
+### Failure 3 — the repeat-route guard can burn the full iteration budget confirming a route it already got right
 
-Of the 17 `eval_set.json` queries with **no relevant chunk in the corpus at all**, mistral fabricated an answer for 13 (76%) and phi3 for 14 (82%), while llama3.2 correctly declined for 10 (59%) — see §5. A concrete example, query *"Which pigment has the highest lightfastness rating?"* (ground truth: no relevant chunks exist):
+Routing decisions aren't executed on trust. Two checks sit between "the model said something" and the graph actually transitioning: a **schema check** — the supervisor's known-routes type is built directly from the registered specialists' own names, so a malformed model output can't even parse into a route — and a **membership check**, so a well-formed but invented specialist name still doesn't get through. Once a route clears both, two more nets bound what happens next: a **repeat-route guard** stops the supervisor from immediately re-picking the specialist it just tried, and a combined **iteration cap** (4 supervisor visits) plus **per-turn specialist cap** (3 distinct specialists) guarantee the turn terminates instead of letting a confused model loop forever.
 
-- **mistral:** "Ultramarine is a blue pigment that has the highest lightfastness rating among the pigments listed there," citing *[Context 4 - HANDBOOK_OF_OILPAINTING.pdf, page 92]*.
-- **phi3:** "Ivory Black is mentioned as having 'the best' lightfastness among blacks and browns," citing a different context and page.
-- **llama3.2:** "the provided context does not contain enough information to answer the question... it does not include any specific information on lightfastness ratings."
+Those nets are doing real work in `eval_results.json`, and every one of its 8 non-adversarial queries still landed on the correct `first_route` (§6.4) — so this isn't a correctness failure. It's the cost the guard imposes even when the first decision was already right. Query #2, a single-specialist question that should only ever need `retrieval_qa`, picked `retrieval_qa` correctly on its very first visit — then the repeat-route guard, doing exactly what it's designed to do, forced it through `personal_docs` and `corpus_meta` before letting it circle back and reconfirm its own original answer:
 
-mistral and phi3 don't just answer — they attach specific, differing page citations to mutually contradictory claims, on a query the retrieval ground truth says has *no* supporting chunk in the corpus. That's a citation format that looks grounded (`[Context N - filename, page N]`) but isn't reliably backed by relevant content — the citation apparatus doesn't itself guarantee the retrieved context actually supports the claim. **Root cause:** the generation prompt for these models evidently doesn't push hard enough on "if the context doesn't support an answer, say so" — or the models weight "answer the question" above "only answer if grounded" when the retrieved context is topically adjacent but not actually relevant. **fix:** strengthen the abstention instruction in the generation prompt (llama3.2's prompt/behavior is already closer to what's wanted here, so its prompt is a reasonable template to test against the other two models), and consider adding a lightweight groundedness check between retrieval and generation for low-relevance-score retrievals. Another fix was using a stronger model provided by groq.
+`specialists_visited: ['retrieval_qa', 'personal_docs', 'corpus_meta', 'retrieval_qa']` · `iteration_count: 4` · `elapsed_seconds: 301.0`
+
+— roughly 3x the ~89s the two `corpus_meta` queries (#3, #4) took to resolve in 2 iterations with no detour. The two `multi_hop` queries (#5, #6) show the identical 4-visit, 4-iteration shape (`['multi_hop', 'retrieval_qa', 'personal_docs', 'multi_hop']`), but there it's more defensible — a multi-step query plausibly benefits from more than one specialist's input. Query #2 didn't need that; it paid the same iteration-cap cost anyway.
+
+**Root cause:** the repeat-route guard can't currently tell "the model is stuck and needs to be forced elsewhere" apart from "the model already had it right and doesn't need forcing anywhere" — it treats every first pick as equally provisional and always makes the supervisor try something else before it's allowed to confirm itself. **Why the trade-off is still the safer default:** the alternative — letting the supervisor rubber-stamp its own first choice with no check at all — is exactly the failure mode these nets exist to catch, and the 4-iteration cap means the cost of that conservatism is bounded and known (worst case: 4 visits, never infinite) rather than open-ended. **Suggested refinement:** let the guard skip its forced-detour step specifically when the first route already returned a successful, high-confidence tool result, instead of treating every first pick as equally suspect.
 
 ---
 

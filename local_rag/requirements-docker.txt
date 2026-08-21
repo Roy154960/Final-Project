@@ -148,3 +148,5 @@ chromadb-client         # NOT plain `chromadb` -- see below
 
 # --- Retrieval (mcp-server's retrieve() tool specifically) ---
 rank-bm25               # retrieval/hybrid_retriever.py's BM25 side of hybrid search
+
+open-clip-torch
