@@ -2475,19 +2475,12 @@ async def build_specialists() -> dict[str, Specialist]:
             raw_web = await search_painting_tool.ainvoke({"painting_name": question})
             web_result = unwrap_tool_result(raw_web) or web_result
 
-        # CONFIRMED live-run bug this closes: search_famous_painting
-        # (mcp_server/web_tools.py) deliberately returns summary=None
-        # alongside a non-empty sources list when Wikipedia's own summary
-        # lookup came up empty but the general web search still found
-        # real, allowlisted sources -- that function's OWN comment says
-        # "caller decides how to phrase 'no summary, but see sources'."
-        # This is that phrasing, finally implemented: a flat "(nothing
-        # found on the internet)" whenever summary was falsy, regardless
-        # of sources, told the synthesis LLM there was nothing online at
-        # all even when three real Wikipedia/Britannica links were about
-        # to be appended right below its own answer -- producing exactly
-        # that contradiction in a live run ("no summary was found
-        # online," followed immediately by three internet sources).
+        # search_famous_painting (mcp_server/web_tools.py) deliberately returns
+        # summary=None alongside a non-empty sources list when Wikipedia's own
+        # summary lookup came up empty but the general web search still found
+        # real, allowlisted sources. This phrases "no summary, but see sources"
+        # so the synthesis LLM isn't told there is nothing online at all while
+        # real links are about to be appended below its answer.
         sources = web_result.get("sources") or []
         if web_result.get("summary"):
             web_summary = web_result["summary"]
@@ -2506,34 +2499,37 @@ async def build_specialists() -> dict[str, Specialist]:
         )
         synth_messages = [SystemMessage(content=synth_prompt), HumanMessage(content=question)]
         response = await _llm_for(question).ainvoke(synth_messages)
-        answer = response.content
 
-        if _looks_like_degenerate_repeat(answer):
-            # CONFIRMED live-run failure -- see _looks_like_degenerate_repeat's
-            # own docstring for the exact incident (a local-Ollama-fallback
-            # synthesis call looping the same "[filename] sentence." block
-            # 30+ times on an Arabic, multi-chunk prompt). Retried ONCE,
-            # explicitly on llm_large -- deliberately bypassing _llm_for's
-            # own tier pick, since the point is to get a DIFFERENT model
-            # than whatever just degenerated: llm_large tries Groq first
-            # (see llm_provider.py), a completely different, much stronger
-            # model, before it would ever itself fall back to the same
-            # local model that just failed.
+        # TEMPORARY DIAGNOSTIC -- delete once the empty-answer cause is known.
+        print(
+            "SYNTH RAW:",
+            repr(response.content)[:300],
+            getattr(response, "response_metadata", {}),
+            file=sys.stderr,
+        )
+
+        # response.content can be a str OR a list of content blocks, and
+        # reasoning models can return it empty. Normalize to a string first.
+        answer = _stringify_message_content(response.content)
+
+        def _bad(a: str) -> bool:
+            # An empty/whitespace reply is a failure, same as a degenerate
+            # repeat loop. _looks_like_degenerate_repeat("") returns False on
+            # its own, which is how a blank answer used to slip through and
+            # end up as "no text, only the Sources links".
+            return (not a.strip()) or _looks_like_degenerate_repeat(a)
+
+        if _bad(answer):
+            # Retried ONCE on llm_large, deliberately bypassing _llm_for's own
+            # tier pick, to get a DIFFERENT model than whatever just failed.
             retry_response = await llm_large.ainvoke(synth_messages)
-            retry_answer = retry_response.content
-            if (
-                isinstance(retry_answer, str)
-                and retry_answer.strip()
-                and not _looks_like_degenerate_repeat(retry_answer)
-            ):
+            retry_answer = _stringify_message_content(retry_response.content)
+            if not _bad(retry_answer):
                 answer = retry_answer
             else:
-                # Both attempts degenerated (rare -- would mean the retry
-                # landed on a broken model too, or Groq is unreachable and
-                # fell back to the same local model again). Never show the
-                # user a wall of repeated text -- degrade to a plain,
-                # unsynthesized answer built directly from what was
-                # actually retrieved instead.
+                # Both attempts failed (empty or looping). Never show the user a
+                # blank reply or a wall of repeated text -- fall back to a plain,
+                # unsynthesized answer built directly from what was retrieved.
                 answer = _plain_painting_lookup_fallback(question, corpus_content, web_summary)
 
         if sources:
@@ -2541,7 +2537,6 @@ async def build_specialists() -> dict[str, Specialist]:
             answer = f"{answer}\n\n**Sources:**\n{source_lines}"
 
         return {"messages": [AIMessage(content=answer, name="painting_lookup")]}
-
     # --- Specialist 6: product-search -------------------------------------
     # One tool call (search_art_supplies), then Python -- not the LLM --
     # tags each candidate's tier and picks the top candidates PER TIER;

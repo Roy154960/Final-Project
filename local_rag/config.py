@@ -190,9 +190,9 @@ GROQ_SMALL_MODEL = "openai/gpt-oss-20b"
 # Groq's own hosted multimodal (text + vision) model -- see
 # https://console.groq.com/docs/vision for current support, limits, and
 # whether a newer/cheaper vision model has since been added to Groq's
-# catalog (checked 2026-08: qwen/qwen3.6-27b is Groq's only vision-capable
+# catalog (checked 2026-08: qwen/qwen3.8-27b is Groq's only vision-capable
 # model at time of writing).
-GROQ_VISION_MODEL = "qwen/qwen3.6-27b"
+GROQ_VISION_MODEL = "qwen/qwen3.8-27b"
 
 # ---------------------------------------------------------------------------
 # Together AI (hosted, PAID -- unlike Groq's free tier above) -- the
@@ -235,7 +235,7 @@ TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 # independently, so if one of them ever needs a different id, this
 # stays a one-line change here instead of an accidental coupling
 # between two unrelated providers' model catalogs.
-TOGETHER_SMALL_MODEL = "openai/gpt-oss-20b"
+TOGETHER_SMALL_MODEL = "Qwen/Qwen3.5-9B"
 
 # ---------------------------------------------------------------------------
 # CLIP (true multimodal embeddings — image and text share one vector space)
